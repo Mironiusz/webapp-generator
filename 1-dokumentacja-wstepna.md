@@ -53,7 +53,7 @@ Następnie generator tworzy projekt zawierający:
 
 ## Architektura
 
-Architektura opisana jest w dokumencie 2-architektura.md
+Architektura opisana jest w dokumencie 4-architektura.md
 
 ## Wspierane kombinacje technologiczne
 
@@ -111,4 +111,4 @@ Poprawność zostanie zweryfikowana przez wygenerowanie projektu, a następnie u
 
 Za sukces uznaję wygenerowanie projektu, który uruchamia się bez dodatkowej konfiguracji oraz przechodzi zestaw testów automatycznych dla wybranej konfiguracji i jest możliwy do uruchomienia przez użytkownika.
 
-Dokładne kryteria akceptacyjne opisane są w dokumencie 4-kryteria-akceptacyjne.md
+Dokładne kryteria akceptacyjne opisane są w dokumencie 3-kryteria-akceptacyjne.md
