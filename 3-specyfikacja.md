@@ -1,0 +1,11 @@
+- format pliku konfiguracyjnego
+- dostępne komendy CLI
+- obsługiwane wartości configu
+- minimalny kontrakt API
+- minimalny kontrakt danych
+- wymagane endpointy
+- wymagane pliki w output
+- wymagane testy
+- zasady walidacji
+- zasady obsługi błędów
+- zasady wznawiania pipeline'u
