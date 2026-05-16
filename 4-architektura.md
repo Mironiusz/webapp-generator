@@ -178,29 +178,36 @@ Deterministyczność dotyczy przede wszystkim struktury katalogów, wygenerowany
 ### 3.1 Przepływ i główne etapy działania
 
 1. Pozyskanie danych wejściowych.
-   Generator zaczyna, otrzymując dane wejściowe. To jest jedynie deklaracja od użytkownika, co chce uzyskać:
+   Generator zaczyna od otrzymania danych wejściowych. To jest jedynie deklaracja od użytkownika, co chce uzyskać:
     - nazwa projektu
     - katalog docelowy
     - frontend
     - backend
     - porty
     - zmienne środowiskowe
+
 2. Normalizacja konfiguracji
-   Generator przerabia dane wejściowe na spójną konfigurację wewnętrzną za pomocą wspólnego mechanizmu normalizacji danych wejściowych. Wartości zostają uporządkowane i zostaje z nich utworzony docelowy plik konfiguracyjny, na którego podstawie powstanie projekt. Dzięki temu zarówno kreator jak i plik konfiguracyjny mogą być interpretowane tak samo.
+   Generator przerabia dane wejściowe na spójną konfigurację wewnętrzną za pomocą wspólnego mechanizmu normalizacji danych wejściowych. Wartości zostają uporządkowane i zostaje z nich utworzony docelowy plik konfiguracyjny, na którego podstawie powstanie projekt. Dzięki temu zarówno kreator, jak i plik konfiguracyjny mogą być interpretowane tak samo.
+
 3. Walidacja
-   Generator waliduje konfigurację i sprawdza, czy jest ona obsługiwana. Sprawdza, czy istnieje taki frontend, backend, czy kombinacja jest wspierana, czy porty nie mają konfliktów, czy da się stworzyć output_dir.
+   Generator waliduje konfigurację i sprawdza, czy jest ona obsługiwana. Sprawdza, czy istnieje wskazany frontend i backend, czy kombinacja jest wspierana, czy porty nie mają konfliktów oraz czy da się stworzyć output_dir.
+
 4. Wybór elementów generacji
-   Po walidacji konfiguracja zmieniana jest konkretne elementy, które zostaną użyte. To już jest docelowa instrukcja dla generatora, co powstanie jako ostateczna wersja.
-   Na tym etapie zostają wybrane już odpowiednie template packi oraz elementy wspólne.
+   Po walidacji konfiguracja zamieniana jest na konkretne elementy, które zostaną użyte. To już jest docelowa instrukcja dla generatora, co powstanie jako ostateczna wersja.
+   Na tym etapie zostają wybrane odpowiednie template packi oraz elementy wspólne.
+
 5. Stworzenie planu generacji
-   Na tym etapie generator buduje plan działania. Określa, jakie pliki zostaną utworzone, które templaty wyrenderowane, jakie elementy wspólne mają zostać złożone, jakie zmienne będą dostępne w kontekście renderowania, jakie kroki weryfikacji zostaną uruchomione. Plan generacji powinien też wykryć konflikty między packami - na przykład jeśli chcą wyrenderować ten sam plik. Odróżnia renderowanie pliku od składania go z kilku packów.
+   Na tym etapie generator buduje plan działania. Określa, jakie pliki zostaną utworzone, które template'y zostaną wyrenderowane, jakie elementy wspólne mają zostać złożone, jakie zmienne będą dostępne w kontekście renderowania oraz jakie kroki weryfikacji zostaną uruchomione. Plan generacji powinien też wykryć konflikty między packami - na przykład jeśli chcą wyrenderować ten sam plik. Odróżnia renderowanie pliku od składania go z kilku packów.
+
 6. Generowanie w katalogu roboczym
-   Generator nie zaczyna od katalogu docelowego, ale robi staging. Tam zostaje przeprowadzony cały proces - renderowanie templatów, struktura katalogów, zapis plików, konteneryzacja. To tutaj nastąpi weryfikacja.
+   Generator nie zaczyna od katalogu docelowego, ale robi staging. Tam zostaje przeprowadzony cały proces - renderowanie template'ów, tworzenie struktury katalogów, zapis plików i przygotowanie konteneryzacji. To tutaj nastąpi weryfikacja.
+
 7. Weryfikacja
-   Etap sprawdzenia, czy wygenerowany projekt rzeczywiście spełnia wymagania. Jest to główne odróżnienie tego generatora od prostego kopiowania templatów. Poprawność projektu nie jest oceniana tym, że pliki powstały, tylko tym, że przechodzą wymagane testy.
-   Weryfikacja sprawdza, czy Docker Compose uruchamia kontenery, backend odpowiada na GET /health, backend komunikuje się z bazą, frontend z backendem, czy wszystkie testy przechodzą i czy happy path tworzący użytkownika i logujący się na niego działa.
+   Etap sprawdzenia, czy wygenerowany projekt rzeczywiście spełnia wymagania. Jest to główne odróżnienie tego generatora od prostego kopiowania template'ów. Poprawność projektu nie jest oceniana tym, że pliki powstały, tylko tym, że przechodzą wymagane testy.
+   Weryfikacja sprawdza, czy Docker Compose uruchamia kontenery, backend odpowiada na GET /health, backend komunikuje się z bazą, frontend komunikuje się z backendem, wszystkie testy przechodzą i happy path logowania na użytkownika testowego lub startowego działa.
+
 8. Finalizacja
-   Otatni etap, przenoszący zweryfikowany projekt do docelowego katalogu. Jeśli weryfikacja nie zakończy się sukcesem, projekt nie zostaje przeniesiony do katalogu docelowego.
+   Ostatni etap, przenoszący zweryfikowany projekt do docelowego katalogu. Jeśli weryfikacja nie zakończy się sukcesem, projekt nie zostaje przeniesiony do katalogu docelowego.
 
 ### 3.2 Tryb kreatora
 
