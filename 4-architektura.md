@@ -113,19 +113,19 @@ Backend i baza danych są łączone w backend-db stack, ponieważ wybór backend
 
 Główna część generatora odpowiedzialna za obsługę procesu generacji.
 
-Core odpowiada za wczytanie konfiguracji, walidację, wybór template packów, zbudowanie planu generacji, uruchomienie pipeline'u, obsługę stanu, staging, finalizację outputu i statystyki. Core nie powinien zawierać szczegółowej logiki konkretnych frameworków.
+Core odpowiada za wczytanie konfiguracji, walidację, wybór template packów, zbudowanie planu generacji, zarządzanie wykonaniem kroków pipeline'u, obsługę stanu, staging, finalizację outputu i statystyki. Core nie powinien zawierać szczegółowej logiki konkretnych frameworków.
 
 ### Pipeline
 
-Kontrolowany proces generacji projektu podzielony na kolejne kroki.
+Pipeline to uporządkowana lista kroków generacji wykorzystywana przez core.
 
-Pipeline odpowiada za przeprowadzenie generatora od konfiguracji wejściowej do gotowego projektu. Obejmuje między innymi walidację, wybór template packów, budowanie planu generacji, przygotowanie katalogu roboczego, renderowanie template'ów, verification oraz finalizację outputu.
+Pipeline nie jest samodzielnym silnikiem wykonawczym. Nie zarządza globalnym stanem, obsługą błędów ani finalizacją outputu. Te decyzje należą do core. Pipeline określa kolejność kroków i pozwala core przechodzić przez proces generacji w kontrolowany sposób.
 
-### Pipeline state
+### Pipeline state / Stan generacji
 
-Zapisany stan wykonania pipeline'u.
+Zapisany stan generacji zarządzany przez core.
 
-Pipeline state przechowuje informacje o wykonanych krokach, aktualnym statusie generacji, błędach, użytej konfiguracji, hash konfiguracji oraz ścieżkach katalogów roboczych. Dzięki temu generator może wznowić działanie po błędzie od ostatniego poprawnie zakończonego kroku.
+Stan przechowuje informacje o wykonanych krokach, aktualnym statusie generacji, błędach, użytej konfiguracji, hashu konfiguracji oraz ścieżkach katalogów roboczych. Dzięki temu core może wznowić działanie po błędzie od ostatniego poprawnie zakończonego kroku.
 
 ### Generation plan
 
@@ -197,7 +197,7 @@ Deterministyczność dotyczy przede wszystkim struktury katalogów, wygenerowany
    Na tym etapie zostają wybrane odpowiednie template packi oraz elementy wspólne.
 
 5. Stworzenie planu generacji
-   Na tym etapie generator buduje plan działania. Określa, jakie pliki zostaną utworzone, które template'y zostaną wyrenderowane, jakie elementy wspólne mają zostać złożone, jakie zmienne będą dostępne w kontekście renderowania oraz jakie kroki weryfikacji zostaną uruchomione. Plan generacji powinien też wykryć konflikty między packami - na przykład jeśli chcą wyrenderować ten sam plik. Odróżnia renderowanie pliku od składania go z kilku packów.
+   Na tym etapie generator buduje plan działania. Określa, jakie pliki zostaną utworzone, które template'y zostaną wyrenderowane, jakie elementy wspólne mają zostać złożone, jakie zmienne będą dostępne w kontekście renderowania oraz jakie kroki pipeline'u i weryfikacji zostaną wykonane przez core. Plan generacji powinien też wykryć konflikty między packami - na przykład jeśli chcą wyrenderować ten sam plik. Odróżnia renderowanie pliku od składania go z kilku packów.
 
 6. Generowanie w katalogu roboczym
    Generator nie zaczyna od katalogu docelowego, ale robi staging. Tam zostaje przeprowadzony cały proces - renderowanie template'ów, tworzenie struktury katalogów, zapis plików i przygotowanie konteneryzacji. To tutaj nastąpi weryfikacja.
@@ -287,7 +287,8 @@ Core jest głównym modułem sterującym generatora. Core nie może znać szczeg
 - normalizacja konfiguracji
 - walidacja
 - planning
-- uruchomienie pipeline'u
+- zarządzanie wykonaniem kroków pipeline'u
+- zapis i odczyt stanu generacji
 - obsługa błędów
 - przekazanie wyniku do outputu
 - zebranie statystyk
@@ -311,7 +312,7 @@ Istnieją różne rodzaje template packów (więcej w rozdziale 10.). Template p
 
 ### 5.4 Planning
 
-Część odpowiedzialna za przetłumaczenie konfiguracji na plan generacji. Następuje tutaj przetłumaczenie konfiguracji na zestaw template packów, contributions, kroków generacji i danych potrzebnych do renderowania. Dzięki niemu proces jest przewidywalny i deterministyczny oraz gwarantuje poprawny plan.
+Część odpowiedzialna za przetłumaczenie konfiguracji na plan generacji. Na tym etapie konfiguracja zostaje zamieniona na zestaw template packów, contributions, kroków generacji i danych potrzebnych do renderowania. Dzięki niemu proces jest przewidywalny i deterministyczny oraz gwarantuje poprawny plan.
 
 ### 5.5 Rendering
 
@@ -326,16 +327,16 @@ Zadania outputu:
 - zapewnienie pustego katalogu roboczego
 - zapis plików
 - przeniesienie projektu do docelowego katalogu
-- czyszczenie po błędzie i obsługa wznowionego procesu
+- czyszczenie po błędzie zgodnie z decyzją core
 - ochrona docelowego katalogu przed uszkodzonym wynikiem
 
 ### 5.7 State
 
-Zapisany stan działania generatora. Bezpieczne korzystanie ze stanów jest możliwe, ponieważ zakładamy, że wynik dla każdej konfiguracji jest deterministyczny. Dzięki temu, można łatwo wstrzymać i przywrócić proces, obsłużyć błąd w jednym z kroków i powtórzyć krok bez konieczności powtarzania całego procesu generacji oraz łatwo wyczyścić stan i rozpocząć od nowa. Stan pozwala też automatycznie wykryć, czy nie została zmieniona konfiguracja - wtedy nie będzie wznawiał działania, tylko wyczyści stan i rozpocznie od nowa.
+Zapisany stan działania generatora. Bezpieczne korzystanie ze stanów jest możliwe, ponieważ zakładamy, że wynik dla każdej konfiguracji jest deterministyczny. Dzięki temu, core może łatwo wstrzymać i przywrócić proces, obsłużyć błąd w jednym z kroków i powtórzyć krok bez konieczności powtarzania całego procesu generacji oraz łatwo wyczyścić stan i rozpocząć od nowa. Stan pozwala wykryć, czy konfiguracja została zmieniona. Jeśli hash konfiguracji nie zgadza się ze stanem zapisanym z poprzedniego przebiegu, core nie wznawia działania, tylko czyści stan i rozpoczyna proces od nowa.
 
 ### 5.8 Verification
 
-Weryfikacja sprawdza, czy projekt w stagingu działa poprawnie. Wygenerowany projekt, zanim trafi do folderu docelowego, jest dokładnie sprawdzany w folderze stagingu. Dzięki temu nie wprowadzamy niedziałającego projektu do katalogu docelowego.
+Weryfikacja sprawdza, czy projekt w stagingu działa poprawnie. Wygenerowany projekt, zanim trafi do folderu docelowego, jest dokładnie sprawdzany w folderze stagingu. Dzięki temu nie wprowadzamy niedziałającego projektu do katalogu docelowego. Weryfikacja jest wykonywana jako jeden lub kilka kroków pipeline'u zarządzanego przez core.
 
 ### 5.9 Statistics
 
