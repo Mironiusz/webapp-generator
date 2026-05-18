@@ -32,7 +32,7 @@ Skrócony przepływ od uruchomienia generatora do gotowego projektu:
 4. Kontrakty zamiast jakichkolwiek adapterów
    Najprostszą drogą do agresywnego współdzielenia logiki między frameworkami byłoby wprowadzenie adapterów. Z perspektywy generowanego projektu takie adaptery są jednak absolutnie bezużyteczne. W tym projekcie nie dawałyby realnej wartości w wygenerowanej aplikacji, bo użytkownik otrzymałby dodatkową warstwę abstrakcji, której nie potrzebuje do dalszego rozwijania projektu. Dlatego, kosztem DRY i bardziej skomplikowanego kodu, świadomie rezygnuję z użycia adapterów pomiędzy różnymi frameworkami.
 5. Template packi są jednostką rozszerzalności
-   Nowa technologia, na przykład kolejny framework frontendowy lub kolejny stack backend + db powinny być dodawane jako nowy template pack, a nie warunki do core generatora. Core sprawdzi dostępne packi i na tej podstawie będzie walidował konfigurację.
+   Nowa technologia, na przykład kolejny framework frontendowy lub kolejny backend-db stack powinny być dodawane jako nowy template pack, a nie warunki do core generatora. Core sprawdzi dostępne packi i na tej podstawie będzie walidował konfigurację.
 6. Wygenerowany projekt jest samodzielny
    Po jednorazowym wygenerowaniu projekt nie potrzebuje generatora do dalszego funkcjonowania.
 7. Idempotentność i staging
