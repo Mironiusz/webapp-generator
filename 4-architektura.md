@@ -458,316 +458,358 @@ Plan określa:
 
 ### 6.15 Zbieranie statystyk
 
-## 7. Konfiguracja wejściowa
+## 7. Pipeline zarządzany przez core
 
-### 7.1 Minimalny zestaw danych wejściowych
+### 7.1 Rola pipeline'u w architekturze
 
-### 7.2 Konfiguracja projektu
+### 7.2 Pipeline jako uporządkowana lista kroków
 
-### 7.3 Konfiguracja frontendu
+### 7.3 Granice odpowiedzialności pipeline'u
 
-### 7.4 Konfiguracja backendu
+### 7.4 Krok pipeline'u
 
-### 7.5 Konfiguracja bazy danych
+### 7.5 Kolejność kroków pipeline'u
 
-### 7.6 Konfiguracja portów
+### 7.6 Relacja pipeline'u z core
 
-### 7.7 Konfiguracja środowiskowa
+### 7.7 Relacja pipeline'u z generation plan
 
-### 7.8 Wartości domyślne
+### 7.8 Pomijanie kroków przy wznowieniu
 
-### 7.9 Walidacja konfiguracji przed generacją
+### 7.9 Podstawowy przebieg pipeline'u
 
-## 8. Model kontraktów
+## 8. Stan generacji
 
-### 8.1 Rola kontraktów w architekturze
+### 8.1 Rola stanu generacji
 
-### 8.2 Kontrakt HTTP API
+### 8.2 Stan jako mechanizm zarządzany przez core
 
-### 8.3 Kontrakt danych
+### 8.3 Informacje zapisywane w stanie
 
-### 8.4 Wersjonowanie kontraktów
+### 8.4 Hash konfiguracji
 
-### 8.5 Zgodność template packów z kontraktami
+### 8.5 Lista ukończonych kroków
 
-### 8.6 Testowanie zgodności z kontraktami
+### 8.6 Informacja o aktualnym kroku
 
-## 9. Template'y i template packi
+### 8.7 Informacja o błędzie
 
-### 9.1 Rola template'ów
+### 8.8 Wznawianie generacji na podstawie stanu
 
-### 9.2 Rola template packów
+### 8.9 Zachowanie po zmianie konfiguracji
 
-### 9.3 Template pack jako jednostka rozszerzalności
+### 8.10 Czyszczenie stanu
 
-### 9.4 Manifest template packa
+## 9. Staging i output
 
-### 9.5 Template'y właścicielskie
+### 9.1 Rola stagingu
 
-### 9.6 Template'y składane
+### 9.2 Katalog roboczy generacji
 
-### 9.7 Contributions do plików wspólnych
+### 9.3 Katalog finalny projektu
 
-### 9.8 Ograniczenie logiki w template'ach
+### 9.4 Zasada braku częściowego wyniku w final output
 
-## 10. Rodzaje template packów
+### 9.5 Finalizacja poprawnej generacji
 
-### 10.1 Frontend pack
+### 9.6 Czyszczenie po błędzie
 
-### 10.2 Backend-db pack
+### 9.7 Relacja outputu ze stanem generacji
 
-### 10.3 Infrastructure pack
+## 10. Idempotentność i deterministyczność
 
-### 10.4 Common pack
+### 10.1 Idempotentność generacji
 
-### 10.5 Verification pack
+### 10.2 Deterministyczność wyniku strukturalnego
 
-## 11. Wybór template packów
+### 10.3 Wartości losowe i sekrety
 
-### 11.1 Rejestr template packów
+### 10.4 Ponowne uruchomienie dla tej samej konfiguracji
 
-### 11.2 Dobór frontend packa
+### 10.5 Wznawianie po błędzie
 
-### 11.3 Dobór backend-db packa
+### 10.6 Ochrona przed niespójnym wynikiem
 
-### 11.4 Dobór infrastructure packa
+## 11. Konfiguracja wejściowa
 
-### 11.5 Dobór common packów
+### 11.1 Minimalny zestaw danych wejściowych
 
-### 11.6 Wykrywanie niewspieranych kombinacji
+### 11.2 Konfiguracja projektu
 
-### 11.7 Wykrywanie konfliktów między packami
+### 11.3 Konfiguracja frontendu
 
-## 12. Łączenie template packów
+### 11.4 Konfiguracja backendu
 
-### 12.1 Generation plan jako wynik doboru packów
+### 11.5 Konfiguracja bazy danych
 
-### 12.2 Kolejność generowania elementów projektu
+### 11.6 Konfiguracja portów
 
-### 12.3 Łączenie plików właścicielskich
+### 11.7 Konfiguracja środowiskowa
 
-### 12.4 Łączenie plików składanych
+### 11.8 Wartości domyślne
 
-### 12.5 Składanie docker-compose.yml
+### 11.9 Docelowy model konfiguracji
 
-### 12.6 Składanie .env i .env.example
+## 12. Walidacja i obsługa błędów
 
-### 12.7 Składanie README.md
+### 12.1 Walidacja danych wejściowych
 
-### 12.8 Obsługa konfliktów plików
+### 12.2 Walidacja kombinacji technologicznych
 
-## 13. Backend-db stack
+### 12.3 Walidacja portów
 
-### 13.1 Uzasadnienie sprzężenia backendu i bazy danych
+### 12.4 Walidacja zmiennych środowiskowych
 
-### 13.2 FastAPI + PostgreSQL
+### 12.5 Walidacja ścieżki output_dir
 
-### 13.3 Django + PostgreSQL
+### 12.6 Walidacja kompatybilności template packów
 
-### 13.4 Minimalny kontrakt danych
+### 12.7 Komunikaty błędów
 
-### 13.5 Rozszerzenia schemy specyficzne dla frameworka
+### 12.8 Przerwanie generacji przed zapisem plików
 
-### 13.6 Migracje
+## 13. Model kontraktów
 
-### 13.7 Dane startowe lub testowe do logowania
+### 13.1 Rola kontraktów w architekturze
 
-## 14. Pipeline generacji
+### 13.2 Kontrakt HTTP API
 
-### 14.1 Rola pipeline'u
+### 13.3 Kontrakt danych backend-db
 
-### 14.2 Etapy pipeline'u
+### 13.4 Wersjonowanie kontraktów
 
-### 14.3 Walidacja przed zapisem plików
+### 13.5 Zgodność template packów z kontraktami
 
-### 14.4 Przygotowanie stagingu
+### 13.6 Testowanie zgodności z kontraktami
 
-### 14.5 Renderowanie template packów
+## 14. Template'y i template packi
 
-### 14.6 Post-processing
+### 14.1 Rola template'ów
 
-### 14.7 Verification
+### 14.2 Rola template packów
 
-### 14.8 Finalizacja outputu
+### 14.3 Template pack jako jednostka rozszerzalności
 
-### 14.9 Raportowanie statystyk
+### 14.4 Manifest template packa
 
-## 15. Staging i output
+### 14.5 Template'y właścicielskie
 
-### 15.1 Rola stagingu
+### 14.6 Template'y składane
 
-### 15.2 Katalog roboczy generacji
+### 14.7 Contributions do plików wspólnych
 
-### 15.3 Katalog finalny projektu
+### 14.8 Ograniczenie logiki w template'ach
 
-### 15.4 Zasada braku częściowego wyniku w final output
+## 15. Rodzaje template packów
 
-### 15.5 Finalizacja poprawnej generacji
+### 15.1 Frontend pack
 
-### 15.6 Czyszczenie po błędzie
+### 15.2 Backend-db pack
 
-## 16. Stan pipeline'u
+### 15.3 Infrastructure pack
 
-### 16.1 Rola stanu pipeline'u
+### 15.4 Common pack
 
-### 16.2 Informacje zapisywane w stanie
+### 15.5 Verification pack
 
-### 16.3 Hash konfiguracji
+## 16. Wybór template packów
 
-### 16.4 Lista ukończonych kroków
+### 16.1 Rejestr template packów
 
-### 16.5 Informacja o błędzie
+### 16.2 Dobór frontend packa
 
-### 16.6 Wznawianie generacji
+### 16.3 Dobór backend-db packa
 
-### 16.7 Zachowanie po zmianie konfiguracji
+### 16.4 Dobór infrastructure packa
 
-## 17. Idempotentność i deterministyczność
+### 16.5 Dobór common packów
 
-### 17.1 Idempotentność generacji
+### 16.6 Wykrywanie niewspieranych kombinacji
 
-### 17.2 Deterministyczność wyniku strukturalnego
+### 16.7 Wykrywanie konfliktów między packami
 
-### 17.3 Wartości losowe i sekrety
+## 17. Łączenie template packów
 
-### 17.4 Ponowne uruchomienie dla tej samej konfiguracji
+### 17.1 Generation plan jako wynik doboru packów
 
-### 17.5 Ochrona przed niespójnym wynikiem
+### 17.2 Kolejność generowania elementów projektu
 
-## 18. Walidacja i obsługa błędów
+### 17.3 Łączenie plików właścicielskich
 
-### 18.1 Walidacja danych wejściowych
+### 17.4 Łączenie plików składanych
 
-### 18.2 Walidacja kombinacji technologicznych
+### 17.5 Składanie docker-compose.yml
 
-### 18.3 Walidacja portów
+### 17.6 Składanie .env i .env.example
 
-### 18.4 Walidacja zmiennych środowiskowych
+### 17.7 Składanie README.md
 
-### 18.5 Walidacja ścieżki output_dir
+### 17.8 Obsługa konfliktów plików
 
-### 18.6 Komunikaty błędów
+## 18. Rendering
 
-### 18.7 Przerwanie generacji przed zapisem plików
+### 18.1 Rola renderingu
 
-## 19. Verification
+### 18.2 Kontekst renderowania
 
-### 19.1 Rola verification
+### 18.3 Renderowanie plików właścicielskich
 
-### 19.2 Verification generatora
+### 18.4 Renderowanie plików składanych
 
-### 19.3 Verification wygenerowanego projektu
+### 18.5 Renderowanie contributions
 
-### 19.4 Verification kontraktu HTTP API
+### 18.6 Ograniczenie logiki w rendererze
 
-### 19.5 Verification kontraktu danych
+## 19. Backend-db stack
 
-### 19.6 Verification Docker Compose
+### 19.1 Uzasadnienie sprzężenia backendu i bazy danych
 
-### 19.7 Verification testów
+### 19.2 FastAPI + PostgreSQL
 
-### 19.8 Verification macierzy wspieranych kombinacji
+### 19.3 Django + PostgreSQL
 
-## 20. Struktura katalogów generatora
+### 19.4 Minimalny kontrakt danych
 
-### 20.1 Proponowana struktura główna
+### 19.5 Rozszerzenia schemy specyficzne dla frameworka
 
-### 20.2 Katalog core
+### 19.6 Migracje
 
-### 20.3 Katalog contracts
+### 19.7 Dane startowe lub testowe do logowania
 
-### 20.4 Katalog template_packs
+## 20. Verification
 
-### 20.5 Katalog verification
+### 20.1 Rola verification
 
-### 20.6 Katalog tests
+### 20.2 Verification jako krok pipeline'u zarządzany przez core
 
-### 20.7 Katalog docs
+### 20.3 Verification wygenerowanego projektu
 
-## 21. Struktura wygenerowanego projektu
+### 20.4 Verification kontraktu HTTP API
 
-### 21.1 Struktura root projektu
+### 20.5 Verification kontraktu danych
 
-### 21.2 Struktura frontendu
+### 20.6 Verification Docker Compose
 
-### 21.3 Struktura backendu
+### 20.7 Verification testów
 
-### 21.4 Pliki środowiskowe
+### 20.8 Verification macierzy wspieranych kombinacji
 
-### 21.5 Pliki Docker
+### 20.9 Zachowanie po nieudanej verification
 
-### 21.6 README.md
+## 21. Statistics
 
-### 21.7 Testy
+### 21.1 Rola statystyk
 
-## 22. Rozszerzalność generatora
+### 21.2 Statystyki zbierane przez core
 
-### 22.1 Dodanie nowego frontendu
+### 21.3 Statystyki kroków pipeline'u
 
-### 22.2 Dodanie nowego backendu
+### 21.4 Statystyki verification
 
-### 22.3 Dodanie nowej bazy danych
+### 21.5 Raport końcowy generacji
 
-### 22.4 Zgodność rozszerzeń z kontraktami
+## 22. Struktura katalogów generatora
 
-### 22.5 Brak regresji w istniejących kombinacjach
+### 22.1 Proponowana struktura główna
 
-### 22.6 Ograniczenie zmian w core
+### 22.2 Katalog core
 
-### 22.7 Dokumentowanie rozszerzeń
+### 22.3 Katalog contracts
 
-## 23. Jakość architektury
+### 22.4 Katalog template_packs
 
-### 23.1 SOLID w generatorze
+### 22.5 Katalog verification
 
-### 23.2 DRY w generatorze
+### 22.6 Katalog tests
 
-### 23.3 Open/closed principle
+### 22.7 Katalog docs
 
-### 23.4 Natywność wygenerowanego kodu
+## 23. Struktura wygenerowanego projektu
 
-### 23.5 Czytelność i samodokumentujący się kod
+### 23.1 Struktura root projektu
 
-### 23.6 Granice odpowiedzialności modułów
+### 23.2 Struktura frontendu
 
-## 24. Bezpieczeństwo aplikacyjne w zakresie projektu
+### 23.3 Struktura backendu
 
-### 24.1 JWT
+### 23.4 Pliki środowiskowe
 
-### 24.2 Hashowanie haseł
+### 23.5 Pliki Docker
 
-### 24.3 CORS
+### 23.6 README.md
 
-### 24.4 Zmienne środowiskowe
+### 23.7 Testy
 
-### 24.5 Zakres bezpieczeństwa poza projektem
+## 24. Rozszerzalność generatora
 
-## 25. Decyzje i kompromisy architektoniczne
+### 24.1 Dodanie nowego frontendu
 
-### 25.1 Dlaczego frontend jest niezależny od backendu
+### 24.2 Dodanie nowego backendu
 
-### 25.2 Dlaczego backend i baza są sprzężone
+### 24.3 Dodanie nowej bazy danych
 
-### 25.3 Dlaczego PostgreSQL jest stałym elementem infrastruktury
+### 24.4 Zgodność rozszerzeń z kontraktami
 
-### 25.4 Dlaczego kontrakty zamiast adapterów
+### 24.5 Brak regresji w istniejących kombinacjach
 
-### 25.5 Dlaczego dopuszczalne są kontrolowane powtórzenia
+### 24.6 Ograniczenie zmian w core
 
-### 25.6 Dlaczego wygenerowany projekt nie zależy od generatora
+### 24.7 Dokumentowanie rozszerzeń
 
-## 26. Powiązanie architektury z kryteriami akceptacyjnymi
+## 25. Jakość architektury
 
-### 26.1 Kryteria generatora
+### 25.1 SOLID w generatorze
 
-### 26.2 Kryteria wspieranych kombinacji
+### 25.2 DRY w generatorze
 
-### 26.3 Kryteria wygenerowanego projektu
+### 25.3 Open/closed principle
 
-### 26.4 Kryteria kontraktów
+### 25.4 Natywność wygenerowanego kodu
 
-### 26.5 Kryteria idempotentności i wznawiania
+### 25.5 Czytelność i samodokumentujący się kod
 
-### 26.6 Kryteria rozszerzalności
+### 25.6 Granice odpowiedzialności modułów
 
-## 27. Elementy poza zakresem architektury
+## 26. Bezpieczeństwo aplikacyjne w zakresie projektu
+
+### 26.1 JWT
+
+### 26.2 Hashowanie haseł
+
+### 26.3 CORS
+
+### 26.4 Zmienne środowiskowe
+
+### 26.5 Zakres bezpieczeństwa poza projektem
+
+## 27. Decyzje i kompromisy architektoniczne
+
+### 27.1 Dlaczego frontend jest niezależny od backendu
+
+### 27.2 Dlaczego backend i baza są sprzężone
+
+### 27.3 Dlaczego PostgreSQL jest stałym elementem infrastruktury
+
+### 27.4 Dlaczego kontrakty zamiast adapterów
+
+### 27.5 Dlaczego dopuszczalne są kontrolowane powtórzenia
+
+### 27.6 Dlaczego pipeline jest zarządzany przez core
+
+### 27.7 Dlaczego wygenerowany projekt nie zależy od generatora
+
+## 28. Powiązanie architektury z kryteriami akceptacyjnymi
+
+### 28.1 Kryteria generatora
+
+### 28.2 Kryteria wspieranych kombinacji
+
+### 28.3 Kryteria wygenerowanego projektu
+
+### 28.4 Kryteria kontraktów
+
+### 28.5 Kryteria idempotentności i wznawiania
+
+### 28.6 Kryteria rozszerzalności
+
+## 29. Elementy poza zakresem architektury
