@@ -18,7 +18,7 @@ Skrócony przepływ od uruchomienia generatora do gotowego projektu:
 4. Generator wybiera pasujące template packi.
 5. Z template packów powstaje plan generacji.
 6. Projekt powstaje w katalogu roboczym.
-7. Projekt jest testowany.
+7. Projekt jest weryfikowany i testowany.
 8. Projekt trafia do finalnego katalogu.
 
 ### 1.3 Najważniejsze założenia architektoniczne
@@ -221,55 +221,242 @@ Tryb użycia jedynie nieinteraktywnego pliku konfiguracyjnego definiującego pro
 
 ### 4.1 Frontend zależy wyłącznie od kontraktu HTTP API
 
+Frontend nie wie nic o tym, jaki backend został wybrany. Dla frontendu istotne jest jedynie to, żeby backend wystawiał mu określone endpointy. Dzięki temu, rozszerzanie generatora o wsparcie dla dowolnych frontendów jest bardzo proste - ponieważ frontend pełni rolę warstwy prezentacji oraz klienta korzystającego z publicznego API backendu.
+
 ### 4.2 Backend i baza danych tworzą backend-db stack
+
+Być może na papierze wygodne byłoby rozdzielenie backendu i bazy danych, żeby tworzyć dowolne kombinacje. Niestety, backend ma zbyt duży wpływ na sposób działania bazy danych:
+
+- ORM
+- migracje
+- modele
+- auth
+- seedowanie
+- tabele techniczne
+- testy backend-db
+
+To wszystko sprawia, że obsługa takiej macierzy kombinacji szybko stałaby się nienatywna i pełna sztucznych warunków. Stąd decyzja o utrzymaniu backendu i bazy danych jako jednego backend-db stacka.
 
 ### 4.3 PostgreSQL jako stały element infrastruktury
 
+Jest to świadome ograniczenie zakresu pracy. Użytkownik nie będzie mógł w podstawowej wersji wybrać nic innego poza PostgreSQL. Jego decyzją będzie stack Django + PostgreSQL lub FastAPI + PostgreSQL. Dodanie większej liczby obsługiwanych stacków nie powinno wymagać zmiany założeń architektonicznych, ale zwiększyłoby ilość pracy implementacyjnej, testowej i dokumentacyjnej oraz spowoduje konieczność żmudnego dodawania kolejnych stacków jeden po drugim. Dlatego podstawowa wersja pracy zawierać będzie jedynie dwa powyższe stacki.
+
 ### 4.4 Kontrakty zamiast adapterów
+
+Ta zasada chroni projekt przed sztuczną warstwą abstrakcji, jaką byłby dowolny adapter. Nie chcę, żeby projekt miał dodatkowe adaptery tylko dlatego, że generator obsłuży inne kombinacje. Dzięki temu spójność zostanie osiągnięta przez kontrakty:
+
+- Frontend jest kompatybilny z backendem, bo spełniają kontrakt API,
+- Backend-db stack jest zgodny z wymaganiami projektu, bo spełnia kontrakt danych.
+
+Dzięki temu nie trzeba będzie dodawać sztucznych adapterów, bo kontrakty zapewnią spójność, a template packi zachowają natywność wygenerowanego kodu.
 
 ### 4.5 Natywność template packów
 
+Template pack będzie generował kod, który jest naturalny dla danej technologii. Django nie zostanie wciśnięte w typową strukturę FastAPI, a Vue nie będzie udawać Reacta. Dlatego kluczowe będzie dokładne zapoznanie się ze wzorcami standardowymi dla obsługiwanych technologii, a następnie utworzenie każdego template packa zgodnie z nimi. Przykład konwencji:
+
+- Django -> Django ORM, migracje Django, struktura Django
+- FastAPI -> struktura FastAPI, osobna konfiguracja aplikacji, osobne modele/schemy
+- Vue -> Vue Router, Vite, struktura typowa dla Vue
+- React -> React Router, Vite, struktura typowa dla Reacta
+
+Jeśli wspólne będą jedynie wymagania, a nie struktura kodu, osiągniemy naturalny projekt, pozbawiony złych nawyków lub wymuszeń związanych z innymi frameworkami.
+
 ### 4.6 Kontrolowane powtórzenia zamiast sztucznych abstrakcji
 
+W zwykłym projekcie często dąży się do DRY. W wypadku generatora zbyt agresywne DRY mogłoby jednak sprawić, że ucierpią na tym generowane projekty. Współdzielenie jednej abstrakcji między różnymi frameworkami skończyłoby się strukturą nienaturalną dla żadnego z nich. Z tego powodu akceptuję pewne powtórzenia, jeśli są konieczne, żeby:
+
+- template pack pozostał natywny
+- wygenerowany kod pozostał czytelny
+- framework działał zgodnie z typowymi dla siebie konwencjami
+- nowa technologia nie wymagała modyfikowania starej
+
+Dlatego wygenerowane projekty powinny być możliwie DRY, ale sam generator może świadomie zawierać kontrolowane powtórzenia w template packach.
+
 ### 4.7 Wygenerowany projekt nie zależy runtime'owo od generatora
+
+Generator jest jedynie narzędziem do tworzenia projektu, a nie jego częścią. Projekt po skopiowaniu do katalogu docelowego ma funkcjonować bez generatora. Wygenerowany projekt nie powinien importować bibliotek generatora ani wymagać go do uruchamiania, testowania lub dalszego rozwijania.
 
 ## 5. Podział systemu na główne części
 
 ### 5.1 Core
 
+Core jest głównym modułem sterującym generatora. Core nie może znać szczegółów frameworków, z jakich korzysta. Musi on orkiestrować cały proces generacji:
+
+- uruchomienie CLI
+- wczytanie danych
+- normalizacja konfiguracji
+- walidacja
+- planning
+- uruchomienie pipeline'u
+- obsługa błędów
+- przekazanie wyniku do outputu
+- zebranie statystyk
+
+Dzięki temu, w przypadku rozszerzania o kolejne technologie, core nie powinien wymagać istotnych modyfikacji.
+
 ### 5.2 Contracts
+
+To nie jest kod aplikacji, a jedynie warstwa wspólnych wymagań, które mają spełnić poszczególne template packi. Dzięki temu wygenerowany projekt pozostaje spójny, a natywność zapewniają konkretne template packi.
+
+Dwa najważniejsze kontrakty:
+
+- kontrakt HTTP API
+- kontrakt danych backend-db
 
 ### 5.3 Template packs
 
+Część systemu, która dostarcza kod i konfigurację dla konkretnych technologii. Template packi znają szczegóły frameworków, mieści się w nich docelowa struktura generowanego kodu.
+Template packi powinny być możliwie niezależne od siebie i komunikować się przez kontrakty oraz contributions. Jeśli autor chce rozszerzyć generator o obsługę kolejnej technologii, po prostu dodaje kolejny template pack. To tam mieści się cały kod, konfiguracja, obsługa kontraktów. Dzięki temu, wystarczy w zasadzie dobrze znać wybrany framework, żeby móc utworzyć dla niego template pack.
+Istnieją różne rodzaje template packów (więcej w rozdziale 10.). Template pack zawiera pełne templaty plików oraz templaty contributions, gdzie docelowy plik powstaje ze wszystkich kontrybuujących do niego templatów.
+
 ### 5.4 Planning
+
+Część odpowiedzialna za przetłumaczenie konfiguracji na plan generacji. Następuje tutaj przetłumaczenie konfiguracji na zestaw template packów, contributions, kroków generacji i danych potrzebnych do renderowania. Dzięki niemu proces jest przewidywalny i deterministyczny oraz gwarantuje poprawny plan.
 
 ### 5.5 Rendering
 
+Proces zmieniający templaty wybrane w planie generacji na realne pliki w katalogu. Renderer przyjmuje template packi i renderuje pełne pliki oraz pliki składane z contributions.
+
 ### 5.6 Output
+
+Output odpowiada za fizyczny zapis wyniku, zarówno do stagingu, jak i do katalogu docelowego. Pilnuje też, żeby wynikowa struktura nie była uszkodzona.
+
+Zadania outputu:
+
+- zapewnienie pustego katalogu roboczego
+- zapis plików
+- przeniesienie projektu do docelowego katalogu
+- czyszczenie po błędzie i obsługa wznowionego procesu
+- ochrona docelowego katalogu przed uszkodzonym wynikiem
 
 ### 5.7 State
 
+Zapisany stan działania generatora. Bezpieczne korzystanie ze stanów jest możliwe, ponieważ zakładamy, że wynik dla każdej konfiguracji jest deterministyczny. Dzięki temu, można łatwo wstrzymać i przywrócić proces, obsłużyć błąd w jednym z kroków i powtórzyć krok bez konieczności powtarzania całego procesu generacji oraz łatwo wyczyścić stan i rozpocząć od nowa. Stan pozwala też automatycznie wykryć, czy nie została zmieniona konfiguracja - wtedy nie będzie wznawiał działania, tylko wyczyści stan i rozpocznie od nowa.
+
 ### 5.8 Verification
 
+Weryfikacja sprawdza, czy projekt w stagingu działa poprawnie. Wygenerowany projekt, zanim trafi do folderu docelowego, jest dokładnie sprawdzany w folderze stagingu. Dzięki temu nie wprowadzamy niedziałającego projektu do katalogu docelowego.
+
 ### 5.9 Statistics
+
+Część odpowiedzialna za mierzenie i raportowanie przebiegu generacji. Statystyki zbierają:
+
+- czas całej generacji
+- czas poszczególnych etapów
+- wybraną kombinację technologiczną
+- liczbę wygenerowanych plików
+- liczbę użytych template packów
+- status verification
+- informację o błędzie, jeśli wystąpił
+
+Mogą też służyć do porównywania czasu trwania etapów oraz czasu generacji różnych kombinacji technologicznych.
 
 ## 6. Core generatora
 
 ### 6.1 Odpowiedzialność core
 
+Core odpowiada za przebieg całej generacji.
+Core orkiestruje:
+
+- uruchomienie generatora
+- obsługę trybu kreatora i configu
+- wczytanie danych wejściowych
+- normalizację konfiguracji
+- walidację konfiguracji
+- dobór template packów
+- zbudowanie planu generacji
+- zarządzanie wykonaniem kroków pipeline'u
+- obsługę błędów
+- zapis i odczyt stanu
+- przekazanie wyniku do outputu
+- wykonanie kroku lub kroków verification w ramach pipeline'u
+- zebranie statystyk
+
 ### 6.2 Czego core nie powinien zawierać
+
+Core nie może wiedzieć, co dokładnie orkiestruje, w szczególności nie powinien znać:
+
+- struktury katalogów frameworka
+- nazw plików frameworka
+- konkretnych zależności technologii
+- szczegółów migracji
+- konkretnego frameworka testowego w wygenerowanym projekcie
+
+To wszystko musi pozostać w template packach i ich manifestach.
 
 ### 6.3 Obsługa CLI
 
+CLI jest wejściem użytkownika do generatora. Jest podmodułem core'a i jego zadaniem jest jedynie pozyskanie ustrukturyzowanych danych wejściowych i przekazanie ich dalej. CLI wyświetla też użytkownikowi stan generacji.
+CLI obsługuje trzy tryby wejścia:
+
+- tryb kreatora
+- tryb pliku konfiguracyjnego
+- tryb wznowienia
+
+CLI wyświetla użytkownikowi:
+
+- stan generacji
+- postęp generacji
+- błędy w procesie generacji
+- statystyki z procesu generacji
+
 ### 6.4 Ładowanie konfiguracji
+
+Kiedy CLI już przygotuje dane wejściowe, przekazuje je do core'a. Dane są sprawdzane pod kątem poprawności struktury i syntaktyki, a następnie przekazywane do modułu normalizacji konfiguracji.
 
 ### 6.5 Normalizacja konfiguracji
 
+W tym module konfiguracja zostaje uporządkowana i znormalizowana. Wynikiem normalizacji powinien być docelowy model konfiguracji: uporządkowany, uzupełniony o dane domyślne i poprawny semantycznie. Poprawność semantyczna oznacza tutaj spójne znaczenie danych, a nie potwierdzenie, że dana technologia lub kombinacja jest obsługiwana przez generator.
+Normalizacja obejmuje:
+
+- uzupełnienie domyślnych portów
+- ujednolicenie nazw technologii
+- zamiana ścieżki względnej na docelową ścieżkę output_dir
+- uzupełnienie domyślnych wartości env
+- utworzenie slug/nazwy technicznej projektu
+
 ### 6.6 Walidacja konfiguracji
+
+Walidacja sprawdza, czy z tej konfiguracji można bezpiecznie wygenerować projekt. Ten etap upewnia się, że wszystkie technologie zawarte w konfigu są obsługiwane, a także nie mają konfliktów.
+Walidacja obejmuje sprawdzenie:
+
+- czy frontend jest obsługiwany
+- czy backend jest obsługiwany
+- czy kombinacja technologiczna jest wspierana
+- czy porty nie mają konfliktów
+- czy output_dir jest poprawny
+- czy wymagane wartości env istnieją albo mogą zostać wygenerowane
+- czy istnieją template packi potrzebne dla tej konfiguracji
+- czy z manifestów packów wynika ich kompatybilność i brak konfliktów
 
 ### 6.7 Budowanie planu generacji
 
-### 6.8 Uruchamianie pipeline'u
+Plan generacji przekłada język konfiguracji na docelowy plan wykonania, używający już konkretnych zasobów.
+Plan określa:
+
+- wybrane template packi
+- pliki właścicielskie
+- pliki składane z contributions
+- kontekst renderowania
+- kroki pipeline'u
+- kroki verification
+- wykryte zależności i kolejność działań
+
+### 6.8 Pipeline jako podmoduł core
+
+### 6.9 Zarządzanie wykonaniem kroków pipeline'u
+
+### 6.10 Zarządzanie stanem generacji
+
+### 6.11 Obsługa błędów i przerwania generacji
+
+### 6.12 Wznawianie generacji
+
+### 6.13 Przekazanie wyniku do outputu
+
+### 6.14 Uruchomienie verification
+
+### 6.15 Zbieranie statystyk
 
 ## 7. Konfiguracja wejściowa
 
