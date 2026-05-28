@@ -505,7 +505,7 @@ Pipeline nie zapisuje globalnego stanu generacji i nie finalizuje outputu.
 
 ### 7.2 Pipeline jako uporządkowana lista kroków
 
-Pipeline definiuje kroki bazując na planie generacji. Lista kroków może zależeć od wybranego stacka, ale ogólny przebieg pozostaje podobny.
+Pipeline definiuje kroki bazując na planie generacji. Lista kroków może zależeć od wybranego stacka, ale ogólny przebieg pozostaje podobny. Plan generacji na podstawie konfiguracji przekaże tu po prostu odpowiednie parametry.
 
 Wzór kroków, które będą zawierały się w pipeline:
 
