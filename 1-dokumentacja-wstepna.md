@@ -17,17 +17,16 @@ Po przejściu przez kreator aplikacji lub uruchomieniu generatora z plikiem konf
 
 - użytkownik uruchamia kreator albo wskazuje plik konfiguracyjny
 - wybiera lub deklaruje frontend (Vue, React)
-- wybiera lub deklaruje backend (Django, FastAPI)
-- baza danych w podstawowym zakresie projektu nie jest osobnym wyborem użytkownika. Generator wykorzystuje PostgreSQL jako stały element infrastruktury.
+- wybiera lub deklaruje backend-db stack (FastAPI + SQLite, Django + PostgreSQL)
 
 Następnie generator tworzy projekt zawierający:
 
 ### Funkcjonalność bazowa
 
 - moduły komunikują się ze sobą
-- na frontendzie działa routing, strona logowania oraz strona app
-- backend wystawia spójny kontrakt HTTP API niezależnie od wybranego frameworka, obejmujący health, login (prosty JWT) i CORS
-- backend-db stack dostarcza minimalny model użytkownika, migracje oraz dane wymagane do działania logowania
+- na frontendzie działa routing, strona logowania i rejestracji oraz strona app
+- backend wystawia spójny kontrakt HTTP API niezależnie od wybranego frameworka, obejmujący health, register, login (prosty JWT) i CORS
+- backend-db stack dostarcza minimalny model użytkownika,  migracje oraz dane wymagane do działania podstawowego mechanizmu uwierzytelniania
 - powstają bazowe testy integracyjne dla połączenia frontend-backend i backend-db
 - powstają bazowe testy jednostkowe dla backendu
 
@@ -49,6 +48,8 @@ Następnie generator tworzy projekt zawierający:
 
 - generacja produkcyjnego modułu do logów na serwerze
 - formatter i linter
+- Nginx
+- backend-db stack używający ASP.NET Core + PostgreSQL
 - ...
 
 ## Architektura
@@ -59,8 +60,8 @@ Architektura opisana jest w dokumencie 4-architektura.md
 
 W podstawowym zakresie projektu wspierane są następujące kombinacje:
 
-- Vue + FastAPI + PostgreSQL
-- React + FastAPI + PostgreSQL
+- Vue + FastAPI + SQLite
+- React + FastAPI + SQLite
 - Vue + Django + PostgreSQL
 - React + Django + PostgreSQL
 
@@ -69,11 +70,11 @@ W podstawowym zakresie projektu wspierane są następujące kombinacje:
 - mówiąc o "wersji produkcyjnej", odnoszę się do kompletnego, rozszerzalnego i uruchamialnego szkieletu aplikacji z podstawową konfiguracją bezpieczeństwa aplikacyjnego, konfiguracją środowiskową, konteneryzacją oraz testami, ale bez infrastruktury serwerowej
 - frontend jest niezależny od backendu i komunikuje się wyłącznie przez kontrakt HTTP API
 - backend i baza danych są traktowane jako sprzężony backend-db stack
-- PostgreSQL jest jedyną wspieraną bazą danych w podstawowym zakresie projektu
 - każdy backend może posiadać własną natywną schemę i migracje
 - wspólna część danych jest definiowana jako minimalny kontrakt danych. Kontrakt danych nie musi oznaczać identycznej fizycznej struktury tabel w każdym backendzie, ale określa minimalne wymagania funkcjonalne i strukturalne potrzebne do działania aplikacji
 - elementy specyficzne dla frameworka są traktowane jako rozszerzenia backend-db stacka
 - generator nie dodaje runtime'owej zależności do wygenerowanego projektu
+- mechanizm uwierzytelniania w podstawowej wersji obejmuje rejestrację, logowanie oraz JWT. Projekt nie implementuje pełnego systemu zarządzania tożsamością użytkowników, dlatego reset hasła, SSO, MFA, potwierdzanie adresu email i integracja z dostawcą poczty pozostają poza podstawowym zakresem projektu
 
 Projekt opiera się na dwóch głównych kontraktach:
 
@@ -84,7 +85,7 @@ Dzięki temu dodawanie kolejnych wspieranych frameworków powinno polegać głó
 
 ## Zakres poza projektem
 
-Projekt nie obejmuje:
+Projekt w podstawowej wersji nie obejmuje:
 
 - Kubernetes
 - TLS
@@ -95,6 +96,7 @@ Projekt nie obejmuje:
 - automatycznego CI/CD
 - podziału na osobne kontenery dev i prod
 - innych typowo serwerowych funkcjonalności
+- resetu hasła i integracji z dostawcą poczty
 
 ## Ryzyka projektowe
 
@@ -102,7 +104,7 @@ Projekt nie obejmuje:
 - zbyt duża liczba kombinacji technologicznych może zwiększyć koszt testowania
 - zbyt mała liczba kombinacji technologicznych może nie dać pewności, że dodawanie kolejnych nie wymaga modyfikacji istniejących
 - backendy różnią się podejściem do auth, ORM i migracji. Z tego powodu kontrakt między backendem a warstwą danych musi być bardzo dobrze przemyślany i możliwy do rozszerzenia o kolejne frameworki backendowe
-- ponieważ podstawowy zakres obejmuje wyłącznie backendy z ekosystemu Pythona, projekt w ograniczonym stopniu weryfikuje i testuje możliwość dodania backendu z innego języka programowania, np. Node.js, Java lub Go, mimo że z perspektywy architektonicznej powinno to być możliwe
+- ponieważ podstawowy zakres obejmuje wyłącznie backendy z ekosystemu Pythona, projekt w ograniczonym stopniu weryfikuje i testuje możliwość dodania backendu z innego języka programowania, np. Node.js, Java lub C#, mimo że z perspektywy architektonicznej powinno to być możliwe
 - zbyt agresywne stosowanie zasady DRY może prowadzić do sztucznych abstrakcji między technologiami. W projekcie ważniejsze jest zachowanie natywności template packów oraz zgodność z zasadą open/closed, nawet kosztem kontrolowanego powtórzenia części kodu lub konfiguracji
 
 ## Weryfikacja
