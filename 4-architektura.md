@@ -449,91 +449,153 @@ Plan określa:
 
 ### 6.8 Pipeline jako podmoduł core
 
-Pipeline jest wyrażonym przez listę kroków przechodzeniem pomiędzy kolejnymi stanami. To pipeline definiuje te kroki i możliwe przejścia między nimi, opierając się na planie generacji. Decyzja, czy przejść dalej, podejmowana jest przez core.
+Pipeline jest wyrażonym przez listę kroków przechodzeniem pomiędzy kolejnymi stanami. Pipeline definiuje kroki i ich kolejność na podstawie planu generacji. Decyzja, czy przejść dalej, wznowić proces albo przerwać generację, należy do core.
 
 ### 6.9 Zarządzanie wykonaniem kroków pipeline'u
 
-Pipeline tylko definiuje kroki bazując na planie generacji i wykonuje je. Decyzję, czy już należy przejść do kolejnego kroku, podejmuje core.
+Pipeline definiuje kroki bazując na planie generacji i wykonuje je. Core zarządza przebiegiem wykonania, odbiera wynik kroku i decyduje, czy można przejść do kolejnego kroku.
+
+Krok jest uznawany za ukończony dopiero po pełnym sukcesie. Dopiero wtedy core zapisuje stan generacji, w przeciwnym wypadku cofa się i ponawia krok.
 
 ### 6.10 Zarządzanie stanem generacji
 
-Każde przejście między stanami będzie mogło utworzyć artefakty (pliki/foldery) oraz miało określone efekty uboczne. Jeśli przejście między stanami zostanie zatrzymane (na przykład przez błąd), wystarczy pozbyć się tych określonych efektów ubocznych oraz artefaktów. Dzięki temu, krok może zostać wznowiony/zapisany. Dzięki temu można też stosunkowo łatwo zdefiniować graf możliwych cofnięć.
+Każde przejście między stanami może utworzyć artefakty, czyli pliki albo foldery, oraz wywołać efekty uboczne, na przykład uruchomienie kontenerów Docker. Jeśli przejście między stanami zostanie zatrzymane przez błąd, core powinien usunąć artefakty i cofnąć efekty uboczne danego kroku.
+
+Stan zapisuje core, a nie pipeline. Dzięki temu pipeline pozostaje mechanizmem przechodzenia przez kroki, a decyzje o wznowieniu, przerwaniu i zapisie checkpointów należą do core.
 
 ### 6.11 Obsługa błędów i przerwania generacji
 
-Jeśli wystąpi błąd, przejście między stanami jest wstrzymywane i core otrzymuje informacje o błędzie. Dodatkowo, artefakty przejścia między stanami są usuwane, a efekty uboczne usuwane i zatrzymywane, przez co następuje cofnięcie się do ostatniego stabilnego stanu.
+Jeśli wystąpi błąd, pipeline przekazuje informację o błędzie do core. Core zatrzymuje przechodzenie do kolejnych kroków, zapisuje informację o błędzie i uruchamia cleanup dla nieudanego kroku.
+
+Nieudany krok nie zostaje zapisany jako ukończony. Dzięki temu generację można wznowić od ostatniego stabilnego stanu.
 
 ### 6.12 Wznawianie generacji
 
-Wznawianie generacji następuje, gdy core wczyta zapisany stan i od niego rozpocznie iterowanie przez pipeline. Dodane też zostaną strategie wznawiania - na przykład po trzech próbach wznowienia ale ciągłym błędzie, proces zostanie przerwany i zakończony błędem globalnym.
+Wznawianie generacji następuje, gdy core wczyta zapisany stan i rozpocznie iterowanie przez pipeline od pierwszego nieukończonego kroku.
+
+Jeśli konfiguracja zmieniła się od poprzedniego uruchomienia, core nie powinien bezrefleksyjnie wznawiać generacji. W takiej sytuacji stan powinien zostać odrzucony albo proces powinien zakończyć się czytelnym błędem.
+
+Możliwe jest dodanie strategii ponawiania wybranych kroków, ale retry powinno dotyczyć tylko błędów technicznych, które mogą mieć charakter chwilowy.
 
 ### 6.13 Zbieranie statystyk
 
 W trakcie generacji są zbierane różne statystyki:
+
 - czas wykonania kroków
 - ogólny czas generacji
-- ilość błędów i wznowień
-- wielkość poszczególnych folderów
-- wykrycie anomalii czasu wykonania
+- liczba błędów i wznowień
+- wybrana kombinacja technologiczna
+- status verification
+- krok, na którym wystąpił błąd
 
 ## 7. Pipeline zarządzany przez core
 
 ### 7.1 Rola pipeline'u w architekturze
 
-Pipeline jest wyrażonym przez listę kroków przechodzeniem pomiędzy kolejnymi stanami. To pipeline definiuje te kroki i możliwe przejścia między nimi, opierając się na planie generacji. Decyzja, czy przejść dalej, podejmowana jest przez core. Core zapisuje też stan, jeśli krok pipelinu powiedzie się.
+Pipeline jest wyrażonym przez listę kroków przechodzeniem pomiędzy kolejnymi stanami. Definiuje kroki i ich kolejność na podstawie planu generacji. Decyzja, czy przejść dalej, podejmowana jest przez core.
+
 Odpowiedzialności pipeline'u:
 
 - definicja listy kroków
-- definicja przejść pomiędzy stanami
+- definicja kolejności kroków
 - wykonywanie poszczególnych kroków
+- zwracanie wyniku kroku do core
+
+Pipeline nie zapisuje globalnego stanu generacji i nie finalizuje outputu.
 
 ### 7.2 Pipeline jako uporządkowana lista kroków
 
-Pipeline tylko definiuje kroki bazując na planie generacji i wykonuje je. Decyzję, czy już należy przejść do kolejnego kroku, podejmuje core.
+Pipeline definiuje kroki bazując na planie generacji. Lista kroków może zależeć od wybranego stacka, ale ogólny przebieg pozostaje podobny.
 
 Wzór kroków, które będą zawierały się w pipeline:
+
 - utworzenie folderu stagingu
 - utworzenie struktury plików na podstawie manifestów template packów
 - utworzenie plików z contributions na podstawie manifestów template packów
-- utworzenie listy dependencies do instalacji
-- zainstalowanie dependencies globalnych
-- rendering globalnych template packów (np Docker)
-- zainstalowanie dependencies backend-db stacka
+- rendering globalnych template packów, na przykład Docker
 - rendering template packa backend-db stacka
-- zainstalowanie dependencies frontendu
 - rendering template packa frontendu
-- uruchomienie środowiska na dockerze
+- wygenerowanie plików zależności backendu i frontendu
+- uruchomienie docker compose build
+- uruchomienie środowiska przez docker compose
+- uruchomienie migracji albo inicjalizacji bazy, jeśli stack tego wymaga
 - uruchomienie testów jednostkowych backend-db stacka
 - uruchomienie testów jednostkowych frontendu
 - uruchomienie testów integracyjnych
-- uruchomienie testu typu happy-path
+- uruchomienie testu typu happy path
+- zatrzymanie środowiska Docker Compose
 - utworzenie folderu docelowego
 - kopia projektu do folderu docelowego
 - czyszczenie stagingu
 
+Generator nie powinien instalować zależności globalnie na komputerze użytkownika. Zależności powinny być instalowane w ramach Docker builda albo wewnątrz kontenerów.
+
 ### 7.3 Granice odpowiedzialności pipeline'u
 
-Pipeline jest tylko narzędziem pomocniczym dla core, żeby ten nie musiał wiedzieć, co dokładnie w danym momencie się dzieje. Pipeline nie podejmuje decyzji o wykonaniu kroku ani przejściu pomiędzy stanami. Jeśli pojawi się błąd, pipeline jedynie przekazuje go do core'a.
+Pipeline jest narzędziem pomocniczym dla core. Pipeline nie podejmuje decyzji o wznowieniu, przerwaniu procesu, zapisie stanu ani finalizacji outputu.
+
+Jeśli pojawi się błąd, pipeline przekazuje go do core. Core decyduje, czy wykonać cleanup, ponowić krok, przerwać generację albo zwrócić błąd użytkownikowi.
 
 ### 7.4 Krok pipeline'u
 
-Krok pipeline'u to przejście ze stanu poprzedzającego do stanu następującego zdefiniowane w liście kroków. Krok na ogół generuje artefakty. Żeby zatrzymać krok i cofnąć się do stanu wyjściowego, wystarczy zniszczyć artefakty. Jeśli krok nie modyfikuje plików (np testy jednostkowe), wystarczy go wykonać jeszcze raz.
+Krok pipeline'u to przejście ze stanu poprzedzającego do stanu następującego zdefiniowane w liście kroków.
+
+Krok może tworzyć artefakty oraz efekty uboczne. Artefaktami są na przykład pliki i foldery. Efektami ubocznymi mogą być na przykład uruchomione kontenery Docker, wolumeny, sieci albo dane utworzone podczas testów.
+
+Krok powinien mieć określone:
+
+- co wykonuje
+- jakie artefakty tworzy
+- jakie efekty uboczne może powodować
+- po czym poznać, że zakończył się sukcesem
+- jak posprzątać po błędzie
 
 ### 7.5 Kolejność kroków pipeline'u
 
-Kroki wykonywane są zgodnie z wzorcową listą utworzoną przez planner. Dopuszczalne jest też cofnięcie się o więcej niż jeden stan, zgodnie z grafem przejść.
+Kroki wykonywane są zgodnie z listą utworzoną przez planner na podstawie generation planu.
+
+Podstawowy model pipeline'u jest liniowy. Warunkowe różnice, na przykład obecność osobnego kontenera database dla Django + PostgreSQL i jego brak dla FastAPI + SQLite, powinny wynikać z generation planu oraz manifestów template packów.
 
 ### 7.6 Relacja pipeline'u z core
 
-Pipeline to rozbudowany iterator, z którego korzysta core.
+Pipeline to uporządkowany mechanizm kroków, z którego korzysta core.
+
+Core:
+
+- tworzy pipeline na podstawie generation planu
+- uruchamia kolejne kroki
+- zapisuje stan po sukcesie kroku
+- obsługuje błędy
+- decyduje o wznowieniu albo przerwaniu procesu
 
 ### 7.7 Relacja pipeline'u z generation plan
 
-Kroki pipelinu zostają zdefiniowane na podstawie generation planu. To planner decyduje, co wydarzy się w każdym z kroków.
+Kroki pipeline'u zostają zdefiniowane na podstawie generation planu. To generation plan określa, jakie template packi, pliki, contributions i kroki verification są wymagane dla danej konfiguracji.
+
+Dzięki temu pipeline nie musi zawierać logiki konkretnych technologii.
 
 ### 7.8 Pomijanie kroków przy wznowieniu
 
-Przy wznowieniu, upewniamy się że artefakty zostały zniszczone, a następnie po prostu iterujemy od pewnego kroku. Jeśli krok nie wymagał artefaktów, wznowienie następuje natychmiastowo.
+Przy wznowieniu core odczytuje zapisany stan i pomija kroki oznaczone jako ukończone. Pierwszy nieukończony krok jest wykonywany ponownie.
+
+Przed ponownym wykonaniem kroku core powinien upewnić się, że artefakty i efekty uboczne poprzedniej, nieudanej próby zostały usunięte albo mogą zostać bezpiecznie nadpisane.
+
+### 7.9 Podstawowy przebieg pipeline'u
+
+Podstawowy przebieg pipeline'u wygląda następująco:
+
+1. Przygotowanie stagingu.
+2. Wygenerowanie struktury projektu.
+3. Renderowanie template'ów i contributions.
+4. Wygenerowanie konfiguracji środowiskowej i Docker Compose.
+5. Zbudowanie projektu przez Docker Compose.
+6. Uruchomienie projektu przez Docker Compose.
+7. Uruchomienie migracji albo inicjalizacji bazy, jeśli stack tego wymaga.
+8. Uruchomienie testów jednostkowych i integracyjnych.
+9. Sprawdzenie happy path rejestracji, logowania i pobrania danych aktualnego użytkownika.
+10. Zatrzymanie środowiska verification.
+11. Przeniesienie projektu do katalogu docelowego.
+12. Wyczyszczenie stagingu.
 
 ## 8. Stan generacji
 
