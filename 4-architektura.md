@@ -1,6 +1,6 @@
 # Architektura
 
-Stan: 16.05.2026
+Stan: 28.05.2026
 
 ## 1. Wstęp
 
@@ -26,9 +26,9 @@ Skrócony przepływ od uruchomienia generatora do gotowego projektu:
 1. Frontend jest niezależny od backendu
    To założenie wymusza komunikację frontendu i backendu jedynie przez API. Oprócz spełnienia podstawowego rozdzielenia odpowiedzialności, pozwoli to autorom rozszerzeń dodawać obsługę nowych frameworków frontendowych w bardzo łatwy sposób, bez wiedzy o całej reszcie za wyjątkiem kontraktu API.
 2. Backend i baza danych traktowane są jako backend-db stack
-   Być może na papierze ładnie wyglądałoby pełne rozdzielenie backendu i bazy danych. Jednak baza danych w takim projekcie nie jest wyłącznie schemą zapisaną w SQL. W rzeczywistości backend wpływa na ORM, migracje, modele, auth, seedowanie, tabele techniczne i sposób testowania komunikacji z bazą. Dlatego, żeby całość pozostała w pełni natywna dla frameworków backendowych, będę traktował backend i bazę danych jako nierozerwalną całość - kosztem pewnego złamania DRY.
-3. W podstawowym zakresie pracy PostgreSQL jest stałą infrastrukturą
-   Nie wprowadzę obsługi innych baz danych, jak na przykład SQLite albo MariaDB. Żeby to było możliwe, konieczne byłoby obsłużenie większej ilości stacków backendowych. Docelowo, gdyby projekt był rozszerzany, prawdopodobnie pełna macierz konfiguracji i tak nie byłaby osiągnięta. Każdy backend ma swoje najczęściej wybierane bazy danych i to pewnie one byłyby w pierwszej kolejności uzupełnione.
+   Być może na papierze ładnie wyglądałoby pełne rozdzielenie backendu i bazy danych. Jednak baza danych w takim projekcie nie jest wyłącznie schemą zapisaną w SQL. W rzeczywistości backend wpływa na ORM, migracje, modele, auth, strukturę danych wymaganą do uwierzytelniania, tabele techniczne i sposób testowania komunikacji z bazą. Dlatego, żeby całość pozostała w pełni natywna dla frameworków backendowych, będę traktował backend i bazę danych jako nierozerwalną całość - kosztem pewnego złamania DRY.
+3. Baza danych wynika z wybranego backend-db stacka
+   Nie wprowadzę pełnej macierzy dowolnego łączenia backendów i baz danych. W podstawowym zakresie pracy obsługiwane będą tylko stacki wskazane w specyfikacji: FastAPI + SQLite oraz Django + PostgreSQL. Dzięki temu każdy backend-db stack może pozostać natywny dla swojej technologii, a generator nie będzie wymuszał sztucznych kombinacji, które zwiększyłyby ilość pracy implementacyjnej, testowej i dokumentacyjnej.
 4. Kontrakty zamiast jakichkolwiek adapterów
    Najprostszą drogą do agresywnego współdzielenia logiki między frameworkami byłoby wprowadzenie adapterów. Z perspektywy generowanego projektu takie adaptery są jednak absolutnie bezużyteczne. W tym projekcie nie dawałyby realnej wartości w wygenerowanej aplikacji, bo użytkownik otrzymałby dodatkową warstwę abstrakcji, której nie potrzebuje do dalszego rozwijania projektu. Dlatego, kosztem DRY i bardziej skomplikowanego kodu, świadomie rezygnuję z użycia adapterów pomiędzy różnymi frameworkami.
 5. Template packi są jednostką rozszerzalności
@@ -75,7 +75,7 @@ Kontrakt HTTP API definiuje wymagane endpointy, format requestów, format respon
 
 Zbiór minimalnych wymagań wobec backend-db stacka dotyczących danych wymaganych do działania aplikacji.
 
-Kontrakt danych określa, że backend-db stack musi zapewnić minimalny model użytkownika pozwalający na jednoznaczną identyfikację użytkownika, logowanie za pomocą emaila, weryfikację hasła zapisanego jako hash oraz oznaczenie użytkownika jako aktywnego lub nieaktywnego.
+Kontrakt danych określa, że backend-db stack musi zapewnić minimalny model użytkownika pozwalający na jednoznaczną identyfikację użytkownika, rejestrację za pomocą emaila, logowanie za pomocą emaila, weryfikację hasła zapisanego jako hash oraz oznaczenie użytkownika jako aktywnego lub nieaktywnego.
 
 Kontrakt danych nie wymaga identycznej fizycznej struktury tabel dla każdego backendu. Backend może posiadać dodatkowe tabele techniczne wymagane przez wybrany framework.
 
@@ -107,7 +107,7 @@ Template registry pozwala generatorowi sprawdzić, jakie template packi są dost
 
 Sprzężona para backendu i bazy danych traktowana jako jedna jednostka generacji.
 
-Backend i baza danych są łączone w backend-db stack, ponieważ wybór backendu wpływa na ORM, migracje, modele, auth, seedowanie, tabele techniczne oraz testowanie komunikacji z bazą. Przykładami backend-db stacków są FastAPI + PostgreSQL oraz Django + PostgreSQL.
+Backend i baza danych są łączone w backend-db stack, ponieważ wybór backendu wpływa na ORM, migracje, modele, auth, strukturę danych wymaganą do uwierzytelniania, tabele techniczne oraz testowanie komunikacji z bazą. Przykładami backend-db stacków są FastAPI + SQLite oraz Django + PostgreSQL.
 
 ### Core
 
@@ -173,6 +173,10 @@ Właściwość generatora oznaczająca, że ta sama konfiguracja powinna prowadz
 
 Deterministyczność dotyczy przede wszystkim struktury katalogów, wygenerowanych plików, dobranych template packów i planu generacji. Wartości losowe, takie jak sekrety, powinny być jawnie zapisane albo generowane w kontrolowany sposób.
 
+### Artefakt
+
+Folder lub plik tworzony przy przejściu między stanami generacji.
+
 ## 3. Ogólny model działania generatora
 
 ### 3.1 Przepływ i główne etapy działania
@@ -182,7 +186,7 @@ Deterministyczność dotyczy przede wszystkim struktury katalogów, wygenerowany
     - nazwa projektu
     - katalog docelowy
     - frontend
-    - backend
+    - backend-db stack
     - porty
     - zmienne środowiskowe
 
@@ -204,7 +208,7 @@ Deterministyczność dotyczy przede wszystkim struktury katalogów, wygenerowany
 
 7. Weryfikacja
    Etap sprawdzenia, czy wygenerowany projekt rzeczywiście spełnia wymagania. Jest to główne odróżnienie tego generatora od prostego kopiowania template'ów. Poprawność projektu nie jest oceniana tym, że pliki powstały, tylko tym, że przechodzą wymagane testy.
-   Weryfikacja sprawdza, czy Docker Compose uruchamia kontenery, backend odpowiada na GET /health, backend komunikuje się z bazą, frontend komunikuje się z backendem, wszystkie testy przechodzą i happy path logowania na użytkownika testowego lub startowego działa.
+   Weryfikacja sprawdza, czy Docker Compose uruchamia wymagane kontenery, backend odpowiada na GET /health, backend komunikuje się z bazą, frontend komunikuje się z backendem, wszystkie testy przechodzą oraz happy path rejestracji, logowania i pobrania danych aktualnego użytkownika działa.
 
 8. Finalizacja
    Ostatni etap, przenoszący zweryfikowany projekt do docelowego katalogu. Jeśli weryfikacja nie zakończy się sukcesem, projekt nie zostaje przeniesiony do katalogu docelowego.
@@ -231,15 +235,15 @@ Być może na papierze wygodne byłoby rozdzielenie backendu i bazy danych, żeb
 - migracje
 - modele
 - auth
-- seedowanie
+- struktura danych wymagana do uwierzytelniania
 - tabele techniczne
 - testy backend-db
 
 To wszystko sprawia, że obsługa takiej macierzy kombinacji szybko stałaby się nienatywna i pełna sztucznych warunków. Stąd decyzja o utrzymaniu backendu i bazy danych jako jednego backend-db stacka.
 
-### 4.3 PostgreSQL jako stały element infrastruktury
+### 4.3 Baza danych wynikająca z backend-db stacka
 
-Jest to świadome ograniczenie zakresu pracy. Użytkownik nie będzie mógł w podstawowej wersji wybrać nic innego poza PostgreSQL. Jego decyzją będzie stack Django + PostgreSQL lub FastAPI + PostgreSQL. Dodanie większej liczby obsługiwanych stacków nie powinno wymagać zmiany założeń architektonicznych, ale zwiększyłoby ilość pracy implementacyjnej, testowej i dokumentacyjnej oraz spowoduje konieczność żmudnego dodawania kolejnych stacków jeden po drugim. Dlatego podstawowa wersja pracy zawierać będzie jedynie dwa powyższe stacki.
+Jest to świadome ograniczenie zakresu pracy. Użytkownik nie będzie mógł w podstawowej wersji dowolnie łączyć backendu z bazą danych. Jego decyzją będzie wybór jednego ze wspieranych backend-db stacków: FastAPI + SQLite albo Django + PostgreSQL. Dodanie większej liczby obsługiwanych stacków nie powinno wymagać zmiany założeń architektonicznych, ale zwiększyłoby ilość pracy implementacyjnej, testowej i dokumentacyjnej oraz spowodowałoby konieczność dodawania kolejnych stacków jeden po drugim. Dlatego podstawowa wersja pracy zawiera tylko stacki wskazane w specyfikacji.
 
 ### 4.4 Kontrakty zamiast adapterów
 
@@ -445,39 +449,91 @@ Plan określa:
 
 ### 6.8 Pipeline jako podmoduł core
 
+Pipeline jest wyrażonym przez listę kroków przechodzeniem pomiędzy kolejnymi stanami. To pipeline definiuje te kroki i możliwe przejścia między nimi, opierając się na planie generacji. Decyzja, czy przejść dalej, podejmowana jest przez core.
+
 ### 6.9 Zarządzanie wykonaniem kroków pipeline'u
+
+Pipeline tylko definiuje kroki bazując na planie generacji i wykonuje je. Decyzję, czy już należy przejść do kolejnego kroku, podejmuje core.
 
 ### 6.10 Zarządzanie stanem generacji
 
+Każde przejście między stanami będzie mogło utworzyć artefakty (pliki/foldery) oraz miało określone efekty uboczne. Jeśli przejście między stanami zostanie zatrzymane (na przykład przez błąd), wystarczy pozbyć się tych określonych efektów ubocznych oraz artefaktów. Dzięki temu, krok może zostać wznowiony/zapisany. Dzięki temu można też stosunkowo łatwo zdefiniować graf możliwych cofnięć.
+
 ### 6.11 Obsługa błędów i przerwania generacji
+
+Jeśli wystąpi błąd, przejście między stanami jest wstrzymywane i core otrzymuje informacje o błędzie. Dodatkowo, artefakty przejścia między stanami są usuwane, a efekty uboczne usuwane i zatrzymywane, przez co następuje cofnięcie się do ostatniego stabilnego stanu.
 
 ### 6.12 Wznawianie generacji
 
-### 6.13 Przekazanie wyniku do outputu
+Wznawianie generacji następuje, gdy core wczyta zapisany stan i od niego rozpocznie iterowanie przez pipeline. Dodane też zostaną strategie wznawiania - na przykład po trzech próbach wznowienia ale ciągłym błędzie, proces zostanie przerwany i zakończony błędem globalnym.
 
-### 6.14 Uruchomienie verification
+### 6.13 Zbieranie statystyk
 
-### 6.15 Zbieranie statystyk
+W trakcie generacji są zbierane różne statystyki:
+- czas wykonania kroków
+- ogólny czas generacji
+- ilość błędów i wznowień
+- wielkość poszczególnych folderów
+- wykrycie anomalii czasu wykonania
 
 ## 7. Pipeline zarządzany przez core
 
 ### 7.1 Rola pipeline'u w architekturze
 
+Pipeline jest wyrażonym przez listę kroków przechodzeniem pomiędzy kolejnymi stanami. To pipeline definiuje te kroki i możliwe przejścia między nimi, opierając się na planie generacji. Decyzja, czy przejść dalej, podejmowana jest przez core. Core zapisuje też stan, jeśli krok pipelinu powiedzie się.
+Odpowiedzialności pipeline'u:
+
+- definicja listy kroków
+- definicja przejść pomiędzy stanami
+- wykonywanie poszczególnych kroków
+
 ### 7.2 Pipeline jako uporządkowana lista kroków
+
+Pipeline tylko definiuje kroki bazując na planie generacji i wykonuje je. Decyzję, czy już należy przejść do kolejnego kroku, podejmuje core.
+
+Wzór kroków, które będą zawierały się w pipeline:
+- utworzenie folderu stagingu
+- utworzenie struktury plików na podstawie manifestów template packów
+- utworzenie plików z contributions na podstawie manifestów template packów
+- utworzenie listy dependencies do instalacji
+- zainstalowanie dependencies globalnych
+- rendering globalnych template packów (np Docker)
+- zainstalowanie dependencies backend-db stacka
+- rendering template packa backend-db stacka
+- zainstalowanie dependencies frontendu
+- rendering template packa frontendu
+- uruchomienie środowiska na dockerze
+- uruchomienie testów jednostkowych backend-db stacka
+- uruchomienie testów jednostkowych frontendu
+- uruchomienie testów integracyjnych
+- uruchomienie testu typu happy-path
+- utworzenie folderu docelowego
+- kopia projektu do folderu docelowego
+- czyszczenie stagingu
 
 ### 7.3 Granice odpowiedzialności pipeline'u
 
+Pipeline jest tylko narzędziem pomocniczym dla core, żeby ten nie musiał wiedzieć, co dokładnie w danym momencie się dzieje. Pipeline nie podejmuje decyzji o wykonaniu kroku ani przejściu pomiędzy stanami. Jeśli pojawi się błąd, pipeline jedynie przekazuje go do core'a.
+
 ### 7.4 Krok pipeline'u
+
+Krok pipeline'u to przejście ze stanu poprzedzającego do stanu następującego zdefiniowane w liście kroków. Krok na ogół generuje artefakty. Żeby zatrzymać krok i cofnąć się do stanu wyjściowego, wystarczy zniszczyć artefakty. Jeśli krok nie modyfikuje plików (np testy jednostkowe), wystarczy go wykonać jeszcze raz.
 
 ### 7.5 Kolejność kroków pipeline'u
 
+Kroki wykonywane są zgodnie z wzorcową listą utworzoną przez planner. Dopuszczalne jest też cofnięcie się o więcej niż jeden stan, zgodnie z grafem przejść.
+
 ### 7.6 Relacja pipeline'u z core
+
+Pipeline to rozbudowany iterator, z którego korzysta core.
 
 ### 7.7 Relacja pipeline'u z generation plan
 
+Kroki pipelinu zostają zdefiniowane na podstawie generation planu. To planner decyduje, co wydarzy się w każdym z kroków.
+
 ### 7.8 Pomijanie kroków przy wznowieniu
 
-### 7.9 Podstawowy przebieg pipeline'u
+Przy wznowieniu, upewniamy się że artefakty zostały zniszczone, a następnie po prostu iterujemy od pewnego kroku. Jeśli krok nie wymagał artefaktów, wznowienie następuje natychmiastowo.
 
 ## 8. Stan generacji
 
@@ -665,7 +721,7 @@ Plan określa:
 
 ### 19.1 Uzasadnienie sprzężenia backendu i bazy danych
 
-### 19.2 FastAPI + PostgreSQL
+### 19.2 FastAPI + SQLite
 
 ### 19.3 Django + PostgreSQL
 
@@ -675,7 +731,7 @@ Plan określa:
 
 ### 19.6 Migracje
 
-### 19.7 Dane startowe lub testowe do logowania
+### 19.7 Rejestracja i dane użytkownika
 
 ## 20. Verification
 
@@ -789,7 +845,7 @@ Plan określa:
 
 ### 27.2 Dlaczego backend i baza są sprzężone
 
-### 27.3 Dlaczego PostgreSQL jest stałym elementem infrastruktury
+### 27.3 Dlaczego baza danych wynika z backend-db stacka
 
 ### 27.4 Dlaczego kontrakty zamiast adapterów
 

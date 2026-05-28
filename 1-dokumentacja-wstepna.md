@@ -50,6 +50,7 @@ Następnie generator tworzy projekt zawierający:
 - formatter i linter
 - Nginx
 - backend-db stack używający ASP.NET Core + PostgreSQL
+- rozszerzenie Vue i React na Nuxt i Next
 - ...
 
 ## Architektura
