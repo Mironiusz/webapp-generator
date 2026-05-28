@@ -41,7 +41,7 @@ Użytkownik odpowiada na pytania i podejmuje decyzje:
 - nazwa projektu
 - ścieżka docelowa
 - frontend
-- backend
+- backend-db stack
 - porty albo wartości domyślne
 - dane środowiskowe albo wartości domyślne
 
@@ -60,15 +60,15 @@ Dane wejściowe są określane na podstawie kreatora lub pliku konfiguracyjnego.
 - database.engine
 - ports.frontend
 - ports.backend
-- ports.database
+- ports.database (gdy backend korzysta z osobnej bazy danych)
 - env
 
 ## 6. Wspierane technologie i kombinacje
 
 Generator musi wspierać następujące kombinacje:
 
-- Vue + FastAPI + PostgreSQL
-- React + FastAPI + PostgreSQL
+- Vue + FastAPI + SQLite
+- React + FastAPI + SQLite
 - Vue + Django + PostgreSQL
 - React + Django + PostgreSQL
 
@@ -125,6 +125,7 @@ Generator musi przerwać działanie przed rozpoczęciem generacji, jeśli:
 
 - routing
 - strona logowania
+- strona rejestracji
 - strona aplikacji
 - strona 404
 - klient HTTP do backendu
@@ -137,6 +138,7 @@ Generator musi przerwać działanie przed rozpoczęciem generacji, jeśli:
 
 - endpoint health
 - endpoint login
+- endpoint register
 - endpoint zwracający dane aktualnego użytkownika
 - obsługa CORS
 - obsługa JWT
@@ -145,13 +147,13 @@ Generator musi przerwać działanie przed rozpoczęciem generacji, jeśli:
 
 ### 9.3 Baza danych
 
-Baza danych jest w PostgreSQL.
+Baza danych jest w PostgreSQL lub w SQLite.
 
 Backend zapewnia:
 
 - migracje
 - minimalny model użytkownika
-- dane wymagane do sprawdzenia logowania
+- strukturę danych wymaganą do działania podstawowego mechanizmu uwierzytelniania
 
 ### 9.4 Komunikacja
 
@@ -182,7 +184,46 @@ Endpoint służy do sprawdzenia, czy backend działa.
 }
 ```
 
-### 10.2 POST /auth/login
+### 10.2 POST /auth/register
+
+Endpoint służy do utworzenia konta użytkownika.
+
+#### Request
+
+```json
+{
+	"email": "admin@example.com",
+	"password": "password"
+}
+```
+
+#### Response 201
+
+```json
+{
+    "id": 1,
+    "email": "admin@example.com",
+    "is_active": true
+}
+```
+
+#### Response 400
+
+```json
+{
+	"detail": "Invalid request data"
+}
+```
+
+#### Response 409
+
+```json
+{
+    "detail": "User already exists"
+}
+```
+
+### 10.3 POST /auth/login
 
 Endpoint służy do zalogowania użytkownika i zwrócenia tokena JWT.
 
@@ -220,7 +261,7 @@ Endpoint służy do zalogowania użytkownika i zwrócenia tokena JWT.
 }
 ```
 
-### 10.3 GET /auth/me
+### 10.4 GET /auth/me
 
 Endpoint służy do pobrania danych aktualnie zalogowanego użytkownika na podstawie tokena JWT.
 
@@ -266,6 +307,7 @@ Minimalny model użytkownika musi pozwalać na:
 
 - jednoznaczną identyfikację użytkownika
 - logowanie za pomocą emaila
+- rejestrację za pomocą emaila
 - weryfikację hasła zapisanego jako hash
 - oznaczenie użytkownika jako aktywnego lub nieaktywnego
 
@@ -279,11 +321,12 @@ Kontrakt danych nie wymaga identycznej fizycznej struktury wszystkich tabel dla 
 docker compose up -d --build
 ```
 
-Powstaną trzy kontenery:
+Każda konfiguracja zawiera kontenery:
 
 - backend
 - frontend
-- database
+
+Dodatkowy kontener database powstaje dla stacków korzystających z osobnej usługi bazy danych, np. Django + PostgreSQL. W przypadku SQLite baza danych działa jako plik obsługiwany przez backend.
 
 Wymagane pliki poza kontenerami:
 
@@ -299,7 +342,7 @@ Wymagane pliki poza kontenerami:
 - testy jednostkowe frontendu
 - testy integracyjne backend-db
 - testy integracyjne frontend-backend
-- testy wygenerowanego projektu
+- test uruchomieniowy potwierdzający, że wygenerowany projekt startuje przez docker compose
 
 ## 14. Wymagania niefunkcjonalne
 
@@ -334,7 +377,6 @@ Projekt ma być łatwy do rozszerzenia dla użytkownika generatora, bez konieczn
 
 ## 15. Ograniczenia
 
-- jedyna wspierana baza danych to PostgreSQL
 - brak Kubernetes
 - brak TLS
 - brak SSO
@@ -343,3 +385,6 @@ Projekt ma być łatwy do rozszerzenia dla użytkownika generatora, bez konieczn
 - brak load balancingu
 - brak automatycznego CI/CD
 - brak osobnych kontenerów dev i prod
+- brak resetu hasła
+- brak wysyłki wiadomości email
+- brak integracji z dostawcą poczty
