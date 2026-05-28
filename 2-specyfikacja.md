@@ -1,6 +1,6 @@
 # Specyfikacja
 
-Stan: 16.05.2026
+Stan: 28.05.2026
 
 ## 1. Cel dokumentu
 
