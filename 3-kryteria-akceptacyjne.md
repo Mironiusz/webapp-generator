@@ -1,6 +1,6 @@
 # Kryteria akceptacyjne
 
-Stan: 16.05.2026
+Stan: 28.05.2026
 
 ## 1. Cel dokumentu
 
@@ -62,15 +62,15 @@ Typ weryfikacji: automatyczna i ręczna.
 
 ## 5. Kryteria dla wspieranych kombinacji technologicznych
 
-### KA-STACK-01 - Vue + FastAPI + PostgreSQL
+### KA-STACK-01 - Vue + FastAPI + SQLite
 
-Kryterium jest spełnione, jeśli generator tworzy działający projekt dla kombinacji Vue + FastAPI + PostgreSQL.
+Kryterium jest spełnione, jeśli generator tworzy działający projekt dla kombinacji Vue + FastAPI + SQLite.
 
 Typ weryfikacji: automatyczna.
 
-### KA-STACK-02 - React + FastAPI + PostgreSQL
+### KA-STACK-02 - React + FastAPI + SQLite
 
-Kryterium jest spełnione, jeśli generator tworzy działający projekt dla kombinacji React + FastAPI + PostgreSQL.
+Kryterium jest spełnione, jeśli generator tworzy działający projekt dla kombinacji React + FastAPI + SQLite.
 
 Typ weryfikacji: automatyczna.
 
@@ -143,11 +143,16 @@ Typ weryfikacji: automatyczna.
 
 ### KA-DOCKER-02 - Wymagane kontenery
 
-Kryterium jest spełnione, jeśli po uruchomieniu projektu działają kontenery:
+Kryterium jest spełnione, jeśli po uruchomieniu projektu dla każdej konfiguracji działają kontenery:
 
 - frontend
 - backend
+
+Dla stacków korzystających z osobnej usługi bazy danych musi działać dodatkowy kontener:
+
 - database
+
+W przypadku SQLite kontener database nie jest wymagany.
 
 Typ weryfikacji: automatyczna.
 
@@ -230,6 +235,34 @@ Kryterium jest spełnione, jeśli backend FastAPI i backend Django zwracają odp
 
 Typ weryfikacji: automatyczna.
 
+### KA-API-07 - Endpoint POST /auth/register dla poprawnych danych
+
+Kryterium jest spełnione, jeśli endpoint POST /auth/register dla poprawnych danych rejestracji zwraca status HTTP 201 oraz dane utworzonego użytkownika.
+
+Oczekiwany format odpowiedzi:
+
+```json
+{
+	"id": 1,
+	"email": "admin@example.com",
+	"is_active": true
+}
+```
+
+Typ weryfikacji: automatyczna.
+
+### KA-API-08 - Endpoint POST /auth/register dla niepoprawnych danych
+
+Kryterium jest spełnione, jeśli endpoint POST /auth/register dla niepoprawnych danych rejestracji zwraca status HTTP 400.
+
+Typ weryfikacji: automatyczna.
+
+### KA-API-09 - Endpoint POST /auth/register dla istniejącego użytkownika
+
+Kryterium jest spełnione, jeśli endpoint POST /auth/register dla adresu email istniejącego użytkownika zwraca status HTTP 409.
+
+Typ weryfikacji: automatyczna.
+
 ## 9. Kryteria dla kontraktu danych
 
 ### KA-DATA-01 - Minimalny model użytkownika
@@ -238,6 +271,7 @@ Kryterium jest spełnione, jeśli backend-db stack zapewnia minimalny model uży
 
 - jednoznaczną identyfikację użytkownika
 - logowanie za pomocą emaila
+- rejestrację za pomocą emaila
 - weryfikację hasła zapisanego jako hash
 - oznaczenie użytkownika jako aktywnego lub nieaktywnego
 
@@ -245,13 +279,13 @@ Typ weryfikacji: automatyczna i ręczna.
 
 ### KA-DATA-02 - Migracje bazy danych
 
-Kryterium jest spełnione, jeśli migracje bazy danych uruchamiają się poprawnie i tworzą struktury wymagane do działania logowania.
+Kryterium jest spełnione, jeśli migracje bazy danych uruchamiają się poprawnie i tworzą struktury wymagane do działania podstawowego mechanizmu uwierzytelniania.
 
 Typ weryfikacji: automatyczna.
 
-### KA-DATA-03 - Dane wymagane do sprawdzenia logowania
+### KA-DATA-03 - Utworzenie użytkownika przez rejestrację
 
-Kryterium jest spełnione, jeśli wygenerowany projekt zawiera sposób utworzenia użytkownika testowego albo startowego pozwalającego sprawdzić logowanie.
+Kryterium jest spełnione, jeśli wygenerowany projekt pozwala utworzyć użytkownika za pomocą endpointu POST /auth/register, a utworzony użytkownik może zostać użyty do sprawdzenia logowania.
 
 Typ weryfikacji: automatyczna.
 
@@ -271,7 +305,7 @@ Typ weryfikacji: automatyczna.
 
 ### KA-COMM-02 - Komunikacja backend-db
 
-Kryterium jest spełnione, jeśli backend potrafi połączyć się z bazą PostgreSQL i wykonać operację wymaganą do działania logowania.
+Kryterium jest spełnione, jeśli backend potrafi połączyć się z bazą danych właściwą dla wybranego backend-db stacka i wykonać operację wymaganą do działania podstawowego mechanizmu uwierzytelniania.
 
 Typ weryfikacji: automatyczna.
 
@@ -347,9 +381,9 @@ Kryterium jest spełnione, jeśli podanie niewspieranego backendu kończy się b
 
 Typ weryfikacji: automatyczna.
 
-### KA-NEG-03 - Niewspierana baza danych
+### KA-NEG-03 - Niewspierana baza danych albo backend-db stack
 
-Kryterium jest spełnione, jeśli podanie bazy danych innej niż PostgreSQL kończy się błędem walidacji.
+Kryterium jest spełnione, jeśli podanie bazy danych albo backend-db stacka niezgodnego ze wspieranymi kombinacjami technologii kończy się błędem walidacji.
 
 Typ weryfikacji: automatyczna.
 
@@ -476,6 +510,7 @@ Projekt zostaje uznany za zaakceptowany, jeśli:
 - spełnione są wszystkie kryteria dotyczące generatora
 - spełnione są wszystkie kryteria dotyczące wspieranych kombinacji technologicznych
 - spełnione są wszystkie kryteria dotyczące wygenerowanego projektu
+- spełnione są wszystkie kryteria dotyczące środowiska Docker
 - spełnione są wszystkie kryteria dotyczące kontraktu HTTP API
 - spełnione są wszystkie kryteria dotyczące kontraktu danych
 - spełnione są wszystkie kryteria dotyczące komunikacji między modułami
