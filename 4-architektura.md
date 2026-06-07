@@ -2,7 +2,7 @@
 
 Stan: 28.05.2026
 
-## 1. Wstęp
+## 1 Wstęp
 
 ### 1.1 Cel dokumentu
 
@@ -15,11 +15,10 @@ Skrócony przepływ od uruchomienia generatora do gotowego projektu:
 1. Użytkownik definiuje, jaki projekt chce otrzymać.
 2. Generator zamienia to na konfigurację.
 3. Konfiguracja zostaje walidowana.
-4. Generator wybiera pasujące template packi.
-5. Z template packów powstaje plan generacji.
-6. Projekt powstaje w katalogu roboczym.
-7. Projekt jest weryfikowany i testowany.
-8. Projekt trafia do finalnego katalogu.
+4. Wybierane są odpowiednie template packi.
+5. Projekt powstaje w katalogu roboczym.
+6. Projekt jest weryfikowany i testowany.
+7. Projekt trafia do finalnego katalogu.
 
 ### 1.3 Najważniejsze założenia architektoniczne
 
@@ -45,33 +44,33 @@ Architektura jest projektowana z myślą o realizacji specyfikacji i spełnieniu
 - Plik ze specyfikacją: 2-specyfikacja.md
 - Plik z kryteriami akceptacyjnymi: 3-kryteria-akceptacyjne.md
 
-## 2. Słownik pojęć
+## 2 Słownik pojęć
 
-### Generator
+### 2.1 Generator
 
 Narzędzie CLI odpowiedzialne za utworzenie szkieletu aplikacji webowej na podstawie kreatora albo pliku konfiguracyjnego.
 
 Generator nie jest częścią wygenerowanej aplikacji. Jego rola kończy się na przygotowaniu projektu, sprawdzeniu jego poprawności i zapisaniu wyniku w katalogu docelowym.
 
-### Wygenerowany projekt / Projekt
+### 2.2 Wygenerowany projekt / Projekt
 
-Projekt aplikacji webowej utworzony przez generator.
+Szkielet aplikacji webowej utworzony przez generator.
 
 Wygenerowany projekt zawiera frontend, backend, konfigurację Docker Compose, konfigurację środowiskową, testy oraz dokumentację. Po zakończeniu generacji projekt musi być możliwy do uruchomienia bez generatora.
 
-### Konfiguracja
+### 2.3 Konfiguracja
 
 Zestaw danych wejściowych opisujących, jaki projekt ma zostać wygenerowany.
 
 Konfiguracja może pochodzić z kreatora albo z pliku konfiguracyjnego. Zawiera między innymi nazwę projektu, katalog docelowy, wybrany frontend, wybrany backend, bazę danych, porty oraz wartości środowiskowe.
 
-### Kontrakt HTTP API
+### 2.4 Kontrakt HTTP API
 
 Zbiór wymagań określających sposób komunikacji pomiędzy frontendem i backendem.
 
 Kontrakt HTTP API definiuje wymagane endpointy, format requestów, format response'ów, statusy HTTP oraz sposób użycia tokena JWT. Dzięki temu frontend nie musi znać konkretnej implementacji backendu i może komunikować się z każdym backendem spełniającym ten sam kontrakt.
 
-### Kontrakt danych backend-db
+### 2.5 Kontrakt danych backend-db
 
 Zbiór minimalnych wymagań wobec backend-db stacka dotyczących danych wymaganych do działania aplikacji.
 
@@ -79,105 +78,105 @@ Kontrakt danych określa, że backend-db stack musi zapewnić minimalny model u�
 
 Kontrakt danych nie wymaga identycznej fizycznej struktury tabel dla każdego backendu. Backend może posiadać dodatkowe tabele techniczne wymagane przez wybrany framework.
 
-### Template
+### 2.6 Template
 
 Pojedynczy szablon pliku albo fragmentu pliku używany podczas generacji projektu.
 
 Template może opisywać na przykład plik konfiguracyjny, plik źródłowy, test, fragment README.md albo fragment docker-compose.yml. Template nie powinien zawierać logiki wyboru technologii. Wybór technologii odbywa się wcześniej, na poziomie konfiguracji, rejestru template packów i planu generacji.
 
-### Template pack
+### 2.7 Template pack
 
-Zestaw template'ów, konfiguracji i metadanych odpowiadający za wygenerowanie konkretnej części projektu.
+Zestaw template'ów i manifestu odpowiadający za wygenerowanie konkretnej części projektu.
 
 Template pack jest podstawową jednostką rozszerzalności generatora. Nowa technologia, na przykład nowy frontend albo nowy backend-db stack, powinna być dodawana jako nowy template pack, a nie jako dodatkowa logika warunkowa w core generatora.
 
-### Manifest template packa
+### 2.8 Manifest template packa
 
 Opis template packa zawierający informacje potrzebne generatorowi do jego użycia.
 
 Manifest określa między innymi typ template packa, obsługiwaną technologię, wymagane kontrakty, zapewniane funkcjonalności, wymagane dane wejściowe, generowane pliki oraz kompatybilność z innymi elementami generatora.
 
-### Template registry
+### 2.9 Template registry
 
-Rejestr dostępnych template packów.
+Rejestr dostępnych template packów, tworzony podczas procesu generacji.
 
 Template registry pozwala generatorowi sprawdzić, jakie template packi są dostępne, które technologie obsługują, z jakimi kontraktami są zgodne i czy mogą zostać użyte dla wybranej konfiguracji. Dzięki temu core generatora nie musi znać szczegółów konkretnych frameworków.
 
-### Backend-db stack
+### 2.10 Backend-db stack
 
 Sprzężona para backendu i bazy danych traktowana jako jedna jednostka generacji.
 
 Backend i baza danych są łączone w backend-db stack, ponieważ wybór backendu wpływa na ORM, migracje, modele, auth, strukturę danych wymaganą do uwierzytelniania, tabele techniczne oraz testowanie komunikacji z bazą. Przykładami backend-db stacków są FastAPI + SQLite oraz Django + PostgreSQL.
 
-### Core
+### 2.11 Core
 
 Główna część generatora odpowiedzialna za obsługę procesu generacji.
 
 Core odpowiada za wczytanie konfiguracji, walidację, wybór template packów, zbudowanie planu generacji, zarządzanie wykonaniem kroków pipeline'u, obsługę stanu, staging, finalizację outputu i statystyki. Core nie powinien zawierać szczegółowej logiki konkretnych frameworków.
 
-### Pipeline
+### 2.12 Pipeline
 
 Pipeline to uporządkowana lista kroków generacji wykorzystywana przez core.
 
 Pipeline nie jest samodzielnym silnikiem wykonawczym. Nie zarządza globalnym stanem, obsługą błędów ani finalizacją outputu. Te decyzje należą do core. Pipeline określa kolejność kroków i pozwala core przechodzić przez proces generacji w kontrolowany sposób.
 
-### Pipeline state / Stan generacji
+### 2.13 Stan generacji
 
 Zapisany stan generacji zarządzany przez core.
 
 Stan przechowuje informacje o wykonanych krokach, aktualnym statusie generacji, błędach, użytej konfiguracji, hashu konfiguracji oraz ścieżkach katalogów roboczych. Dzięki temu core może wznowić działanie po błędzie od ostatniego poprawnie zakończonego kroku.
 
-### Generation plan
+### 2.14 Generation plan
 
-Plan technicznego wykonania generacji utworzony na podstawie konfiguracji i dobranych template packów.
+Plan technicznego wykonania generacji utworzony na podstawie konfiguracji i dobranych template packów. Jest zbiorem parametrów dla kroków pipeline'u.
 
-Generation plan określa, jakie template packi zostaną użyte, jakie pliki zostaną wygenerowane, jakie contributions zostaną dodane do plików wspólnych, jakie kroki pipeline'u zostaną wykonane i jakie testy lub komendy verification powinny zostać uruchomione.
+Generation plan określa, jakie template packi zostaną użyte, jakie pliki zostaną wygenerowane, jakie contributions zostaną dodane do plików wspólnych.
 
-### Contribution
+### 2.15 Contribution
 
-Wkład template packa do pliku albo elementu, który jest składany z wielu źródeł.
+Wkład template packa lub templata do pliku albo elementu, który jest składany z wielu źródeł.
 
-Contribution jest używane tam, gdzie jeden plik powstaje z informacji dostarczanych przez wiele template packów. Przykładami takich plików są docker-compose.yml, .env.example oraz README.md.
+Contribution jest używane tam, gdzie jeden plik powstaje z informacji dostarczanych przez wiele template packów. Przykładami takich plików są docker-compose.yml, .env oraz README.md.
 
-### Staging
+### 2.16 Staging
 
 Katalog roboczy, w którym generator tworzy projekt przed zapisaniem go do finalnego katalogu.
 
 Staging chroni katalog docelowy przed częściowo wygenerowanym lub uszkodzonym wynikiem. Projekt trafia do final output dopiero po poprawnym zakończeniu wymaganych kroków pipeline'u.
 
-### Final output
+### 2.17 Final output
 
 Finalny katalog projektu przekazywany użytkownikowi po zakończeniu generacji.
 
 Final output powinien zawierać wyłącznie poprawnie wygenerowany i zweryfikowany projekt. Nieudana generacja nie powinna zostawiać częściowego wyniku w final output.
 
-### Validation
+### 2.18 Validation
 
 Proces sprawdzania, czy ze wstępnej konfiguracji użytkownika da się stworzyć obsługiwany projekt.
 
-### Verification
+### 2.19 Verification
 
 Proces sprawdzania, czy wygenerowany projekt spełnia wymagania.
 
 Verification obejmuje między innymi sprawdzenie uruchomienia projektu przez Docker Compose, działanie kontraktu HTTP API, działanie kontraktu danych, komunikację frontend-backend, komunikację backend-db oraz przejście wymaganych testów.
 
-### Idempotentność
+### 2.20 Idempotentność
 
 Właściwość generatora oznaczająca, że ponowne uruchomienie dla tej samej konfiguracji nie prowadzi do niespójnego lub częściowo uszkodzonego projektu.
 
 Idempotentność jest szczególnie ważna przy błędach generacji, wznowieniu pipeline'u i ponownym uruchamianiu generatora dla tej samej konfiguracji.
 
-### Deterministyczność
+### 2.21 Deterministyczność
 
 Właściwość generatora oznaczająca, że ta sama konfiguracja powinna prowadzić do takiej samej struktury wygenerowanego projektu.
 
 Deterministyczność dotyczy przede wszystkim struktury katalogów, wygenerowanych plików, dobranych template packów i planu generacji. Wartości losowe, takie jak sekrety, powinny być jawnie zapisane albo generowane w kontrolowany sposób.
 
-### Artefakt
+### 2.22 Artefakt
 
 Folder lub plik tworzony przy przejściu między stanami generacji.
 
-## 3. Ogólny model działania generatora
+## 3 Ogólny model działania generatora
 
 ### 3.1 Przepływ i główne etapy działania
 
@@ -194,34 +193,30 @@ Folder lub plik tworzony przy przejściu między stanami generacji.
    Generator przerabia dane wejściowe na spójną konfigurację wewnętrzną za pomocą wspólnego mechanizmu normalizacji danych wejściowych. Wartości zostają uporządkowane i zostaje z nich utworzony docelowy plik konfiguracyjny, na którego podstawie powstanie projekt. Dzięki temu zarówno kreator, jak i plik konfiguracyjny mogą być interpretowane tak samo.
 
 3. Walidacja
-   Generator waliduje konfigurację i sprawdza, czy jest ona obsługiwana. Sprawdza, czy istnieje wskazany frontend i backend, czy kombinacja jest wspierana, czy porty nie mają konfliktów oraz czy da się stworzyć output_dir.
+   Generator waliduje konfigurację i sprawdza, czy jest ona obsługiwana. Sprawdza, czy istnieje wskazany frontend i backend, czy porty nie mają konfliktów oraz czy da się stworzyć output_dir.
 
-4. Wybór elementów generacji
-   Po walidacji konfiguracja zamieniana jest na konkretne elementy, które zostaną użyte. To już jest docelowa instrukcja dla generatora, co powstanie jako ostateczna wersja.
-   Na tym etapie zostają wybrane odpowiednie template packi oraz elementy wspólne.
+4. Stworzenie planu generacji
+   Plan generacji jest zbiorem danych parametryzujących generację projektu. Zostanie on przekazany do pipeline'u. Plan generacji powinien wykryć konflikty między packami - na przykład jeśli chcą wyrenderować ten sam plik. Odróżnia renderowanie pliku od składania go z kilku packów, informuje, jakie pliki składane zostaną stworzone.
 
-5. Stworzenie planu generacji
-   Na tym etapie generator buduje plan działania. Określa, jakie pliki zostaną utworzone, które template'y zostaną wyrenderowane, jakie elementy wspólne mają zostać złożone, jakie zmienne będą dostępne w kontekście renderowania oraz jakie kroki pipeline'u i weryfikacji zostaną wykonane przez core. Plan generacji powinien też wykryć konflikty między packami - na przykład jeśli chcą wyrenderować ten sam plik. Odróżnia renderowanie pliku od składania go z kilku packów.
+5. Generowanie w katalogu roboczym
+   Generator nie zaczyna od katalogu docelowego, ale robi staging. Na podstawie stałej listy kroków oraz planu generacji zostaje przeprowadzony cały proces - renderowanie template'ów, tworzenie struktury katalogów, zapis plików i przygotowanie konteneryzacji.
 
-6. Generowanie w katalogu roboczym
-   Generator nie zaczyna od katalogu docelowego, ale robi staging. Tam zostaje przeprowadzony cały proces - renderowanie template'ów, tworzenie struktury katalogów, zapis plików i przygotowanie konteneryzacji. To tutaj nastąpi weryfikacja.
-
-7. Weryfikacja
+6. Weryfikacja
    Etap sprawdzenia, czy wygenerowany projekt rzeczywiście spełnia wymagania. Jest to główne odróżnienie tego generatora od prostego kopiowania template'ów. Poprawność projektu nie jest oceniana tym, że pliki powstały, tylko tym, że przechodzą wymagane testy.
    Weryfikacja sprawdza, czy Docker Compose uruchamia wymagane kontenery, backend odpowiada na GET /health, backend komunikuje się z bazą, frontend komunikuje się z backendem, wszystkie testy przechodzą oraz happy path rejestracji, logowania i pobrania danych aktualnego użytkownika działa.
 
-8. Finalizacja
+7. Finalizacja
    Ostatni etap, przenoszący zweryfikowany projekt do docelowego katalogu. Jeśli weryfikacja nie zakończy się sukcesem, projekt nie zostaje przeniesiony do katalogu docelowego.
 
 ### 3.2 Tryb kreatora
 
-Tryb CLI, zbierający dane wejściowe od użytkownika definiujące projekt.
+Tryb interaktywnego CLI, zbierający dane wejściowe od użytkownika definiujące projekt.
 
 ### 3.3 Tryb pliku konfiguracyjnego
 
 Tryb użycia jedynie nieinteraktywnego pliku konfiguracyjnego definiującego projekt.
 
-## 4. Główne zasady architektoniczne
+## 4 Główne zasady architektoniczne
 
 ### 4.1 Frontend zależy wyłącznie od kontraktu HTTP API
 
@@ -280,7 +275,7 @@ Dlatego wygenerowane projekty powinny być możliwie DRY, ale sam generator moż
 
 Generator jest jedynie narzędziem do tworzenia projektu, a nie jego częścią. Projekt po skopiowaniu do katalogu docelowego ma funkcjonować bez generatora. Wygenerowany projekt nie powinien importować bibliotek generatora ani wymagać go do uruchamiania, testowania lub dalszego rozwijania.
 
-## 5. Podział systemu na główne części
+## 5 Podział systemu na główne części
 
 ### 5.1 Core
 
@@ -301,17 +296,17 @@ Dzięki temu, w przypadku rozszerzania o kolejne technologie, core nie powinien 
 
 ### 5.2 Pipeline
 
-Zarządzany przez core iterowalny proces, przechodzący przez renderowanie, weryfikację i output. Pipeline umożliwa przechodzenie ze stanu do stanu w przód, ale też pozwala się cofać.
+Zarządzany przez core iterowalny proces, przechodzący przez renderowanie, weryfikację i output. Pipeline umożliwia przechodzenie ze stanu do stanu w przód, ale też pozwala się cofać.
 
 ### 5.3 Template packs
 
 Część systemu, która dostarcza kod i konfigurację dla konkretnych technologii. Template packi znają szczegóły frameworków, mieści się w nich docelowa struktura generowanego kodu.
 Template packi powinny być możliwie niezależne od siebie i komunikować się przez kontrakty oraz contributions. Jeśli autor chce rozszerzyć generator o obsługę kolejnej technologii, po prostu dodaje kolejny template pack. To tam mieści się cały kod, konfiguracja, obsługa kontraktów. Dzięki temu, wystarczy w zasadzie dobrze znać wybrany framework, żeby móc utworzyć dla niego template pack.
-Istnieją różne rodzaje template packów (więcej w rozdziale 10.). Template pack zawiera pełne templaty plików oraz templaty contributions, gdzie docelowy plik powstaje ze wszystkich kontrybuujących do niego templatów.
+Istnieją różne rodzaje template packów. Template pack zawiera pełne templaty plików oraz templaty contributions, gdzie docelowy plik powstaje ze wszystkich kontrybuujących do niego templatów.
 
 ### 5.4 Planning
 
-Część odpowiedzialna za przetłumaczenie konfiguracji na plan generacji. Na tym etapie konfiguracja zostaje zamieniona na zestaw template packów, contributions, kroków generacji i danych potrzebnych do renderowania. Dzięki niemu proces jest przewidywalny i deterministyczny oraz gwarantuje poprawny plan.
+Część odpowiedzialna za przetłumaczenie konfiguracji na plan generacji. Na tym etapie konfiguracja zostaje zamieniona na zestaw template packów, contributions i danych potrzebnych do renderowania. Dzięki niemu proces jest przewidywalny i deterministyczny oraz gwarantuje poprawny plan.
 
 ### 5.5 Rendering
 
@@ -351,7 +346,7 @@ Część odpowiedzialna za mierzenie i raportowanie przebiegu generacji. Statyst
 
 Mogą też służyć do porównywania czasu trwania etapów oraz czasu generacji różnych kombinacji technologicznych.
 
-## 6. Core generatora
+## 6 Core generatora
 
 ### 6.1 Odpowiedzialność core
 
@@ -432,7 +427,6 @@ Plan generacji przekłada język konfiguracji na docelowy plan wykonania, używa
 Plan określa:
 
 - wybrane template packi
-- pliki właścicielskie
 - pliki składane z contributions
 - dane projektu
 
@@ -477,7 +471,7 @@ W trakcie generacji są zbierane różne statystyki:
 - status verification
 - krok, na którym wystąpił błąd
 
-## 7. Pipeline zarządzany przez core
+## 7 Pipeline zarządzany przez core
 
 ### 7.1 Rola pipeline'u w architekturze
 
@@ -493,22 +487,23 @@ Pipeline nie zapisuje globalnego stanu generacji i nie finalizuje outputu.
 
 ### 7.2 Pipeline jako uporządkowana lista kroków
 
-Pipeline definiuje kroki bazując na planie generacji. Lista kroków może zależeć od wybranego stacka, ale ogólny przebieg pozostaje podobny. Plan generacji na podstawie konfiguracji przekaże tu po prostu odpowiednie parametry.
+Pipeline definiuje kroki bazując na planie generacji. W zależności od wybranych template packów, niektóre kroki będą odpowiednio sparametryzowane.
 
 Zadania, które zrealizuje pipeline:
 
-1. Przygotowanie stagingu.
-2. Wygenerowanie struktury projektu.
-3. Renderowanie template'ów i contributions.
-4. Wygenerowanie konfiguracji środowiskowej i Docker Compose.
-5. Zbudowanie projektu przez Docker Compose.
-6. Uruchomienie projektu przez Docker Compose.
-7. Uruchomienie migracji albo inicjalizacji bazy, jeśli stack tego wymaga.
-8. Uruchomienie testów jednostkowych i integracyjnych.
-9. Sprawdzenie happy path rejestracji, logowania i pobrania danych aktualnego użytkownika.
-10. Zatrzymanie środowiska verification.
-11. Przeniesienie projektu do katalogu docelowego.
-12. Wyczyszczenie stagingu.
+1. Pobranie generation planu
+2. Przygotowanie stagingu.
+3. Wygenerowanie struktury projektu.
+4. Renderowanie template'ów i contributions.
+5. Wygenerowanie konfiguracji środowiskowej i Docker Compose.
+6. Zbudowanie projektu przez Docker Compose.
+7. Uruchomienie projektu przez Docker Compose.
+8. Uruchomienie migracji albo inicjalizacji bazy, jeśli stack tego wymaga.
+9. Uruchomienie testów jednostkowych i integracyjnych.
+10. Sprawdzenie happy path rejestracji, logowania i pobrania danych aktualnego użytkownika.
+11. Zatrzymanie środowiska verification.
+12. Przeniesienie projektu do katalogu docelowego.
+13. Wyczyszczenie stagingu.
 
 Generator nie powinien instalować zależności globalnie na komputerze użytkownika. Zależności powinny być instalowane w ramach Docker builda albo wewnątrz kontenerów. Niektóre zależności, jak package-lock.json, muszą być zainstalowane w projekcie.
 
@@ -586,7 +581,7 @@ Wzór listy kroków:
 - kopia projektu do folderu docelowego
 - czyszczenie stagingu
 
-## 8. Stan generacji
+## 8 Stan generacji
 
 ### 8.1 Rola stanu generacji
 
@@ -622,31 +617,31 @@ Błąd wstrzymuje wykonanie kroku i jest przekazywany do core'a. To core zdecydu
 
 Jeśli core podejmie decyzję o wznowieniu generacji, stan jest zrównywany do tego z ostatniego ukończonego kroku. Zostają usunięte artefakty i wstrzymane/uruchomione skutki uboczne. Od tego miejsca można deterministycznie kontynuować run.
 
-## 9. Staging i output
+## 9 Staging i output
 
 ### 9.1 Rola stagingu
 
-Staging zapewnia, że katalog docelowy nie zostaje zaśmiecony niedziałającym projektem. Staging znajduje się w tymczasowym folderze wewnątrz src generatora. Przy uruchomieniu nowego runa staging jest zawsze czyszczony. Gwarantuje to, że na dysku nie pozostanie żaden niesprawdzony, niedziałający efekt generacji.
+Staging zapewnia, że katalog docelowy nie zostaje zaśmiecony niedziałającym projektem. Staging znajduje się w tymczasowym folderze domyślnym. Przy uruchomieniu nowego runa staging jest zawsze czyszczony. Gwarantuje to, że na dysku nie pozostanie żaden niesprawdzony, niedziałający efekt generacji.
 
 ### 9.2 Katalog roboczy generacji
 
-Katalog roboczy to folder TEMP wewnątrz kodu źródłowego generatora.
+Katalog roboczy to domyślny folder TEMP.
 
 ### 9.3 Katalog finalny projektu
 
 Zdefiniowany przez użytkownika.
 
-### 9.5 Finalizacja poprawnej generacji
+### 9.4 Finalizacja poprawnej generacji
 
-Po udanej generacji i zakońćzeniu weryfikacji, projekt zostaje bezpośrednio skopiowany do folderu końcowego.
+Po udanej generacji i zakończeniu weryfikacji, projekt zostaje bezpośrednio skopiowany do folderu końcowego.
 
-### 9.6 Czyszczenie po błędzie
+### 9.5 Czyszczenie po błędzie
 
 W przypadku błędu i decyzji o niewznawianiu runa, wystarczy wyczyścić zawartość folderu TEMP.
 
-## 11. Konfiguracja wejściowa
+## 10 Konfiguracja wejściowa
 
-### 11.1 Zestaw danych wejściowych
+### 10.1 Zestaw danych wejściowych
 
 Dane wejściowe zawsze będą zawierały:
 
@@ -657,99 +652,99 @@ Dane wejściowe zawsze będą zawierały:
 - porty do wykorzystania
 - zmienne środowiskowe
 
-### 11.2 CLI vs plik konfiguracyjny
+### 10.2 CLI vs plik konfiguracyjny
 
 Oba zakończą się utworzeniem identycznej konfiguracji. Różnice są wyłącznie w zachowaniu.
 
 CLI normalizuje i weryfikuje dane wprowadzone w każdym kroku i od razu daje użytkownikowi możliwość poprawienia danych.
-Plik konfiguracyjny jest sprawdzany jako całość. Nieporawny plik kończy się rzuceniem błędu z informacją, co należy zmienić.
+Plik konfiguracyjny jest sprawdzany jako całość. Niepoprawny plik kończy się rzuceniem błędu z informacją, co należy zmienić.
 
-### 11.2 Konfiguracja projektu
+### 10.3 Konfiguracja projektu
 
 Ścieżka bezwzględna do katalogu docelowego oraz jego nazwa.
 
-Ścieżka musi prowadzić do istniejącego miejsca na dysku, a katalog musi umożliwać zapis i odczyt plików.
+Ścieżka musi prowadzić do istniejącego miejsca na dysku, a katalog musi umożliwiać zapis i odczyt plików.
 
-### 11.3 Konfiguracja frontendu
+### 10.4 Konfiguracja frontendu
 
 Wybór template packa z dostępnych frontendów. Plik konfiguracyjny jest walidowany pod kątem dostępności, CLI pozwala wybrać tylko spośród dostępnych.
 
-### 11.4 Konfiguracja backend-db stacka
+### 10.5 Konfiguracja backend-db stacka
 
 Wybór template packa z dostępnych backendów. Plik konfiguracyjny jest walidowany pod kątem dostępności, CLI pozwala wybrać tylko spośród dostępnych.
 
-### 11.6 Konfiguracja portów
+### 10.6 Konfiguracja portów
 
-Plik konfiguracyjny wymaga podanie portów pod oczekiwane usługi. CLI będzie od razu weryfikowało, czy port jest dostępny. Nie można użyć niedostępnego portu.
+Plik konfiguracyjny wymaga podania portów pod oczekiwane usługi. CLI będzie od razu weryfikowało, czy port jest dostępny. Nie można użyć niedostępnego portu.
 
-### 11.7 Konfiguracja środowiskowa
+### 10.7 Konfiguracja środowiskowa
 
 Jeśli będą potrzebne jakieś secrety środowiskowe, trzeba je będzie tutaj podać. Każdy template pack może oczekiwać zmiennych środowiskowych.
 
-### 11.8 Wartości domyślne
+### 10.8 Wartości domyślne
 
 Domyślnie może być wybrany pierwszy dostępny frontend, backend-db stack, dostępny port. Ścieżka do katalogu docelowego, nazwa projektu i zmienne środowiskowe muszą być podane.
 
-## 12. Generation plan
+## 11 Generation plan
 
-### 12.1 Rola generation planu
+### 11.1 Rola generation planu
 
-Generation plan stanowić będzie listę kroków paramteryzowanych do wykonania przez pipeline. Będzie utworzony na podstawie konfiguracji.
-Efektem będzie źródło parametryzowanych kroków dla pipelinu.
+Generation plan stanowić będzie listę kroków parametryzowanych do wykonania przez pipeline. Będzie utworzony na podstawie konfiguracji.
+Efektem będzie źródło parametryzowanych kroków dla pipeline'u.
 
-### 12.2 Wzór generation planu
+### 11.2 Wzór generation planu
 
 - ścieżka do katalogu docelowego
 - nazwa projektu
 - frontend template pack
 - backend-db stack template pack
-- contenerization template pack
+- containerization template pack
 - lista plików składanych z contributions
 
-### 12.3 Utworzenie generation planu
+### 11.3 Utworzenie generation planu
 
-Każdy z kroków będzie obiektem źródłowym dla wywołania odpowiedniego kroku pipelinu.
+Każdy z kroków będzie obiektem źródłowym dla wywołania odpowiedniego kroku pipeline'u.
 
-## 13. Model kontraktów
+## 12 Model kontraktów
 
-### 13.1 Rola kontraktów w architekturze
+### 12.1 Rola kontraktów w architekturze
 
 Kontrakty pilnują, żeby poszczególne warstwy aplikacji były ze sobą kompatybilne i komunikowały się ze sobą. Wymuszają jeden określony sposób komunikacji.
 
-### 13.2 Kontrakt HTTP API
+### 12.2 Kontrakt HTTP API
 
-Lista endpointów, których oczekuje fronend i które musi zagwarantować backend. Specyfikacja, jak każdy z nich ma wyglądać i zachowywać się. Specyfikacja błędów, jakich można od nich oczekiwać.
+Lista endpointów, których oczekuje frontend i które musi zagwarantować backend. Specyfikacja, jak każdy z nich ma wyglądać i zachowywać się. Specyfikacja błędów, jakich można od nich oczekiwać.
 
-### 13.3 Kontrakt danych backend-db
+### 12.3 Kontrakt danych backend-db
 
 Tabele domenowe, jakie muszą zawrzeć się w bazie danych oraz struktura ich kolumn i typów.
 
-### 13.5 Zgodność template packów z kontraktami
+### 12.4 Zgodność template packów z kontraktami
 
 Każdy dodany template pack musi spełniać te kontrakty, inaczej nie będzie kompatybilny z innymi.
 
-### 13.6 Testowanie zgodności z kontraktami
+### 12.5 Testowanie zgodności z kontraktami
 
 Zawsze frontend posiada test happy path, który sprawdza podstawowy flow. Jeśli test nie przejdzie, kontrakt może nie być spełniony.
 
-## 14. Template'y i template packi
+## 13 Template'y i template packi
 
-### 14.1 Rola template'ów
+### 13.1 Rola template'ów
 
 Template to pojedynczy plik, będący częścią template packa, odwzorowywany na plik docelowy lub fragment pliku docelowego. Każdy template ma typ (częściowy, całościowy), treść oraz ścieżkę względną. Renderowanie templatu całościowego sprowadza się do jego skopiowania w odpowiednie miejsce, a częściowego do skopiowania jako contribution do pliku docelowego.
 
-### 14.2 Rola template packów
+### 13.2 Rola template packów
 
-Template pack składa sie ze zbioru templatów całościowych, częściowych oraz manifestu.
+Template pack składa się ze zbioru templatów całościowych, częściowych oraz manifestu.
 Templaty całościowe są po prostu katalogiem do skopiowania.
 Templaty częściowe zawierają treść oraz informację, do jakiego pliku kontrybuują.
 Manifest określa rodzaj template packa, zależności, wersję.
 
-### 14.3 Template pack jako jednostka rozszerzalności
+### 13.3 Template pack jako jednostka rozszerzalności
 
 Kiedy core zostanie ukończony, rozszerzanie generatora o kolejne wspierane frameworki będzie możliwe poprzez dodanie kolejnego template packa. Celem jest, aby nowa technologia nie wymagała zmiany czegokolwiek i jedynie wymagała dodanie nowego template packa.
 
-### 14.4 Manifest template packa
+### 13.4 Manifest template packa
 
 Manifest zawiera wszystkie potrzebne informacje o template packu. To na podstawie manifestu zostaje dopasowany odpowiedni template pack.
 
@@ -768,39 +763,39 @@ Dane zawarte w manifeście (\* oznacza daną opcjonalną):
 - Zapotrzebowanie na porty
 - Dostarczane templaty częściowe
 
-### 14.8 Ograniczenie logiki w template'ach
+### 13.5 Ograniczenie logiki w template'ach
 
-Template pack powinien być bazą modułu/frameworka/biblioteki napisanego zgodnie z najlepszymi, standardowymi dla niego praktykami. Powinien być stworzony w sposób natywny i łatwo rozszerzalny dla użtkownika.
+Template pack powinien być bazą modułu/frameworka/biblioteki napisanego zgodnie z najlepszymi, standardowymi dla niego praktykami. Powinien być stworzony w sposób natywny i łatwo rozszerzalny dla użytkownika.
 
-## 15. Rodzaje template packów
+### 13.6 Rodzaje template packów
 
-### 15.1 Frontend pack
+#### 13.6.1 Frontend pack
 
 Zawiera framework z frontendem. Jest wymagany do każdego projektu.
 
-### 15.2 Backend-db pack
+#### 13.6.2 Backend-db pack
 
 Zawiera framework z backend-db stackiem. Jest wymagany do każdego projektu.
 
-### 15.3 Contenerization pack
+#### 13.6.3 Containerization pack
 
 Zawiera konfigurację konteneryzacji. Jest wymagany.
 
-### 15.4 Infrastructure pack
+#### 13.6.4 Infrastructure pack
 
 Zawiera konfigurację związaną z infrastrukturą inną niż konteneryzacja. Serwer, ci/cd i tak dalej. Nie jest wymagany.
 
-### 15.5 Verification pack
+#### 13.6.5 Verification pack
 
 Zawiera testy niezależne od użytego frameworka oraz procedury weryfikacji.
 
-## 16. Wybór template packów
+### 13.7 Wybór template packów
 
-### 16.1 Rejestr template packów
+#### 13.7.1 Rejestr template packów
 
 Rejestr jest tworzony podczas każdego wykonania programu. Wszystkie dostępne template packi znajdujące się w katalogu template_packs są sprawdzane, a dane pobierane z ich manifestów. Na tej podstawie następuje kategoryzacja.
 
-### 16.2 Dobór template packów
+#### 13.7.2 Dobór template packów
 
 Żeby projekt zadziałał, muszą być odnalezione minimum cztery template packi, po jednym z każdej kategorii:
 
@@ -811,163 +806,105 @@ Rejestr jest tworzony podczas każdego wykonania programu. Wszystkie dostępne t
 
 Inne nie są obowiązkowe, a projekt zadziała bez nich.
 
-### 16.6 Wykrywanie niewspieranych kombinacji
+#### 13.7.3 Wykrywanie niewspieranych kombinacji
 
 Każda kombinacja, jeśli została dodana, powinna być wspierana.
-Dzięki temu, że każdy template pack ma swój typ, łątwo jest dobrać kompatybilny i pełny zbiór packów.
+Dzięki temu, że każdy template pack ma swój typ, łatwo jest dobrać kompatybilny i pełny zbiór packów.
 
-## 18. Rendering
+## 14 Rendering
 
-### 18.1 Rola renderingu
+### 14.1 Rola renderingu
 
 Rendering to proces faktycznej generacji zawartości projektu. Pliki są kopiowane i składane w odpowiedni sposób, a wynikiem jest gotowy projekt.
 
-### 18.3 Renderowanie plików właścicielskich
+### 14.2 Renderowanie plików właścicielskich
 
 Pliki właścicielskie są bardzo proste do wyrenderowania. Wystarczy skopiować templaty całościowe do odpowiedniego katalogu.
 
-### 18.4 Renderowanie plików składanych
+### 14.3 Renderowanie plików składanych
 
-Pliki składane tworzone są z templatów częściowych. Jeden z kroków pipelinu tworzy wszystkie pliki składane i tworzy ich wspólny początek, a następnie dokleja części z kontrybuujących template packów.
+Pliki składane tworzone są z templatów częściowych. Jeden z kroków pipeline'u tworzy wszystkie pliki składane i tworzy ich wspólny początek, a następnie dokleja części z kontrybuujących template packów.
 
-### 18.6 Ograniczenie logiki w rendererze
+### 14.4 Ograniczenie logiki w rendererze
 
 Renderer jedynie kopiuje pliki lub skleja zawartość plików według prostego schematu. Dzięki temu nie ma ciężkiej logiki i jest stosunkowo mało podatny na błędy, a także niezależny od tego, co renderuje.
 
-## 20. Verification
+## 15 Verification
 
-### 20.1 Rola verification
+### 15.1 Rola verification
 
-### 20.2 Verification jako krok pipeline'u zarządzany przez core
+### 15.2 Verification jako krok pipeline'u zarządzany przez core
 
-### 20.3 Verification wygenerowanego projektu
+### 15.3 Verification wygenerowanego projektu
 
-### 20.4 Verification kontraktu HTTP API
+### 15.4 Verification kontraktu HTTP API
 
-### 20.5 Verification kontraktu danych
+### 15.5 Verification kontraktu danych
 
-### 20.6 Verification Docker Compose
+### 15.6 Verification Docker Compose
 
-### 20.7 Verification testów
+### 15.7 Verification testów
 
-### 20.8 Verification macierzy wspieranych kombinacji
+### 15.8 Verification macierzy wspieranych kombinacji
 
-### 20.9 Zachowanie po nieudanej verification
+### 15.9 Zachowanie po nieudanej verification
 
-## 21. Statistics
+## 16 Statistics
 
-### 21.1 Rola statystyk
+### 16.1 Rola statystyk
 
-### 21.2 Statystyki zbierane przez core
+### 16.2 Statystyki zbierane przez core
 
-### 21.3 Statystyki kroków pipeline'u
+### 16.3 Statystyki kroków pipeline'u
 
-### 21.4 Statystyki verification
+### 16.4 Statystyki verification
 
-### 21.5 Raport końcowy generacji
+### 16.5 Raport końcowy generacji
 
-## 22. Struktura katalogów generatora
+## 17 Struktura katalogów generatora
 
-### 22.1 Proponowana struktura główna
+### 17.1 Proponowana struktura główna
 
-### 22.2 Katalog core
+### 17.2 Katalog core
 
-### 22.3 Katalog contracts
+### 17.3 Katalog contracts
 
-### 22.4 Katalog template_packs
+### 17.4 Katalog template_packs
 
-### 22.5 Katalog verification
+### 17.5 Katalog verification
 
-### 22.6 Katalog tests
+### 17.6 Katalog tests
 
-### 22.7 Katalog docs
+### 17.7 Katalog docs
 
-## 23. Struktura wygenerowanego projektu
+## 18 Struktura wygenerowanego projektu
 
-### 23.1 Struktura root projektu
+### 18.1 Struktura root projektu
 
-### 23.2 Struktura frontendu
+### 18.2 Struktura frontendu
 
-### 23.3 Struktura backendu
+### 18.3 Struktura backendu
 
-### 23.4 Pliki środowiskowe
+### 18.4 Pliki środowiskowe
 
-### 23.5 Pliki Docker
+### 18.5 Pliki Docker
 
-### 23.6 README.md
+### 18.6 README.md
 
-### 23.7 Testy
+### 18.7 Testy
 
-## 24. Rozszerzalność generatora
+## 19 Powiązanie architektury z kryteriami akceptacyjnymi
 
-### 24.1 Dodanie nowego frontendu
+### 19.1 Kryteria generatora
 
-### 24.2 Dodanie nowego backendu
+### 19.2 Kryteria wspieranych kombinacji
 
-### 24.3 Dodanie nowej bazy danych
+### 19.3 Kryteria wygenerowanego projektu
 
-### 24.4 Zgodność rozszerzeń z kontraktami
+### 19.4 Kryteria kontraktów
 
-### 24.5 Brak regresji w istniejących kombinacjach
+### 19.5 Kryteria idempotentności i wznawiania
 
-### 24.6 Ograniczenie zmian w core
+### 19.6 Kryteria rozszerzalności
 
-### 24.7 Dokumentowanie rozszerzeń
-
-## 25. Jakość architektury
-
-### 25.1 SOLID w generatorze
-
-### 25.2 DRY w generatorze
-
-### 25.3 Open/closed principle
-
-### 25.4 Natywność wygenerowanego kodu
-
-### 25.5 Czytelność i samodokumentujący się kod
-
-### 25.6 Granice odpowiedzialności modułów
-
-## 26. Bezpieczeństwo aplikacyjne w zakresie projektu
-
-### 26.1 JWT
-
-### 26.2 Hashowanie haseł
-
-### 26.3 CORS
-
-### 26.4 Zmienne środowiskowe
-
-### 26.5 Zakres bezpieczeństwa poza projektem
-
-## 27. Decyzje i kompromisy architektoniczne
-
-### 27.1 Dlaczego frontend jest niezależny od backendu
-
-### 27.2 Dlaczego backend i baza są sprzężone
-
-### 27.3 Dlaczego baza danych wynika z backend-db stacka
-
-### 27.4 Dlaczego kontrakty zamiast adapterów
-
-### 27.5 Dlaczego dopuszczalne są kontrolowane powtórzenia
-
-### 27.6 Dlaczego pipeline jest zarządzany przez core
-
-### 27.7 Dlaczego wygenerowany projekt nie zależy od generatora
-
-## 28. Powiązanie architektury z kryteriami akceptacyjnymi
-
-### 28.1 Kryteria generatora
-
-### 28.2 Kryteria wspieranych kombinacji
-
-### 28.3 Kryteria wygenerowanego projektu
-
-### 28.4 Kryteria kontraktów
-
-### 28.5 Kryteria idempotentności i wznawiania
-
-### 28.6 Kryteria rozszerzalności
-
-## 29. Elementy poza zakresem architektury
+## 20 Elementy poza zakresem architektury
