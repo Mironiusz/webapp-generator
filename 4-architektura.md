@@ -717,7 +717,7 @@ Lista endpointów, których oczekuje frontend i które musi zagwarantować backe
 
 ### 12.3 Kontrakt danych backend-db
 
-Tabele domenowe, jakie muszą zawrzeć się w bazie danych oraz struktura ich kolumn i typów.
+Tabele domenowe, jakie muszą zawrzeć się w bazie danych oraz struktura ich kolumn i typów. Tabele typowe dla różnych frameworków pozostają dla nich natywne i nie będą ograniczane kontraktami.
 
 ### 12.4 Zgodność template packów z kontraktami
 
@@ -831,80 +831,153 @@ Renderer jedynie kopiuje pliki lub skleja zawartość plików według prostego s
 
 ## 15 Verification
 
-### 15.1 Rola verification
+Verification to proces testujący wygenerowany projekt przed przeniesieniem go do katalogu docelowego.
+Będzie on ostatnim krokiem pipeline'u, a jego wynikiem będzie potwierdzenie, że wygenerowany projekt działa poprawinie.
 
-### 15.2 Verification jako krok pipeline'u zarządzany przez core
+Weryfikacja będzie składała się z kilku elementów:
 
-### 15.3 Verification wygenerowanego projektu
-
-### 15.4 Verification kontraktu HTTP API
-
-### 15.5 Verification kontraktu danych
-
-### 15.6 Verification Docker Compose
-
-### 15.7 Verification testów
-
-### 15.8 Verification macierzy wspieranych kombinacji
-
-### 15.9 Zachowanie po nieudanej verification
+- uruchomienie testów jednostkowych backend-db stacka
+- uruchomienie testów jednostkowych frontendu
+- uruchomienie testów integracyjnych
+- uruchomienie testu typu happy path
 
 ## 16 Statistics
 
-### 16.1 Rola statystyk
+Statystyki pozwolą podsumować i porównać różne template packi. Do tego, dają użytkownikowi bieżącą informację o postępie procesu generacji. Zbierane są:
 
-### 16.2 Statystyki zbierane przez core
-
-### 16.3 Statystyki kroków pipeline'u
-
-### 16.4 Statystyki verification
-
-### 16.5 Raport końcowy generacji
+- czas całej generacji
+- czas poszczególnych etapów
+- wybraną kombinację technologiczną
+- liczbę wygenerowanych plików
+- liczbę użytych template packów
+- status verification
+- informację o błędzie, jeśli wystąpił
 
 ## 17 Struktura katalogów generatora
 
-### 17.1 Proponowana struktura główna
-
-### 17.2 Katalog core
-
-### 17.3 Katalog contracts
-
-### 17.4 Katalog template_packs
-
-### 17.5 Katalog verification
-
-### 17.6 Katalog tests
-
-### 17.7 Katalog docs
+|--/core
+|--/contracts
+|--/template_packs
+|--/verification
+|--/docs
+|--/docker
+|--/TEMP
+|--main.py
+|--.env
+|--.env.example
+|--README.md
+|--docker-compose.yml
 
 ## 18 Struktura wygenerowanego projektu
 
-### 18.1 Struktura root projektu
-
-### 18.2 Struktura frontendu
-
-### 18.3 Struktura backendu
-
-### 18.4 Pliki środowiskowe
-
-### 18.5 Pliki Docker
-
-### 18.6 README.md
-
-### 18.7 Testy
+|--/docs
+|--/frontend
+|--/backend
+|--/database
+|--.env
+|--.env.example
+|--README.md
+|--docker-compose.yml
 
 ## 19 Powiązanie architektury z kryteriami akceptacyjnymi
 
 ### 19.1 Kryteria generatora
 
+Za spełnienie kryteriów dotyczących działania generatora odpowiada przede wszystkim core.
+
+Core obsługuje uruchomienie generatora jako narzędzia CLI, wczytanie danych wejściowych, normalizację konfiguracji, walidację, przygotowanie planu generacji, wykonanie pipeline'u oraz zebranie statystyk.
+
+Tryb kreatora oraz tryb pliku konfiguracyjnego są sprowadzane do tego samego modelu konfiguracji. Dzięki temu dalsze etapy generatora działają tak samo niezależnie od źródła danych wejściowych.
+
+Walidacja konfiguracji przed rozpoczęciem generacji pozwala spełnić kryteria dotyczące wykrywania błędnych danych wejściowych, niewspieranych technologii, niewspieranych kombinacji, konfliktów portów oraz niepoprawnego katalogu docelowego.
+
 ### 19.2 Kryteria wspieranych kombinacji
+
+Za spełnienie kryteriów dotyczących wspieranych kombinacji technologicznych odpowiadają template registry, manifesty template packów oraz generation plan.
+
+Każda wspierana technologia jest dostarczana przez odpowiedni template pack. Generator nie wybiera frameworków przez warunki zaszyte w core, tylko przez informacje zawarte w manifestach. Dzięki temu możliwe jest sprawdzenie, czy dla wskazanej konfiguracji istnieje komplet wymaganych template packów.
+
+W podstawowym zakresie projektu obsługiwane są kombinacje wynikające ze specyfikacji:
+
+- Vue + FastAPI + SQLite
+- React + FastAPI + SQLite
+- Vue + Django + PostgreSQL
+- React + Django + PostgreSQL
+
+Niewspierane kombinacje są odrzucane na etapie walidacji, zanim generator rozpocznie zapis plików.
 
 ### 19.3 Kryteria wygenerowanego projektu
 
+Za spełnienie kryteriów dotyczących wygenerowanego projektu odpowiadają template packi, rendering, output oraz verification.
+
+Template packi dostarczają pliki źródłowe, konfigurację środowiskową, pliki Docker, testy oraz dokumentację. Rendering odpowiada za fizyczne utworzenie struktury projektu w katalogu roboczym. Output odpowiada za przeniesienie zweryfikowanego projektu do katalogu docelowego.
+
+Wygenerowany projekt musi zawierać co najmniej:
+
+- frontend
+- backend
+- docker-compose.yml
+- .env
+- .env.example
+- README.md
+- testy
+
+Projekt po wygenerowaniu nie może zależeć runtime'owo od generatora.
+
 ### 19.4 Kryteria kontraktów
+
+Za spełnienie kryteriów dotyczących kontraktów odpowiadają kontrakt HTTP API, kontrakt danych backend-db oraz verification.
+
+Kontrakt HTTP API zapewnia spójność komunikacji między frontendem i backendem. Każdy frontend korzysta z tych samych endpointów, a każdy backend musi te endpointy udostępnić zgodnie ze specyfikacją.
+
+Kontrakt danych backend-db określa minimalne wymagania wobec danych potrzebnych do działania mechanizmu rejestracji, logowania i pobierania aktualnego użytkownika. Kontrakt danych nie wymusza identycznej fizycznej struktury tabel we wszystkich backendach, ale wymaga, aby każdy backend-db stack zapewniał wymagane zachowanie.
+
+Verification sprawdza, czy wygenerowany projekt spełnia kontrakt API, czy backend komunikuje się z bazą danych oraz czy działa podstawowy przepływ rejestracji, logowania i pobrania danych aktualnego użytkownika.
 
 ### 19.5 Kryteria idempotentności i wznawiania
 
+Za spełnienie kryteriów dotyczących idempotentności i wznawiania odpowiadają state, pipeline, staging oraz output.
+
+State przechowuje informacje o konfiguracji, hashu konfiguracji, wykonanych krokach, aktualnym kroku i ewentualnym błędzie. Dzięki temu core może rozpoznać, czy można wznowić poprzedni proces generacji, czy należy rozpocząć nowy run.
+
+Pipeline wykonuje generację jako uporządkowaną listę kroków. Krok zostaje uznany za zakończony dopiero po pełnym sukcesie. Jeśli krok zakończy się błędem, nie zostaje zapisany jako ukończony.
+
+Staging chroni katalog docelowy przed częściowo wygenerowanym projektem. Projekt trafia do final output dopiero po zakończeniu generacji i pozytywnej weryfikacji. Dzięki temu nieudana generacja nie powinna zostawić uszkodzonego wyniku w katalogu docelowym.
+
 ### 19.6 Kryteria rozszerzalności
 
+Za spełnienie kryteriów dotyczących rozszerzalności odpowiadają template packi, manifesty, template registry, kontrakty oraz generation plan.
+
+Nowa technologia powinna być dodawana jako nowy template pack. Core nie powinien wymagać istotnych zmian przy dodaniu nowego frontendu albo nowego backend-db stacka.
+
+Frontend musi być zgodny z kontraktem HTTP API. Backend-db stack musi być zgodny z kontraktem HTTP API oraz kontraktem danych. Dzięki temu nowe technologie mogą być dodawane niezależnie od istniejących, bez naruszania już obsługiwanych kombinacji.
+
+Manifest template packa określa informacje potrzebne do użycia danej technologii przez generator. Dzięki temu registry i planner mogą wykrywać dostępność, kompatybilność oraz konflikty między template packami.
+
 ## 20 Elementy poza zakresem architektury
+
+Architektura opisuje sposób działania generatora oraz zasady tworzenia wygenerowanego projektu. Nie opisuje elementów, które zgodnie ze specyfikacją pozostają poza zakresem podstawowej wersji projektu.
+
+Poza podstawowym zakresem architektury znajdują się:
+
+- konfiguracja Kubernetes
+- TLS i obsługa certyfikatów
+- Nginx
+- reverse proxy
+- load balancing
+- automatyczne CI/CD
+- deployment na serwer produkcyjny
+- osobne kontenery dev i prod
+- SSO
+- MFA
+- reset hasła
+- potwierdzanie adresu email
+- wysyłka wiadomości email
+- integracja z dostawcą poczty
+- pełny system zarządzania tożsamością użytkownika
+- monitoring produkcyjny
+- logowanie produkcyjne na poziomie infrastruktury serwerowej
+
+Brak tych elementów nie oznacza, że architektura uniemożliwia ich dodanie w przyszłości. Oznacza jedynie, że nie są one wymagane do spełnienia podstawowego zakresu projektu i nie będą podstawą oceny poprawności generatora.
+
+Generator ma tworzyć kompletny, uruchamialny i rozszerzalny szkielet aplikacji webowej, ale nie ma zastępować pełnej platformy deploymentowej ani produkcyjnej infrastruktury serwerowej.

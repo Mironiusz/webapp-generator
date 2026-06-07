@@ -26,7 +26,7 @@ Następnie generator tworzy projekt zawierający:
 - moduły komunikują się ze sobą
 - na frontendzie działa routing, strona logowania i rejestracji oraz strona app
 - backend wystawia spójny kontrakt HTTP API niezależnie od wybranego frameworka, obejmujący health, register, login (prosty JWT) i CORS
-- backend-db stack dostarcza minimalny model użytkownika,  migracje oraz dane wymagane do działania podstawowego mechanizmu uwierzytelniania
+- backend-db stack dostarcza minimalny model użytkownika, migracje oraz dane wymagane do działania podstawowego mechanizmu uwierzytelniania
 - powstają bazowe testy integracyjne dla połączenia frontend-backend i backend-db
 - powstają bazowe testy jednostkowe dla backendu
 

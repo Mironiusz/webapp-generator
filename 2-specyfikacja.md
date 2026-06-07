@@ -201,9 +201,9 @@ Endpoint służy do utworzenia konta użytkownika.
 
 ```json
 {
-    "id": 1,
-    "email": "admin@example.com",
-    "is_active": true
+	"id": 1,
+	"email": "admin@example.com",
+	"is_active": true
 }
 ```
 
@@ -219,7 +219,7 @@ Endpoint służy do utworzenia konta użytkownika.
 
 ```json
 {
-    "detail": "User already exists"
+	"detail": "User already exists"
 }
 ```
 
