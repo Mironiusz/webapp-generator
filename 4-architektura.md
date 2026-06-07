@@ -94,7 +94,7 @@ Template pack jest podstawową jednostką rozszerzalności generatora. Nowa tech
 
 Opis template packa zawierający informacje potrzebne generatorowi do jego użycia.
 
-Manifest określa między innymi typ template packa, obsługiwaną technologię, wymagane kontrakty, zapewniane funkcjonalności, wymagane dane wejściowe, generowane pliki oraz kompatybilność z innymi elementami generatora.
+Manifest określa między innymi typ template packa, obsługiwaną technologię, generowane pliki oraz inne, potrzebne informacje.
 
 ### 2.9 Template registry
 
@@ -170,7 +170,7 @@ Idempotentność jest szczególnie ważna przy błędach generacji, wznowieniu p
 
 Właściwość generatora oznaczająca, że ta sama konfiguracja powinna prowadzić do takiej samej struktury wygenerowanego projektu.
 
-Deterministyczność dotyczy przede wszystkim struktury katalogów, wygenerowanych plików, dobranych template packów i planu generacji. Wartości losowe, takie jak sekrety, powinny być jawnie zapisane albo generowane w kontrolowany sposób.
+Deterministyczność dotyczy przede wszystkim struktury katalogów, wygenerowanych plików, dobranych template packów i planu generacji. Wartości losowe i sekrety, powinny być jawnie zapisane albo generowane w kontrolowany sposób.
 
 ### 2.22 Artefakt
 
@@ -296,7 +296,7 @@ Dzięki temu, w przypadku rozszerzania o kolejne technologie, core nie powinien 
 
 ### 5.2 Pipeline
 
-Zarządzany przez core iterowalny proces, przechodzący przez renderowanie, weryfikację i output. Pipeline umożliwia przechodzenie ze stanu do stanu w przód, ale też pozwala się cofać.
+Zarządzany przez core iterowalny proces, przechodzący przez renderowanie, weryfikację i output. Pipeline umożliwia przechodzenie ze stanu do stanu w przód, a informacje o artefaktach i efektach ubocznych kroków pozwalają core'owi wykonać cleanup albo wznowienie procesu.
 
 ### 5.3 Template packs
 
@@ -419,7 +419,7 @@ Walidacja obejmuje sprawdzenie:
 - czy output_dir jest poprawny
 - czy wymagane wartości env istnieją albo mogą zostać wygenerowane
 - czy istnieją template packi potrzebne dla tej konfiguracji
-- czy z manifestów packów wynika ich kompatybilność i brak konfliktów
+- czy wybrane template packi deklarują wymagane kontrakty oraz czy nie powodują konfliktów plików, portów, zmiennych środowiskowych i contributions
 
 ### 6.7 Budowanie planu generacji
 
@@ -621,7 +621,7 @@ Jeśli core podejmie decyzję o wznowieniu generacji, stan jest zrównywany do t
 
 ### 9.1 Rola stagingu
 
-Staging zapewnia, że katalog docelowy nie zostaje zaśmiecony niedziałającym projektem. Staging znajduje się w tymczasowym folderze domyślnym. Przy uruchomieniu nowego runa staging jest zawsze czyszczony. Gwarantuje to, że na dysku nie pozostanie żaden niesprawdzony, niedziałający efekt generacji.
+Staging zapewnia, że katalog docelowy nie zostaje zaśmiecony niedziałającym projektem. Staging znajduje się w tymczasowym folderze domyślnym. Staging jest czyszczony tylko przy rozpoczęciu nowej generacji albo po wykryciu zmiany hasha konfiguracji. Przy wznowieniu generator odtwarza stan stagingu albo używa istniejącego stagingu powiązanego z tym samym run_id i config_hash. Gwarantuje to, że na dysku nie pozostanie żaden niesprawdzony, niedziałający efekt generacji.
 
 ### 9.2 Katalog roboczy generacji
 
@@ -658,12 +658,13 @@ Oba zakończą się utworzeniem identycznej konfiguracji. Różnice są wyłącz
 
 CLI normalizuje i weryfikuje dane wprowadzone w każdym kroku i od razu daje użytkownikowi możliwość poprawienia danych.
 Plik konfiguracyjny jest sprawdzany jako całość. Niepoprawny plik kończy się rzuceniem błędu z informacją, co należy zmienić.
+Niektóre opcje, jak na przykład zajęty katalog lub chwilowo niedostępny port, wymagają użycia w pliku konfiguracyjnym flagi --force.
 
 ### 10.3 Konfiguracja projektu
 
 Ścieżka bezwzględna do katalogu docelowego oraz jego nazwa.
 
-Ścieżka musi prowadzić do istniejącego miejsca na dysku, a katalog musi umożliwiać zapis i odczyt plików.
+Ścieżka musi prowadzić do istniejącego miejsca na dysku, a katalog musi umożliwiać zapis i odczyt plików. Jeśli docelowy katalog nie jest pusty, należy potwierdzić uzycie go - wtedy zawartość zostanie wyczyszczona.
 
 ### 10.4 Konfiguracja frontendu
 
@@ -675,7 +676,7 @@ Wybór template packa z dostępnych backendów. Plik konfiguracyjny jest walidow
 
 ### 10.6 Konfiguracja portów
 
-Plik konfiguracyjny wymaga podania portów pod oczekiwane usługi. CLI będzie od razu weryfikowało, czy port jest dostępny. Nie można użyć niedostępnego portu.
+Plik konfiguracyjny wymaga podania portów pod oczekiwane usługi. CLI będzie od razu weryfikowało, czy port nie ma konfliktów i czy jest chwilowo dostępny. Nie można użyć portu z konfliktem, ale port niedostępny jest przepuszczany z ostrzeżeniem wymagającym potwierdzenia.
 
 ### 10.7 Konfiguracja środowiskowa
 
@@ -717,7 +718,7 @@ Lista endpointów, których oczekuje frontend i które musi zagwarantować backe
 
 ### 12.3 Kontrakt danych backend-db
 
-Tabele domenowe, jakie muszą zawrzeć się w bazie danych oraz struktura ich kolumn i typów. Tabele typowe dla różnych frameworków pozostają dla nich natywne i nie będą ograniczane kontraktami.
+Minimalne wymagania funkcjonalne i strukturalne wobec danych wymaganych do działania mechanizmu uwierzytelniania. Kontrakt danych nie wymusza identycznej fizycznej struktury tabel, ale wymaga, aby backend-db stack zapewniał możliwość identyfikacji użytkownika, rejestracji, logowania, weryfikacji hasła jako hasha oraz oznaczenia użytkownika jako aktywnego albo nieaktywnego.
 
 ### 12.4 Zgodność template packów z kontraktami
 
@@ -757,11 +758,13 @@ Dane zawarte w manifeście (\* oznacza daną opcjonalną):
 - \*Wersja frameworka
 - Język programowania
 - Poziom stabilności {alfa, beta, stable}
+- Uruchomienie testów (komenda + ścieżka)
 - Lista zależności wymaganych przez template pack z zewnątrz
 - Lista zależności, jakie template pack zainstaluje
 - Zapotrzebowanie na zasoby
 - Zapotrzebowanie na porty
-- Dostarczane templaty częściowe
+- Kontrybucje
+- Generowane pliki
 
 ### 13.5 Ograniczenie logiki w template'ach
 
@@ -785,10 +788,6 @@ Zawiera konfigurację konteneryzacji. Jest wymagany.
 
 Zawiera konfigurację związaną z infrastrukturą inną niż konteneryzacja. Serwer, ci/cd i tak dalej. Nie jest wymagany.
 
-#### 13.6.5 Verification pack
-
-Zawiera testy niezależne od użytego frameworka oraz procedury weryfikacji.
-
 ### 13.7 Wybór template packów
 
 #### 13.7.1 Rejestr template packów
@@ -797,12 +796,11 @@ Rejestr jest tworzony podczas każdego wykonania programu. Wszystkie dostępne t
 
 #### 13.7.2 Dobór template packów
 
-Żeby projekt zadziałał, muszą być odnalezione minimum cztery template packi, po jednym z każdej kategorii:
+Żeby projekt zadziałał, muszą być odnalezione minimum trzy template packi, po jednym z każdej kategorii:
 
 - Frontend
 - Backend-db stack
 - Konteneryzacja
-- Verification
 
 Inne nie są obowiązkowe, a projekt zadziała bez nich.
 
@@ -824,6 +822,19 @@ Pliki właścicielskie są bardzo proste do wyrenderowania. Wystarczy skopiować
 ### 14.3 Renderowanie plików składanych
 
 Pliki składane tworzone są z templatów częściowych. Jeden z kroków pipeline'u tworzy wszystkie pliki składane i tworzy ich wspólny początek, a następnie dokleja części z kontrybuujących template packów.
+
+Pliki są zawsze składane w tej samej kolejności:
+
+- Wstęp
+- Konteneryzacja
+- Frontend
+- Backend
+- Inne template packi, chociażby alfabetycznie
+- Zakończenie
+
+Jeśli któryś z template packów nie kontrybuuje do pliku, kolejność i tak pozostaje zachowana - po prostu bez niego.
+
+Dla plików strukturalnych, takich jak docker-compose.yml, contributions są składane w ramach nazwanych sekcji, na przykład services, volumes, networks i env. W obrębie sekcji obowiązuje stała kolejność składania.
 
 ### 14.4 Ograniczenie logiki w rendererze
 
@@ -867,17 +878,21 @@ Statystyki pozwolą podsumować i porównać różne template packi. Do tego, da
 |--.env.example
 |--README.md
 |--docker-compose.yml
+|--.gitignore
+|--.dockerignore
 
 ## 18 Struktura wygenerowanego projektu
 
 |--/docs
 |--/frontend
 |--/backend
-|--/database
+|--/database \*opcjonalny
 |--.env
 |--.env.example
 |--README.md
 |--docker-compose.yml
+|--.gitignore
+|--.dockerignore
 
 ## 19 Powiązanie architektury z kryteriami akceptacyjnymi
 

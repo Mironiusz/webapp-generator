@@ -89,16 +89,16 @@ Generowane są:
 
 ### 7.1 Struktura wygenerowanego projektu
 
-```
-frontend/
-backend/
-docker-compose.yml
-.env
-.env.example
-.gitignore
-.dockerignore
-README.md
-```
+|--/docs
+|--/frontend
+|--/backend
+|--/database \*opcjonalny
+|--.env
+|--.env.example
+|--README.md
+|--docker-compose.yml
+|--.gitignore
+|--.dockerignore
 
 ## 8. Wymagania funkcjonalne generatora
 

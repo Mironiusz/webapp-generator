@@ -98,16 +98,16 @@ Typ weryfikacji: automatyczna.
 
 Kryterium jest spełnione, jeśli wygenerowany projekt zawiera co najmniej:
 
-```text
-frontend/
-backend/
-docker-compose.yml
-.env
-.env.example
-.gitignore
-.dockerignore
-README.md
-```
+|--/docs
+|--/frontend
+|--/backend
+|--/database \*opcjonalny
+|--.env
+|--.env.example
+|--README.md
+|--docker-compose.yml
+|--.gitignore
+|--.dockerignore
 
 Typ weryfikacji: automatyczna.
 
@@ -471,11 +471,16 @@ Typ weryfikacji: automatyczna i ręczna.
 
 Kryterium jest spełnione, jeśli nowa technologia musi jawnie określić:
 
-- jakie pliki generuje
-- jakie dane wejściowe wykorzystuje
-- jakie kontrakty spełnia
-- jakie testy powinny potwierdzić jej poprawność
-- z jakimi elementami generatora jest kompatybilna
+- Nazwa
+- Rodzaj
+- Wersja template packa
+- \*Nazwa i wersja frameworka
+- Język programowania
+- Poziom stabilności
+- Uruchomienie testów
+- Lista zależności
+- Zapotrzebowanie na zasoby i porty
+- Kontrybucje i generowane pliki
 
 Typ weryfikacji: ręczna.
 
