@@ -765,6 +765,8 @@ Dane zawarte w manifeście (\* oznacza daną opcjonalną):
 - Zapotrzebowanie na porty
 - Kontrybucje
 - Generowane pliki
+- \*Zapewniane kontrakty
+- \*Wymagane kontrakty
 
 ### 13.5 Ograniczenie logiki w template'ach
 
