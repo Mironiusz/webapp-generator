@@ -26,3 +26,12 @@ indent-style = "space"
 line-ending = "auto"
 skip-magic-trailing-comma = false
 docstring-code-format = true
+
+[tool.pytest.ini_options]
+addopts = "-ra -q --import-mode=importlib"
+testpaths = [
+    "tests",
+]
+pythonpath = [
+    ".",
+]

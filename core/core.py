@@ -1,24 +1,29 @@
+from config.logger import get_logger
+
+logger = get_logger(__name__)
+
+
 class Core:
     def __init__(self):
         print("Core created")
 
     def _run_config(self):
-        pass
+        print("[mock] Config loaded")
 
     def _run_normalizer(self):
-        pass
+        print("[mock] Config normalized")
 
     def _run_validator(self):
-        pass
+        print("[mock] Config validated")
 
     def _run_pipeline(self):
-        pass
+        print("[mock] Pipeline ran")
 
     def _pass_result(self):
-        pass
+        print("[mock] Result project passed")
 
     def _show_stats(self):
-        pass
+        print("[mock] Stats shown")
 
     def run_generator(self):
         self._run_config()

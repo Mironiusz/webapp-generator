@@ -9,5 +9,8 @@
 	},
 	"ruff.nativeServer": "on",
 	"ruff.lint.enable": true,
-	"ruff.configurationPreference": "filesystemFirst"
+	"ruff.configurationPreference": "filesystemFirst",
+
+	"python.testing.pytestEnabled": true,
+	"python.testing.unittestEnabled": false
 }
