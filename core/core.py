@@ -5,25 +5,25 @@ logger = get_logger(__name__)
 
 class Core:
     def __init__(self):
-        print("Core created")
+        logger.info("Core created")
 
     def _run_config(self):
-        print("[mock] Config loaded")
+        logger.info("[mock] Config loaded")
 
     def _run_normalizer(self):
-        print("[mock] Config normalized")
+        logger.info("[mock] Config normalized")
 
     def _run_validator(self):
-        print("[mock] Config validated")
+        logger.info("[mock] Config validated")
 
     def _run_pipeline(self):
-        print("[mock] Pipeline ran")
+        logger.info("[mock] Pipeline ran")
 
     def _pass_result(self):
-        print("[mock] Result project passed")
+        logger.info("[mock] Result project passed")
 
     def _show_stats(self):
-        print("[mock] Stats shown")
+        logger.info("[mock] Stats shown")
 
     def run_generator(self):
         self._run_config()
