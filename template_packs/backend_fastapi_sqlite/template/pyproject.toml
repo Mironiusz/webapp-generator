@@ -3,21 +3,24 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "generator"
+name = "backend"
 version = "0.0.0"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "alembic==1.19.1",
+    "fastapi==0.141.1",
+    "pydantic==2.13.4",
+    "SQLAlchemy==2.0.51",
+    "uvicorn==0.52.1",
+    "bcrypt==5.0.0",
+]
 
 [project.optional-dependencies]
 dev = [
-    "bandit[toml]==1.9.4",
-    "deptry==0.25.1",
+    "httpx2==2.10.0",
     "mypy==2.3.0",
-    "pip-audit==2.10.1",
     "pytest==9.1.1",
-    "pytest-cov==7.1.0",
     "ruff==0.16.2",
-    "vulture==2.16",
 ]
 
 [tool.setuptools]
@@ -36,8 +39,6 @@ exclude = [
     "__pycache__",
     "build",
     "dist",
-    "template_packs",
-    "TEMP",
 ]
 extend-exclude = ["*.md"]
 force-exclude = true
@@ -75,23 +76,12 @@ skip-magic-trailing-comma = false
 docstring-code-format = true
 
 [tool.mypy]
-files = ["config", "core", "main.py"]
+files = ["main.py", "src"]
 cache_dir = ".cache/mypy"
-
-[tool.vulture]
-paths = ["config", "core", "main.py", "tests"]
-ignore_decorators = ["@pytest.fixture"]
-
-[tool.deptry]
-optional_dependencies_dev_groups = ["dev"]
-extend_exclude = ["template_packs", "TEMP"]
-
-[tool.coverage.run]
-data_file = ".cache/coverage"
-source = ["config", "core"]
+plugins = ["pydantic.mypy"]
 
 [tool.pytest.ini_options]
-addopts = "-ra -q --import-mode=importlib"
+addopts = "-ra -q"
 testpaths = ["tests"]
 pythonpath = ["."]
 cache_dir = ".cache/pytest"

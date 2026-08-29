@@ -1,7 +1,12 @@
 __pycache__
 .ruff_cache
-venv
-log
-*.log
 .pytest_cache
+.cache
+venv
+/log
+*.log
 .env
+.coverage
+*.egg-info
+/build
+/dist

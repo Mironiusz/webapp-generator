@@ -29,3 +29,7 @@ Po długim czasie od ostatniej pracy ułożyłem całą strukturę repo. Wykorzy
 ### 29.08.2026
 
 Po sześciu tygodniach w końcu zabieram się z powrotem za pracę.
+
+Przemyślałem sobie kolejność i uważam, że jednak zanim zacznę cokolwiek generować, to muszę mieć działający frontend i backend. Dlatego zaczynam od FastAPI, i w zasadzie stworzę z niego pierwszy template pack.
+
+Gdy zacząłem pisać backend, zdałem sobie sprawę, że brakuje mi jeszcze trochę narzędzi i infrastruktury. Dodałem je.
