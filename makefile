@@ -3,35 +3,38 @@
 PYTHON ?= python
 
 install:
-	pip install -e ".[dev]"
+	$(PYTHON) -m pip install -e ".[dev]"
 
 lint:
-	ruff check .
-	ruff format --check .
+	$(PYTHON) -m ruff check .
+	$(PYTHON) -m ruff format --check .
 
 format:
-	ruff format .
-	ruff check --fix .
+	$(PYTHON) -m ruff format .
+	$(PYTHON) -m ruff check --fix .
 
 typecheck:
-	mypy
+	$(PYTHON) -m mypy
 
 test:
-	pytest
+	$(PYTHON) -m pytest
 
 coverage:
-	pytest --cov --cov-report=term-missing
+	$(PYTHON) -m pytest --cov --cov-report=term-missing
 
 deadcode:
-	vulture
+	$(PYTHON) -m vulture
 
 deps:
-	deptry .
+	$(PYTHON) -m deptry .
 
 security:
-	bandit -r config core main.py
+	$(PYTHON) -m bandit -r config core main.py
 
 audit:
-	pip-audit
+	$(PYTHON) -m pip_audit
 
 check: lint typecheck deadcode deps security audit test
+
+run:
+	$(PYTHON) main.py

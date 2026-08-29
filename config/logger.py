@@ -81,6 +81,8 @@ class Logger:
     _instance: ClassVar[Logger | None] = None
     _lock: ClassVar[threading.RLock] = threading.RLock()
 
+    _initialized: bool
+
     def __new__(cls) -> Self:
         with cls._lock:
             if cls._instance is None:

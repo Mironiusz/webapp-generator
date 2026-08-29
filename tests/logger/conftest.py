@@ -22,7 +22,6 @@ def _reset_application_logging() -> None:
 
         logger.setLevel(logging.NOTSET)
         logger.propagate = True
-        logger.disabled = False
 
 
 @pytest.fixture(autouse=True)
