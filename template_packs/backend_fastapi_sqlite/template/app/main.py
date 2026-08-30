@@ -19,7 +19,7 @@ def build_lifespan(settings: Settings) -> Lifespan[FastAPI]:
     """Buduje handler cyklu życia aplikacji"""
 
     @asynccontextmanager
-    async def lifespan(application: FastAPI) -> AsyncGenerator[LifespanState]:
+    async def lifespan(_application: FastAPI) -> AsyncGenerator[LifespanState]:
         """Konfiguruje logowanie przy starcie aplikacji i domyka zasoby przy jej zatrzymaniu."""
         configure_logging()
         engine = build_engine(settings.database)

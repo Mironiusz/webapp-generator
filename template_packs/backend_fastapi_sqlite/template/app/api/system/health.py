@@ -24,6 +24,6 @@ async def db_connection_check(session: AsyncSession) -> DatabaseStatus:
     return DatabaseStatus.UP
 
 
-async def db_schema_check(session: AsyncSession) -> SchemaStatus:
+async def db_schema_check(_session: AsyncSession) -> SchemaStatus:
     """Sprawdza stan schemy i migracji bazy danych"""
     return SchemaStatus.UNKNOWN

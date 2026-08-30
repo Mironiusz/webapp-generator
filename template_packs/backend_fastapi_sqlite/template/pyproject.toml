@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "backend"
-version = "0.0.0"
+version = "0.0.1"
 requires-python = ">=3.13"
 dependencies = [
     "aiosqlite==0.22.1",
@@ -16,12 +16,12 @@ dependencies = [
     "pydantic-settings==2.15.0",
     "PyJWT==2.13.0",
     "SQLAlchemy==2.0.51",
+    "tzdata==2026.3",
     "uvicorn==0.52.1",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "httpx==0.28.1",
     "httpx2==2.10.0",
     "mypy==2.3.0",
     "pytest==9.1.1",
@@ -65,6 +65,9 @@ select = [
     "N",
     "RUF",
     "G",
+    "ARG",
+    "ASYNC",
+    "DTZ",
 ]
 fixable = ["ALL"]
 
@@ -88,6 +91,7 @@ explicit_package_bases = true
 namespace_packages = true
 cache_dir = ".cache/mypy"
 plugins = ["pydantic.mypy"]
+strict = true
 
 [tool.pytest.ini_options]
 addopts = "-ra -q"
@@ -95,3 +99,24 @@ testpaths = ["tests"]
 pythonpath = ["."]
 cache_dir = ".cache/pytest"
 asyncio_mode = "auto"
+filterwarnings = ["error"]
+
+[tool.alembic]
+script_location = "%(here)s/migrations"
+file_template = "%%(year)d/%%(month).2d/%%(day).2d_%%(hour).2d%%(minute).2d_%%(second).2d_%%(rev)s_%%(slug)s"
+prepend_sys_path = ["."]
+recursive_version_locations = true
+truncate_slug_length = 64
+timezone = "UTC"
+
+[[tool.alembic.post_write_hooks]]
+name = "ruff-check"
+type = "module"
+module = "ruff"
+options = "check --fix REVISION_SCRIPT_FILENAME"
+
+[[tool.alembic.post_write_hooks]]
+name = "ruff-format"
+type = "module"
+module = "ruff"
+options = "format REVISION_SCRIPT_FILENAME"

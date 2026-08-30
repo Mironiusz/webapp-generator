@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from enum import StrEnum
 from functools import lru_cache
+from importlib.metadata import version
 from pathlib import Path
 from typing import Literal, Self
 
@@ -23,6 +24,8 @@ __all__ = [
 _PROJECT_ROOT_PATH = Path(__file__).resolve().parents[2]
 
 _MIN_PRODUCTION_SECRET_LENGTH = 32
+
+_PACKAGE_VERSION = version("backend")
 
 LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
@@ -47,7 +50,7 @@ class ApiSettings(SettingsSection):
     """Ustawienia warstwy HTTP wystawianej przez aplikację."""
 
     title: str = "backend"
-    version: str = "0.0.1"
+    version: str = _PACKAGE_VERSION
     root_path: str = ""
     docs_enabled: bool = True
 
