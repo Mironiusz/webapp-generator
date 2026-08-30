@@ -7,5 +7,5 @@ CREATE TABLE users (
     pass_hash TEXT NOT NULL,
     is_active BOOLEAN NOT NULL,
     created_at DATETIME NOT NULL,
-    updated_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL
 );

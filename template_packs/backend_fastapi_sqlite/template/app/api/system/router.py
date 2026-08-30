@@ -50,7 +50,7 @@ async def get_db_status(
     if database_status is DatabaseStatus.UP:
         service_status = ServiceStatus.OK
 
-    response.status_code = SERVICE_STATUS_RESPONSE_CODE_MAP.get(service_status)
+    response.status_code = SERVICE_STATUS_RESPONSE_CODE_MAP[service_status]
 
     return GetDatabaseStatus(
         status=service_status,
@@ -75,7 +75,7 @@ async def get_ready_status(
     if schema_status is SchemaStatus.READY:
         service_status = ServiceStatus.OK
 
-    response.status_code = SERVICE_STATUS_RESPONSE_CODE_MAP.get(service_status)
+    response.status_code = SERVICE_STATUS_RESPONSE_CODE_MAP[service_status]
 
     return GetReadinessStatus(
         status=service_status,
