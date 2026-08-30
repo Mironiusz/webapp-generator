@@ -58,6 +58,9 @@ select = [
     "N",
     "RUF",
     "G",
+    "ARG",
+    "ASYNC",
+    "DTZ",
 ]
 fixable = ["ALL"]
 
@@ -75,8 +78,12 @@ skip-magic-trailing-comma = false
 docstring-code-format = true
 
 [tool.mypy]
-files = ["config", "core", "main.py"]
+files = ["config", "core", "main.py", "tests"]
+mypy_path = "."
+explicit_package_bases = true
+namespace_packages = true
 cache_dir = ".cache/mypy"
+strict = true
 
 [tool.vulture]
 paths = ["config", "core", "main.py", "tests"]
@@ -95,3 +102,4 @@ addopts = "-ra -q --import-mode=importlib"
 testpaths = ["tests"]
 pythonpath = ["."]
 cache_dir = ".cache/pytest"
+filterwarnings = ["error"]

@@ -4,11 +4,13 @@ import logging
 import sys
 import threading
 from pathlib import Path
-from typing import ClassVar, Final, Self, cast, final
+from typing import ClassVar, Final, Self, final
 
 from .config import BASE_LOGGER_NAME, CONSOLE_LOG_LEVEL, FILE_LOG_LEVEL, LOG_FILE_PATH
 
 __all__ = [
+    "CONSOLE_LOG_LEVEL",
+    "FILE_LOG_LEVEL",
     "configure_logging",
     "get_logger",
 ]
@@ -90,7 +92,7 @@ class Logger:
                 instance._initialized = False
                 cls._instance = instance
 
-            return cast(Self, cls._instance)
+            return cls._instance
 
     def __init__(self) -> None:
         if self._initialized:

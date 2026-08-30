@@ -26,10 +26,12 @@ Zakończyłem pracę nad architekturą. Wysłałem dokumentację do zatwierdzeni
 
 Po długim czasie od ostatniej pracy ułożyłem całą strukturę repo. Wykorzystałem logger z innego projektu, poukładałem foldery i jestem gotowy do pisania kodu.
 
-### 29.08.2026
+### 29.08.2026, 30.08.2026
 
 Po sześciu tygodniach w końcu zabieram się z powrotem za pracę.
 
 Przemyślałem sobie kolejność i uważam, że jednak zanim zacznę cokolwiek generować, to muszę mieć działający frontend i backend. Dlatego zaczynam od FastAPI, i w zasadzie stworzę z niego pierwszy template pack.
 
 Gdy zacząłem pisać backend, zdałem sobie sprawę, że brakuje mi jeszcze trochę narzędzi i infrastruktury. Dodałem je.
+
+Stworzyłem plan implementacji backendu i rozpocząłem implementację. Idzie całkiem nieźle.
