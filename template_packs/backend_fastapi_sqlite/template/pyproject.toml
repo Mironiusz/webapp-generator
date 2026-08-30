@@ -7,19 +7,25 @@ name = "backend"
 version = "0.0.0"
 requires-python = ">=3.13"
 dependencies = [
+    "aiosqlite==0.22.1",
     "alembic==1.19.1",
+    "bcrypt==5.0.0",
     "fastapi==0.141.1",
+    "greenlet==3.5.5",
     "pydantic==2.13.4",
+    "pydantic-settings==2.15.0",
+    "PyJWT==2.13.0",
     "SQLAlchemy==2.0.51",
     "uvicorn==0.52.1",
-    "bcrypt==5.0.0",
 ]
 
 [project.optional-dependencies]
 dev = [
+    "httpx==0.28.1",
     "httpx2==2.10.0",
     "mypy==2.3.0",
     "pytest==9.1.1",
+    "pytest-asyncio==1.4.0",
     "ruff==0.16.2",
 ]
 
@@ -76,7 +82,10 @@ skip-magic-trailing-comma = false
 docstring-code-format = true
 
 [tool.mypy]
-files = ["main.py", "src"]
+files = ["app", "tests"]
+mypy_path = "."
+explicit_package_bases = true
+namespace_packages = true
 cache_dir = ".cache/mypy"
 plugins = ["pydantic.mypy"]
 
@@ -85,3 +94,4 @@ addopts = "-ra -q"
 testpaths = ["tests"]
 pythonpath = ["."]
 cache_dir = ".cache/pytest"
+asyncio_mode = "auto"

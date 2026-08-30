@@ -3,26 +3,26 @@
 PYTHON ?= python
 
 install:
-	pip install -e ".[dev]"
+	$(PYTHON) -m pip install -e ".[dev]"
 
 lint:
-	ruff check .
-	ruff format --check .
+	$(PYTHON) -m ruff check .
+	$(PYTHON) -m ruff format --check .
 
 format:
-	ruff format .
-	ruff check --fix .
+	$(PYTHON) -m ruff format .
+	$(PYTHON) -m ruff check --fix .
 
 typecheck:
-	mypy
+	$(PYTHON) -m mypy
 
 test:
-	pytest
+	$(PYTHON) -m pytest
 
 check: lint typecheck test
 
 run:
-	$(PYTHON) -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
+	$(PYTHON) -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 
 migrate:
-	alembic upgrade head
+	$(PYTHON) -m alembic upgrade head

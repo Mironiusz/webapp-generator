@@ -1,9 +1,11 @@
 .env
+.env.local
 __pycache__
 venv
 .venv
 logs
 *.log
+log/
 .coverage
 .pytest-*
 .cache/*
