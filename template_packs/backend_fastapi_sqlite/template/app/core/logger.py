@@ -3,10 +3,9 @@ from __future__ import annotations
 import logging
 import sys
 import threading
-from pathlib import Path
 from typing import ClassVar, Final, Self, cast, final
 
-from .config import BASE_LOGGER_NAME, CONSOLE_LOG_LEVEL, FILE_LOG_LEVEL, LOG_FILE_PATH
+from .config import LogLevel, get_settings
 
 __all__ = [
     "configure_logging",
@@ -27,17 +26,6 @@ _COLOR_BY_LEVEL: Final[dict[int, str]] = {
     logging.ERROR: "\x1b[31m",
     logging.CRITICAL: "\x1b[1;31m",
 }
-
-_VALID_LOG_LEVELS: Final[frozenset[int]] = frozenset(
-    {
-        logging.NOTSET,
-        logging.DEBUG,
-        logging.INFO,
-        logging.WARNING,
-        logging.ERROR,
-        logging.CRITICAL,
-    }
-)
 
 
 class _LevelAwareFormatter(logging.Formatter):
@@ -114,34 +102,18 @@ class Logger:
             return self._base_logger
 
     def _load_config(self) -> None:
-        """Wczytuje konfigurację loggera z modułu config."""
-        self._base_logger_name = BASE_LOGGER_NAME
-        self._console_log_level = CONSOLE_LOG_LEVEL
-        self._file_log_level = FILE_LOG_LEVEL
-        self._log_file_path = Path(LOG_FILE_PATH)
+        """Wczytuje konfigurację loggera z sekcji log w ustawieniach aplikacji."""
+        log_settings = get_settings().log
+
+        self._base_logger_name = log_settings.base_name
+        self._console_log_level = _resolve_log_level(log_settings.console_level)
+        self._file_log_level = _resolve_log_level(log_settings.file_level)
+        self._log_file_path = log_settings.file_path
 
     def _validate_config(self) -> None:
-        """Odrzuca niepoprawną konfigurację bez stosowania fallbacków."""
-        if not isinstance(self._base_logger_name, str) or not self._base_logger_name.strip():
-            raise ValueError("BASE_LOGGER_NAME musi być niepustym stringiem")
-
-        self._validate_log_level(
-            setting_name="CONSOLE_LOG_LEVEL",
-            level=self._console_log_level,
-        )
-        self._validate_log_level(
-            setting_name="FILE_LOG_LEVEL",
-            level=self._file_log_level,
-        )
-
-    @staticmethod
-    def _validate_log_level(setting_name: str, level: int) -> None:
-        """Sprawdza, czy poziom jest standardową wartością modułu logging."""
-        if isinstance(level, bool) or not isinstance(level, int):
-            raise TypeError(f"{setting_name} musi być wartością typu int z modułu logging")
-
-        if level not in _VALID_LOG_LEVELS:
-            raise ValueError(f"{setting_name} ma nieobsługiwaną wartość: {level}")
+        """Pilnuje, by pusta nazwa bazowa nie podpięła konfiguracji pod root logger."""
+        if not self._base_logger_name.strip():
+            raise ValueError("LOG__BASE_NAME musi być niepustym stringiem")
 
     def _configure_base_logger(self) -> logging.Logger:
         """Buduje bazowy logger z handlerem konsolowym i plikowym."""
@@ -206,20 +178,26 @@ def get_logger(name: str) -> logging.Logger:
     return logging.getLogger(_normalize_logger_name(name))
 
 
+def _resolve_log_level(level: LogLevel) -> int:
+    """Zamienia nazwę poziomu z konfiguracji na liczbę rozumianą przez moduł logging."""
+    return logging.getLevelNamesMapping()[level]
+
+
 def _normalize_logger_name(name: str) -> str:
     """Buduje nazwę loggera należącą do przestrzeni nazw aplikacji."""
     if not isinstance(name, str):
         raise TypeError("Nazwa loggera musi być stringiem")
 
+    base_logger_name = get_settings().log.base_name
     normalized_name = name.strip()
 
     if not normalized_name:
         raise ValueError("Nazwa loggera nie może być pusta")
 
     if normalized_name == "__main__":
-        return BASE_LOGGER_NAME
+        return base_logger_name
 
-    if normalized_name == BASE_LOGGER_NAME or normalized_name.startswith(f"{BASE_LOGGER_NAME}."):
+    if normalized_name == base_logger_name or normalized_name.startswith(f"{base_logger_name}."):
         return normalized_name
 
-    return f"{BASE_LOGGER_NAME}.{normalized_name}"
+    return f"{base_logger_name}.{normalized_name}"

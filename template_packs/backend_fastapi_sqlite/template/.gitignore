@@ -13,3 +13,4 @@ log/
 *.egg-info
 build
 dist
+*.db
