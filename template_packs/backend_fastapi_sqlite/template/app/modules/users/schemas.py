@@ -21,10 +21,4 @@ class UsersRead(BaseModel):
 class UserCreate(BaseModel):
     username: str
     email: str
-    pass_plain: str
-
-
-class UserCreateResponse(BaseModel):
-    id: int
-    username: str
-    email: str
+    password: str
