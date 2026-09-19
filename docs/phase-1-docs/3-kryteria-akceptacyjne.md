@@ -186,42 +186,43 @@ Kryterium jest spełnione, jeśli endpoint GET /health zwraca status HTTP 200 or
 
 Typ weryfikacji: automatyczna.
 
-### KA-API-02 - Endpoint POST /auth/login dla poprawnych danych
+### KA-API-02 - Endpoint POST /api/v1/auth/login dla poprawnych danych
 
-Kryterium jest spełnione, jeśli endpoint POST /auth/login dla poprawnych danych logowania zwraca status HTTP 200 oraz odpowiedź zawierającą access_token i token_type.
+Kryterium jest spełnione, jeśli endpoint POST /api/v1/auth/login dla poprawnych danych logowania aktywnego użytkownika zwraca status HTTP 200 oraz odpowiedź zawierającą access_token i token_type.
 
 Oczekiwany format odpowiedzi:
 
 ```json
 {
-	"access_token": "string",
+	"access_token": "<jwt>",
 	"token_type": "bearer"
 }
 ```
 
 Typ weryfikacji: automatyczna.
 
-### KA-API-03 - Endpoint POST /auth/login dla niepoprawnych danych
+### KA-API-03 - Endpoint POST /api/v1/auth/login dla niepoprawnych danych
 
-Kryterium jest spełnione, jeśli endpoint POST /auth/login dla niepoprawnych danych logowania zwraca status HTTP 401.
-
-Typ weryfikacji: automatyczna.
-
-### KA-API-04 - Endpoint GET /auth/me bez tokena
-
-Kryterium jest spełnione, jeśli endpoint GET /auth/me bez tokena JWT zwraca status HTTP 401.
+Kryterium jest spełnione, jeśli endpoint POST /api/v1/auth/login dla nieistniejącego adresu email oraz dla złego hasła zwraca status HTTP 401 z detail o wartości Invalid credentials.
 
 Typ weryfikacji: automatyczna.
 
-### KA-API-05 - Endpoint GET /auth/me z poprawnym tokenem
+### KA-API-04 - Endpoint GET /api/v1/auth/me bez tokena
 
-Kryterium jest spełnione, jeśli endpoint GET /auth/me z poprawnym tokenem JWT zwraca status HTTP 200 oraz dane aktualnego użytkownika.
+Kryterium jest spełnione, jeśli endpoint GET /api/v1/auth/me bez nagłówka Authorization, z niepoprawnym tokenem oraz z wygasłym tokenem zwraca status HTTP 401 z detail o wartości Not authenticated.
+
+Typ weryfikacji: automatyczna.
+
+### KA-API-05 - Endpoint GET /api/v1/auth/me z poprawnym tokenem
+
+Kryterium jest spełnione, jeśli endpoint GET /api/v1/auth/me z poprawnym tokenem JWT zwraca status HTTP 200 oraz dane aktualnego użytkownika.
 
 Oczekiwany format odpowiedzi:
 
 ```json
 {
 	"id": 1,
+	"username": "admin",
 	"email": "admin@example.com",
 	"is_active": true
 }
@@ -231,19 +232,20 @@ Typ weryfikacji: automatyczna.
 
 ### KA-API-06 - Spójność API między backendami
 
-Kryterium jest spełnione, jeśli backend FastAPI i backend Django zwracają odpowiedzi zgodne z tym samym kontraktem HTTP API.
+Kryterium jest spełnione, jeśli backend FastAPI i backend Django zwracają odpowiedzi zgodne z tym samym kontraktem HTTP API: te same ścieżki, kody statusu, kształty odpowiedzi i wartości detail.
 
 Typ weryfikacji: automatyczna.
 
-### KA-API-07 - Endpoint POST /auth/register dla poprawnych danych
+### KA-API-07 - Endpoint POST /api/v1/auth/register dla poprawnych danych
 
-Kryterium jest spełnione, jeśli endpoint POST /auth/register dla poprawnych danych rejestracji zwraca status HTTP 201 oraz dane utworzonego użytkownika.
+Kryterium jest spełnione, jeśli endpoint POST /api/v1/auth/register dla poprawnych danych rejestracji zwraca status HTTP 201 oraz dane utworzonego użytkownika. Jeśli request nie zawiera username, pole username w odpowiedzi ma wartość null.
 
 Oczekiwany format odpowiedzi:
 
 ```json
 {
 	"id": 1,
+	"username": "admin",
 	"email": "admin@example.com",
 	"is_active": true
 }
@@ -251,15 +253,67 @@ Oczekiwany format odpowiedzi:
 
 Typ weryfikacji: automatyczna.
 
-### KA-API-08 - Endpoint POST /auth/register dla niepoprawnych danych
+### KA-API-08 - Endpoint POST /api/v1/auth/register dla niepoprawnych danych
 
-Kryterium jest spełnione, jeśli endpoint POST /auth/register dla niepoprawnych danych rejestracji zwraca status HTTP 400.
+Kryterium jest spełnione, jeśli endpoint POST /api/v1/auth/register zwraca status HTTP 400 z detail o wartości Invalid request data dla każdego z przypadków:
+
+- brak wymaganego pola
+- niepoprawny adres email
+- hasło krótsze niż 8 albo dłuższe niż 128 znaków
+- username krótszy niż 3 albo dłuższy niż 64 znaki
 
 Typ weryfikacji: automatyczna.
 
-### KA-API-09 - Endpoint POST /auth/register dla istniejącego użytkownika
+### KA-API-09 - Endpoint POST /api/v1/auth/register dla istniejącego użytkownika
 
-Kryterium jest spełnione, jeśli endpoint POST /auth/register dla adresu email istniejącego użytkownika zwraca status HTTP 409.
+Kryterium jest spełnione, jeśli endpoint POST /api/v1/auth/register dla adresu email istniejącego użytkownika oraz dla username istniejącego użytkownika zwraca status HTTP 409 z detail o wartości User already exists.
+
+Typ weryfikacji: automatyczna.
+
+### KA-API-10 - Endpoint GET /health/db
+
+Kryterium jest spełnione, jeśli endpoint GET /health/db przy działającej bazie danych zwraca status HTTP 200 oraz odpowiedź:
+
+```json
+{
+	"status": "ok",
+	"database_status": "up"
+}
+```
+
+Typ weryfikacji: automatyczna.
+
+### KA-API-11 - Endpoint GET /health/ready
+
+Kryterium jest spełnione, jeśli endpoint GET /health/ready po wdrożeniu wszystkich migracji zwraca status HTTP 200 oraz odpowiedź:
+
+```json
+{
+	"status": "ok",
+	"database_status": "up",
+	"schema_status": "ready"
+}
+```
+
+a przed wdrożeniem migracji zwraca status HTTP 503 z schema_status o wartości not_migrated.
+
+Typ weryfikacji: automatyczna.
+
+### KA-API-12 - Endpoint POST /api/v1/auth/login dla nieaktywnego użytkownika
+
+Kryterium jest spełnione, jeśli endpoint POST /api/v1/auth/login dla poprawnych danych logowania nieaktywnego użytkownika zwraca status HTTP 403 z detail o wartości Inactive user i nie zwraca tokena.
+
+Typ weryfikacji: automatyczna.
+
+### KA-API-13 - Endpoint GET /api/v1/auth/me dla nieaktywnego użytkownika
+
+Kryterium jest spełnione, jeśli endpoint GET /api/v1/auth/me z poprawnym tokenem użytkownika, który został dezaktywowany po wydaniu tokena, zwraca status HTTP 403 z detail o wartości Inactive user.
+
+Typ weryfikacji: automatyczna.
+
+### KA-API-14 - Format odpowiedzi błędu
+
+Kryterium jest spełnione, jeśli każda odpowiedź ze statusem HTTP 400, 401, 403 albo 409 ma body w postaci obiektu JSON z jednym polem detail, którego wartość jest zgodna ze specyfikacją.
 
 Typ weryfikacji: automatyczna.
 
@@ -285,7 +339,7 @@ Typ weryfikacji: automatyczna.
 
 ### KA-DATA-03 - Utworzenie użytkownika przez rejestrację
 
-Kryterium jest spełnione, jeśli wygenerowany projekt pozwala utworzyć użytkownika za pomocą endpointu POST /auth/register, a utworzony użytkownik może zostać użyty do sprawdzenia logowania.
+Kryterium jest spełnione, jeśli wygenerowany projekt pozwala utworzyć użytkownika za pomocą endpointu POST /api/v1/auth/register, a utworzony użytkownik może zostać użyty do sprawdzenia logowania.
 
 Typ weryfikacji: automatyczna.
 

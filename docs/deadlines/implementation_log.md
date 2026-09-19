@@ -35,3 +35,9 @@ Przemyślałem sobie kolejność i uważam, że jednak zanim zacznę cokolwiek g
 Gdy zacząłem pisać backend, zdałem sobie sprawę, że brakuje mi jeszcze trochę narzędzi i infrastruktury. Dodałem je.
 
 Stworzyłem plan implementacji backendu i rozpocząłem implementację. Idzie całkiem nieźle.
+
+### 19.09.2026
+
+Większość czasu poświęciłem na doprowadzenie backendu do działania - teraz można tworzyć użytkowników, działa hashowanie hasła, oraz dopiąłem kilka wcześniejszych błędów.
+
+Zmieniłem plan na najbliższy czas - wyznaczyłem minimum, po jakim porzucam backend i zrobię frontend. Potem, mając dwa minimalne template packi, zabiorę się za generator, a packi będę uzupełniał z czasem. Gdy generator będzie w pełni sprawny, dopiero wtedy zabiorę się za kolejne packi.

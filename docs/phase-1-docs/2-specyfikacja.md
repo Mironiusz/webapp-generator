@@ -136,7 +136,7 @@ Generator musi przerwać działanie przed rozpoczęciem generacji, jeśli:
 
 ### 9.2 Backend
 
-- endpoint health
+- endpoint health, db i ready
 - endpoint login
 - endpoint register
 - endpoint zwracający dane aktualnego użytkownika
@@ -164,9 +164,53 @@ Backend zapewnia:
 
 ## 10. Kontrakt HTTP API
 
-### 10.1 GET /health
+### 10.1 Zasady wspólne
 
-Endpoint służy do sprawdzenia, czy backend działa.
+Endpointy health są wystawione bez prefixu. Pozostałe endpointy są wystawione pod prefixem `/api/v1`. Ścieżki w kontrakcie są podane w pełnej formie.
+
+Każde body requestu i każda odpowiedź mają typ `application/json`.
+
+#### Format błędów
+
+Każdy błąd ma postać:
+
+```json
+{
+	"detail": "Komunikat błędu"
+}
+```
+
+Wartości `detail` są stałymi wymienionymi przy endpointach, żeby testy mogły porównywać je dosłownie.
+
+Każdy endpoint może dodatkowo zwrócić status 500 z `detail` o wartości `Internal server error` dla nieobsłużonego błędu serwera. Kryteria akceptacyjne nie testują tej odpowiedzi.
+
+#### Walidacja danych wejściowych
+
+Naruszenie którejkolwiek reguły daje status 400 z `detail` o wartości `Invalid request data`. Odpowiedź nie wskazuje, która reguła została naruszona, dlatego frontend stosuje te same reguły po swojej stronie.
+
+- brak wymaganego pola albo zły typ pola
+- `email`: poprawny adres email, najwyżej 254 znaki
+- `password`: od 8 do 128 znaków
+- `username`: jeśli podany, od 3 do 64 znaków
+
+#### Obiekt użytkownika
+
+Wszystkie endpointy zwracające użytkownika używają tego samego kształtu:
+
+```json
+{
+	"id": 1,
+	"username": "admin",
+	"email": "admin@example.com",
+	"is_active": true
+}
+```
+
+Pole `username` ma wartość `null`, gdy użytkownik nie podał go przy rejestracji. Hash hasła nigdy nie jest zwracany.
+
+### 10.2 GET /health
+
+Endpoint służy do sprawdzenia, czy backend odpowiada. Nie sprawdza bazy danych.
 
 #### Response 200
 
@@ -176,22 +220,79 @@ Endpoint służy do sprawdzenia, czy backend działa.
 }
 ```
 
-#### Response 500
+### 10.3 GET /health/db
+
+Endpoint służy do sprawdzenia, czy backend łączy się z bazą danych.
+
+Pole `database_status` przyjmuje wartości `up` albo `down`.
+
+#### Response 200
 
 ```json
 {
-	"detail": "Service unavailable"
+	"status": "ok",
+	"database_status": "up"
 }
 ```
 
-### 10.2 POST /auth/register
+#### Response 503
 
-Endpoint służy do utworzenia konta użytkownika.
+```json
+{
+	"status": "degraded",
+	"database_status": "down"
+}
+```
+
+### 10.4 GET /health/ready
+
+Endpoint służy do sprawdzenia, czy backend jest gotowy do obsługi ruchu: baza danych odpowiada i ma wdrożone wszystkie migracje.
+
+Pole `schema_status` przyjmuje wartości:
+
+- `ready`: schema jest zgodna z najnowszą migracją
+- `not_migrated`: baza odpowiada, ale brakuje migracji
+- `unknown`: nie dało się sprawdzić schemy, bo baza nie odpowiada
+
+#### Response 200
+
+```json
+{
+	"status": "ok",
+	"database_status": "up",
+	"schema_status": "ready"
+}
+```
+
+#### Response 503, brak migracji
+
+```json
+{
+	"status": "degraded",
+	"database_status": "up",
+	"schema_status": "not_migrated"
+}
+```
+
+#### Response 503, baza nie odpowiada
+
+```json
+{
+	"status": "degraded",
+	"database_status": "down",
+	"schema_status": "unknown"
+}
+```
+
+### 10.5 POST /api/v1/auth/register
+
+Endpoint służy do utworzenia konta użytkownika. Pole `username` jest opcjonalne.
 
 #### Request
 
 ```json
 {
+	"username": "admin",
 	"email": "admin@example.com",
 	"password": "password"
 }
@@ -202,6 +303,7 @@ Endpoint służy do utworzenia konta użytkownika.
 ```json
 {
 	"id": 1,
+	"username": "admin",
 	"email": "admin@example.com",
 	"is_active": true
 }
@@ -217,13 +319,15 @@ Endpoint służy do utworzenia konta użytkownika.
 
 #### Response 409
 
+Zwracany, gdy istnieje już użytkownik z takim samym `email` albo takim samym `username`. Odpowiedź nie wskazuje, które pole koliduje.
+
 ```json
 {
 	"detail": "User already exists"
 }
 ```
 
-### 10.3 POST /auth/login
+### 10.6 POST /api/v1/auth/login
 
 Endpoint służy do zalogowania użytkownika i zwrócenia tokena JWT.
 
@@ -240,7 +344,7 @@ Endpoint służy do zalogowania użytkownika i zwrócenia tokena JWT.
 
 ```json
 {
-	"access_token": "string",
+	"access_token": "<jwt>",
 	"token_type": "bearer"
 }
 ```
@@ -255,13 +359,25 @@ Endpoint służy do zalogowania użytkownika i zwrócenia tokena JWT.
 
 #### Response 401
 
+Zwracany dla nieistniejącego adresu email i dla złego hasła. Odpowiedź nie rozróżnia tych przypadków.
+
 ```json
 {
 	"detail": "Invalid credentials"
 }
 ```
 
-### 10.4 GET /auth/me
+#### Response 403
+
+Zwracany, gdy dane logowania są poprawne, ale użytkownik jest nieaktywny. Nieaktywny użytkownik nie dostaje tokena.
+
+```json
+{
+	"detail": "Inactive user"
+}
+```
+
+### 10.7 GET /api/v1/auth/me
 
 Endpoint służy do pobrania danych aktualnie zalogowanego użytkownika na podstawie tokena JWT.
 
@@ -280,12 +396,15 @@ Authorization: Bearer <access_token>
 ```json
 {
 	"id": 1,
+	"username": "admin",
 	"email": "admin@example.com",
 	"is_active": true
 }
 ```
 
 #### Response 401
+
+Zwracany, gdy nagłówka brakuje, token jest niepoprawny albo wygasł.
 
 ```json
 {
