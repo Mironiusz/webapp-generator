@@ -61,6 +61,7 @@ class DatabaseSettings(SettingsSection):
     url: str = "sqlite+aiosqlite:///./app.db"
     echo: bool = False
     pool_pre_ping: bool = True
+    alembic_config_path: Path = _PROJECT_ROOT_PATH / "pyproject.toml"
 
 
 class LogSettings(SettingsSection):

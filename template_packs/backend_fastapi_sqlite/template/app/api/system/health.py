@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from alembic.config import Config
 from alembic.runtime.migration import MigrationContext
-from alembic.script import ScriptDirectory
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,6 +15,10 @@ from app.core.logger import get_logger
 logger = get_logger(__name__)
 
 
+def _read_current_revision(session: Session) -> str | None:
+    return MigrationContext.configure(session.connection()).get_current_revision()
+
+
 async def db_connection_check(session: AsyncSession) -> DatabaseStatus:
     """Sprawdza stan połączenia z bazą danych"""
     try:
@@ -28,18 +30,8 @@ async def db_connection_check(session: AsyncSession) -> DatabaseStatus:
     return DatabaseStatus.UP
 
 
-async def db_schema_check(session: AsyncSession) -> SchemaStatus:
+async def db_schema_check(session: AsyncSession, alembic_current_head: str) -> SchemaStatus:
     """Sprawdza stan schemy i migracji bazy danych"""
 
-    schema_status = SchemaStatus.UNKNOWN
-    alembic_config = Config(toml_file="pyproject.toml")
-
-    current_head = ScriptDirectory.from_config(alembic_config).get_current_head()
-
-    def get_current_revision(session: Session) -> str:
-        return MigrationContext.configure(session.connection()).get_current_revision()
-
-    current_revision = await session.run_sync(get_current_revision)
-    schema_status = SchemaStatus.READY if current_head == current_revision else SchemaStatus.NOT_MIGRATED
-
-    return schema_status
+    current_revision = await session.run_sync(_read_current_revision)
+    return SchemaStatus.READY if alembic_current_head == current_revision else SchemaStatus.NOT_MIGRATED

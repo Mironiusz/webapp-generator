@@ -12,6 +12,7 @@ from app.core.config import DatabaseSettings
 
 class LifespanState(TypedDict):
     db_session_factory: async_sessionmaker[AsyncSession]
+    alembic_current_head: str
 
 
 def build_engine(database_settings: DatabaseSettings) -> AsyncEngine:

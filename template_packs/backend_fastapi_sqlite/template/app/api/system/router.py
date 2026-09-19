@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter, Response, status
+from fastapi import APIRouter, Request, Response, status
 
 from app.api.deps import SessionDep
 from app.api.system.health import db_connection_check, db_schema_check
@@ -62,6 +62,7 @@ async def get_db_status(
 async def get_ready_status(
     session: SessionDep,
     response: Response,
+    request: Request,
 ) -> GetReadinessStatus:
     """Sprawdza, czy baza danych jest gotowa do działania i ma aktualną schemę"""
 
@@ -70,7 +71,7 @@ async def get_ready_status(
     schema_status = SchemaStatus.UNKNOWN
 
     if database_status is DatabaseStatus.UP:
-        schema_status = await db_schema_check(session)
+        schema_status = await db_schema_check(session, request.state["alembic_current_head"])
 
     if schema_status is SchemaStatus.READY:
         service_status = ServiceStatus.OK
