@@ -7,13 +7,14 @@ from app.modules.users import service
 from app.modules.users.schemas import UserCreate, UserRead, UsersRead
 
 user_router = APIRouter(
-    prefix="/users",
+    prefix="",
 )
 
 
-@user_router.get("")
+@user_router.get("/users")
 async def read_users(session: SessionDep) -> UsersRead:
-    """GET wszystkich użytkowników z bazy danych"""
+    """GET wszystkich użytkowników z bazy danych. Tymczasowo zostaje,
+    by pomóc w debugowaniu - docelowa wersja tego nie będzie miała"""
     return UsersRead(users=await service.read_users(session))
 
 

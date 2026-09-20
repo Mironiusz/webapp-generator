@@ -1,6 +1,6 @@
-from datetime import datetime
+from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class UserRead(BaseModel):
@@ -10,8 +10,6 @@ class UserRead(BaseModel):
     username: str | None
     email: str
     is_active: bool
-    created_at: datetime
-    updated_at: datetime
 
 
 class UsersRead(BaseModel):
@@ -19,6 +17,6 @@ class UsersRead(BaseModel):
 
 
 class UserCreate(BaseModel):
-    username: str
-    email: str
-    password: str
+    username: Annotated[str | None, Field(min_length=3, max_length=64)] = None
+    email: Annotated[EmailStr, Field(max_length=254)]
+    password: Annotated[str, Field(min_length=8, max_length=128)]

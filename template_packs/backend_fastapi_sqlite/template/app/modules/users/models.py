@@ -10,6 +10,6 @@ class User(IdMixin, CreatedAtMixin, UpdatedAtMixin, Base):
     __table_args__ = ({"sqlite_autoincrement": True},)
 
     username: Mapped[str | None] = mapped_column(String(64), unique=True)
-    email: Mapped[str] = mapped_column(String(64), unique=True)
+    email: Mapped[str] = mapped_column(String(254), unique=True)
     pass_hash: Mapped[str] = mapped_column(Text)
     is_active: Mapped[bool] = mapped_column(server_default=true())

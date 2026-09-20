@@ -19,6 +19,7 @@ dependencies = [
     "SQLAlchemy==2.0.51",
     "tzdata==2026.3",
     "uvicorn==0.52.1",
+    "email-validator==2.3.0",
 ]
 
 [project.optional-dependencies]
