@@ -23,7 +23,7 @@ __all__ = [
 
 _PROJECT_ROOT_PATH = Path(__file__).resolve().parents[2]
 
-_MIN_PRODUCTION_SECRET_LENGTH = 32
+_MIN_SECRET_LENGTH = 32
 
 _PACKAGE_VERSION = version("backend")
 
@@ -56,6 +56,21 @@ class ApiSettings(SettingsSection):
     cors_origins: list[str] = ["*"]
     allow_headers: list[str] = ["*"]
     allow_methods: list[str] = ["*"]
+
+
+class AuthSettings(SettingsSection):
+    """Ustawienia autentykacji użytkownika"""
+
+    algorithm: str = "HS256"
+    token_lifetime_min: int = 60
+    secret_key: SecretStr
+
+    @model_validator(mode="after")
+    def _enforce_auth_rules(self) -> Self:
+        if len(self.secret_key.get_secret_value()) < _MIN_SECRET_LENGTH:
+            raise ValueError(f"SECRET_KEY musi mieć co najmniej {_MIN_SECRET_LENGTH} znaków")
+
+        return self
 
 
 class DatabaseSettings(SettingsSection):
@@ -91,7 +106,6 @@ class Settings(BaseSettings):
         frozen=True,
     )
 
-    secret_key: SecretStr
     environment: Environment = Environment.LOCAL
 
     api: ApiSettings = ApiSettings()
@@ -108,9 +122,6 @@ class Settings(BaseSettings):
         """Pilnuje reguł, które wolno złamać lokalnie, ale nie na produkcji."""
         if not self.is_production:
             return self
-
-        if len(self.secret_key.get_secret_value()) < _MIN_PRODUCTION_SECRET_LENGTH:
-            raise ValueError(f"SECRET_KEY na produkcji musi mieć co najmniej {_MIN_PRODUCTION_SECRET_LENGTH} znaków")
 
         if self.database.echo:
             raise ValueError("DATABASE__ECHO na produkcji wypisuje zapytania SQL do logów")
