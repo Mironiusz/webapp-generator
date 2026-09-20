@@ -71,7 +71,7 @@ async def get_ready_status(
     schema_status = SchemaStatus.UNKNOWN
 
     if database_status is DatabaseStatus.UP:
-        schema_status = await db_schema_check(session, request.state["alembic_current_head"])
+        schema_status = await db_schema_check(session, request.state.alembic_current_head)
 
     if schema_status is SchemaStatus.READY:
         service_status = ServiceStatus.OK

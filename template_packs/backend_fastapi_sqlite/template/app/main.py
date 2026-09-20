@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 from alembic.config import Config
 from alembic.script import ScriptDirectory
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.types import Lifespan
 
 from app.api.errors import register_exception_handlers
@@ -61,6 +62,15 @@ def create_app(settings: Settings) -> FastAPI:
     application.state.settings = settings
     application.include_router(v1_router)
     application.include_router(system_router)
+
+    application.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.api.cors_origins,
+        allow_credentials=False,
+        allow_methods=settings.api.allow_methods,
+        allow_headers=settings.api.allow_headers,
+    )
+
     register_exception_handlers(application)
 
     return application

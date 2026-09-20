@@ -25,3 +25,9 @@ class ConflictError(AppError):
     """Bazowa klasa błędu typu `409 Conflict`"""
 
     status_code = status.HTTP_409_CONFLICT
+
+
+class BadRequestError(AppError):
+    """Bazowa klasa błędu typu `400 Bad Request`"""
+
+    status_code = status.HTTP_400_BAD_REQUEST

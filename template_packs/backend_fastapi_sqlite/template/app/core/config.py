@@ -53,6 +53,9 @@ class ApiSettings(SettingsSection):
     version: str = _PACKAGE_VERSION
     root_path: str = ""
     docs_enabled: bool = True
+    cors_origins: list[str] = ["*"]
+    allow_headers: list[str] = ["*"]
+    allow_methods: list[str] = ["*"]
 
 
 class DatabaseSettings(SettingsSection):
