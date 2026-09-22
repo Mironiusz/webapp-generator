@@ -8,9 +8,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logger import get_logger
 from app.core.security import hash_password
-from app.modules.users.exceptions import UserAlreadyExistsError
+from app.modules.users.exceptions import InvalidCredentialsError, UserAlreadyExistsError
 from app.modules.users.models import User
-from app.modules.users.schemas import UserCreate
+from app.modules.users.schemas import UserCreate, UserLogin
 
 logger = get_logger(__name__)
 
@@ -40,3 +40,18 @@ async def create_user(session: AsyncSession, payload: UserCreate) -> User:
         raise UserAlreadyExistsError() from e
 
     return user
+
+
+async def authenticate_user(_session: AsyncSession, _payload: UserLogin) -> bool:
+    """Uwierzytelnia użytkownika"""
+    return False
+
+
+async def login_user(session: AsyncSession, payload: UserLogin) -> User:
+    """Uwierzytelnia i loguje użytkownika"""
+    is_authenticated = authenticate_user(session, payload)
+
+    if not is_authenticated:
+        raise InvalidCredentialsError()
+
+    return User()
