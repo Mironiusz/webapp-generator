@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
@@ -23,9 +23,10 @@ class UserCreate(BaseModel):
 
 
 class UserLogin(BaseModel):
-    username: Annotated[EmailStr, Field(max_length=254)]
+    email: Annotated[EmailStr, Field(max_length=254)]
     password: Annotated[str, Field(min_length=8, max_length=128)]
 
 
 class UserTokenResponse(BaseModel):
-    token: str
+    access_token: str
+    token_type: Literal["bearer"]

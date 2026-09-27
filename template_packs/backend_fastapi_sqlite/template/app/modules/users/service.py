@@ -7,8 +7,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logger import get_logger
-from app.core.security import hash_password
-from app.modules.users.exceptions import InvalidCredentialsError, UserAlreadyExistsError
+from app.core.security import hash_password, verify_password
+from app.modules.users.exceptions import InactiveUserError, InvalidCredentialsError, UserAlreadyExistsError
 from app.modules.users.models import User
 from app.modules.users.schemas import UserCreate, UserLogin
 
@@ -42,16 +42,22 @@ async def create_user(session: AsyncSession, payload: UserCreate) -> User:
     return user
 
 
-async def authenticate_user(_session: AsyncSession, _payload: UserLogin) -> bool:
+async def authenticate_user(session: AsyncSession, payload: UserLogin) -> User:
     """Uwierzytelnia użytkownika"""
-    return False
+    statement = select(User).where(User.email == payload.email)
+    logger.debug(statement)
 
+    result = await session.execute(statement)
+    user = result.scalar_one_or_none()
+    if user is None:
+        raise InvalidCredentialsError
 
-async def login_user(session: AsyncSession, payload: UserLogin) -> User:
-    """Uwierzytelnia i loguje użytkownika"""
-    is_authenticated = authenticate_user(session, payload)
+    is_verified = verify_password(payload.password, user.pass_hash)
 
-    if not is_authenticated:
-        raise InvalidCredentialsError()
+    if not is_verified:
+        raise InvalidCredentialsError
 
-    return User()
+    if not user.is_active:
+        raise InactiveUserError
+
+    return user

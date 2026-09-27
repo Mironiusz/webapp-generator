@@ -22,6 +22,6 @@ class InvalidCredentialsError(UnauthorizedError):
 
 
 class InactiveUserError(ForbiddenError):
-    """Błąd informujący, że użytkownik nie jest zalogowany"""
+    """Błąd informujący, że użytkownik nie jest aktywny"""
 
     detail = "Inactive user"
