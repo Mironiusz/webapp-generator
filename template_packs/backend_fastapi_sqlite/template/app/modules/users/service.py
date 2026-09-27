@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
-
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,13 +11,6 @@ from app.modules.users.models import User
 from app.modules.users.schemas import UserCreate, UserLogin
 
 logger = get_logger(__name__)
-
-
-async def read_users(session: AsyncSession) -> Sequence[User]:
-    """Pobiera wszystkich użytkowników z bazy danych"""
-    statement = select(User)
-    result = await session.execute(statement)
-    return result.scalars().all()
 
 
 async def create_user(session: AsyncSession, payload: UserCreate) -> User:
@@ -61,3 +52,8 @@ async def authenticate_user(session: AsyncSession, payload: UserLogin) -> User:
         raise InactiveUserError
 
     return user
+
+
+async def get_user_by_id(session: AsyncSession, user_id: int) -> User | None:
+    """Zwraca użytkownika o podanym id albo None, gdy takiego nie ma w bazie"""
+    return await session.get(User, user_id)

@@ -6,19 +6,13 @@ from app.api.deps import SessionDep
 from app.api.errors import InvalidRequestDataError, error_responses
 from app.core.security import create_access_token
 from app.modules.users import service
-from app.modules.users.exceptions import InactiveUserError, InvalidCredentialsError, UserAlreadyExistsError
-from app.modules.users.schemas import UserCreate, UserLogin, UserRead, UsersRead, UserTokenResponse
+from app.modules.users.deps import CurrentUserDep
+from app.modules.users.exceptions import InactiveUserError, InvalidCredentialsError, NotAuthenticatedError, UserAlreadyExistsError
+from app.modules.users.schemas import UserCreate, UserLogin, UserRead, UserTokenResponse
 
 user_router = APIRouter(
     prefix="",
 )
-
-
-@user_router.get("/users")
-async def read_users(session: SessionDep) -> UsersRead:
-    """GET wszystkich użytkowników z bazy danych. Tymczasowo zostaje,
-    by pomóc w debugowaniu - docelowa wersja tego nie będzie miała"""
-    return UsersRead(users=await service.read_users(session))
 
 
 @user_router.post(
@@ -29,24 +23,36 @@ async def read_users(session: SessionDep) -> UsersRead:
         UserAlreadyExistsError,
     ),
 )
-async def create_user(session: SessionDep, user: UserCreate) -> UserRead:
-    """POST użytkownika do bazy danych"""
-    result = await service.create_user(session, user)
+async def create_user(session: SessionDep, payload: UserCreate) -> UserRead:
+    """Tworzy konto użytkownika"""
+    result = await service.create_user(session, payload)
 
     return UserRead.model_validate(result)
 
 
 @user_router.post(
     "/auth/login",
-    status_code=status.HTTP_200_OK,
     responses=error_responses(
         InvalidCredentialsError,
         InactiveUserError,
         InvalidRequestDataError,
     ),
 )
-async def login_user(session: SessionDep, user: UserLogin) -> UserTokenResponse:
-    result = await service.authenticate_user(session, user)
+async def login_user(session: SessionDep, payload: UserLogin) -> UserTokenResponse:
+    """Autentykuje użytkownika i nadaje mu token"""
+    result = await service.authenticate_user(session, payload)
     token = create_access_token(str(result.id))
 
     return UserTokenResponse(access_token=token, token_type="bearer")
+
+
+@user_router.get(
+    "/auth/me",
+    responses=error_responses(
+        NotAuthenticatedError,
+        InactiveUserError,
+    ),
+)
+async def read_current_user(user: CurrentUserDep) -> UserRead:
+    """Zwraca informacje o aktualnie zalogowanym użytkowniku"""
+    return UserRead.model_validate(user)

@@ -12,10 +12,6 @@ class UserRead(BaseModel):
     is_active: bool
 
 
-class UsersRead(BaseModel):
-    users: list[UserRead]
-
-
 class UserCreate(BaseModel):
     username: Annotated[str | None, Field(min_length=3, max_length=64)] = None
     email: Annotated[EmailStr, Field(max_length=254)]
