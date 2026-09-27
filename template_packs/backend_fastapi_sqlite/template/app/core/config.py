@@ -11,6 +11,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 __all__ = [
     "ApiSettings",
+    "AuthSettings",
     "DatabaseSettings",
     "Environment",
     "LogLevel",
@@ -67,8 +68,9 @@ class AuthSettings(SettingsSection):
 
     @model_validator(mode="after")
     def _enforce_auth_rules(self) -> Self:
+        """Upewnia się, że AUTH__SECRET_KEY ma minimalną długość"""
         if len(self.secret_key.get_secret_value()) < _MIN_SECRET_LENGTH:
-            raise ValueError(f"SECRET_KEY musi mieć co najmniej {_MIN_SECRET_LENGTH} znaków")
+            raise ValueError(f"AUTH__SECRET_KEY musi mieć co najmniej {_MIN_SECRET_LENGTH} znaków")
 
         return self
 
@@ -111,6 +113,7 @@ class Settings(BaseSettings):
     api: ApiSettings = ApiSettings()
     database: DatabaseSettings = DatabaseSettings()
     log: LogSettings = LogSettings()
+    auth: AuthSettings
 
     @property
     def is_production(self) -> bool:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import ClassVar
 
 from fastapi import status
@@ -10,6 +11,7 @@ class AppError(Exception):
 
     status_code: ClassVar[int]
     detail: ClassVar[str]
+    headers: ClassVar[Mapping[str, str] | None] = None
 
     def __init__(self) -> None:
         super().__init__(self.detail)
@@ -25,6 +27,7 @@ class UnauthorizedError(AppError):
     """Bazowa klasa błędu typu `401 Unauthorized`"""
 
     status_code = status.HTTP_401_UNAUTHORIZED
+    headers: ClassVar[Mapping[str, str] | None] = {"WWW-Authenticate": "Bearer"}
 
 
 class ForbiddenError(AppError):
