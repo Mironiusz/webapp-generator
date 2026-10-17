@@ -1,6 +1,6 @@
 # Kryteria akceptacyjne
 
-Stan: 28.05.2026
+Stan: 17.10.2026
 
 ## 1. Cel dokumentu
 
@@ -153,6 +153,10 @@ Dla stacków korzystających z osobnej usługi bazy danych musi działać dodatk
 - database
 
 W przypadku SQLite kontener database nie jest wymagany.
+
+Jednorazowe usługi inicjalizujące, np. migracje bazy danych, nie muszą działać po uruchomieniu projektu, ale każda z nich musi zakończyć się kodem 0.
+
+Kontener backend musi osiągnąć stan healthy.
 
 Typ weryfikacji: automatyczna.
 

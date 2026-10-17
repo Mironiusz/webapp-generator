@@ -1,6 +1,6 @@
 # Architektura
 
-Stan: 28.05.2026
+Stan: 17.10.2026
 
 ## 1 Wstęp
 
@@ -498,7 +498,7 @@ Zadania, które zrealizuje pipeline:
 5. Wygenerowanie konfiguracji środowiskowej i Docker Compose.
 6. Zbudowanie projektu przez Docker Compose.
 7. Uruchomienie projektu przez Docker Compose.
-8. Uruchomienie migracji albo inicjalizacji bazy, jeśli stack tego wymaga.
+8. Sprawdzenie, czy migracje albo inicjalizacja bazy uruchomione przez Docker Compose zakończyły się poprawnie, jeśli stack tego wymaga.
 9. Uruchomienie testów jednostkowych i integracyjnych.
 10. Sprawdzenie happy path rejestracji, logowania i pobrania danych aktualnego użytkownika.
 11. Zatrzymanie środowiska verification.
@@ -571,7 +571,7 @@ Wzór listy kroków:
 - wygenerowanie plików zależności backendu i frontendu
 - uruchomienie docker compose build
 - uruchomienie środowiska przez docker compose
-- uruchomienie migracji albo inicjalizacji bazy, jeśli stack tego wymaga
+- sprawdzenie, czy migracje albo inicjalizacja bazy uruchomione przez docker compose zakończyły się poprawnie, jeśli stack tego wymaga
 - uruchomienie testów jednostkowych backend-db stacka
 - uruchomienie testów jednostkowych frontendu
 - uruchomienie testów integracyjnych

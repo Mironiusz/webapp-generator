@@ -45,3 +45,9 @@ Zmieniłem plan na najbliższy czas - wyznaczyłem minimum, po jakim porzucam ba
 ### 26.09.2026, 27.09.2026
 
 Dokończyłem cały backend fastapi w wersji 1.0 (jeszcze bez testów i niektórych featurów). Stworzyłem wstępny docker. Kolejnego dnia planuję stworzyć docelowy już docker oraz rozpocząć pracę nad frontendem.
+
+### 17.10.2026, 18.10.2026
+
+Skończyłem podstawową wersję backendu, jeszcze bez dokłądniejszych zabezpieczeń i bez testów. Doszedł za to docker i user friendly readme.
+
+Okazuje się, że implementując backend, trochę rozjechałem się z moimi docsami specyfikacji. Jako że bardziej podoba mi się to, co wyszło mi w praktyce, po prostu zaktualizuję te docsy.

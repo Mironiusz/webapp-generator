@@ -1,6 +1,6 @@
 # Specyfikacja
 
-Stan: 28.05.2026
+Stan: 17.10.2026
 
 ## 1. Cel dokumentu
 
@@ -62,6 +62,8 @@ Dane wejściowe są określane na podstawie kreatora lub pliku konfiguracyjnego.
 - ports.backend
 - ports.database (gdy backend korzysta z osobnej bazy danych)
 - env
+
+Sekrety w env, np. klucz podpisu tokenów JWT, nie mają wartości domyślnych. Jeśli nie zostały podane, generator tworzy je losowo osobno dla każdego projektu.
 
 ## 6. Wspierane technologie i kombinacje
 
@@ -182,6 +184,8 @@ Każdy błąd ma postać:
 
 Wartości `detail` są stałymi wymienionymi przy endpointach, żeby testy mogły porównywać je dosłownie.
 
+Każda odpowiedź ze statusem 401 zawiera nagłówek `WWW-Authenticate: Bearer`.
+
 Każdy endpoint może dodatkowo zwrócić status 500 z `detail` o wartości `Internal server error` dla nieobsłużonego błędu serwera. Kryteria akceptacyjne nie testują tej odpowiedzi.
 
 #### Walidacja danych wejściowych
@@ -192,6 +196,10 @@ Naruszenie którejkolwiek reguły daje status 400 z `detail` o wartości `Invali
 - `email`: poprawny adres email, najwyżej 254 znaki
 - `password`: od 8 do 128 znaków
 - `username`: jeśli podany, od 3 do 64 znaków
+
+Adres email jest zapisywany i porównywany małymi literami, więc adresy różniące się tylko wielkością liter oznaczają to samo konto.
+
+Pola spoza kontraktu w body requestu są ignorowane i nie wpływają na wynik, np. `is_active` wysłane przy rejestracji.
 
 #### Obiekt użytkownika
 
@@ -404,7 +412,7 @@ Authorization: Bearer <access_token>
 
 #### Response 401
 
-Zwracany, gdy nagłówka brakuje, token jest niepoprawny albo wygasł.
+Zwracany, gdy nagłówka brakuje, token jest niepoprawny, wygasł albo wskazuje użytkownika, który nie istnieje.
 
 ```json
 {
@@ -447,6 +455,10 @@ Każda konfiguracja zawiera kontenery:
 
 Dodatkowy kontener database powstaje dla stacków korzystających z osobnej usługi bazy danych, np. Django + PostgreSQL. W przypadku SQLite baza danych działa jako plik obsługiwany przez backend.
 
+Konfiguracja może zawierać jednorazowe usługi inicjalizujące, np. migracje bazy danych. Backend startuje dopiero wtedy, gdy każda z nich zakończy się kodem 0.
+
+Kontener backend ma healthcheck oparty o `GET /health/ready`.
+
 Wymagane pliki poza kontenerami:
 
 - .env
@@ -462,6 +474,8 @@ Wymagane pliki poza kontenerami:
 - testy integracyjne backend-db
 - testy integracyjne frontend-backend
 - test uruchomieniowy potwierdzający, że wygenerowany projekt startuje przez docker compose
+
+Testy uruchamiane są w kontenerach Docker, bez instalowania zależności projektu na hoście.
 
 ## 14. Wymagania niefunkcjonalne
 
