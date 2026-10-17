@@ -1,17 +1,15 @@
 from pathlib import Path
 from typing import Annotated, Literal
 
-from pydantic import AfterValidator, Field, StrictInt, StringConstraints
+from pydantic import AfterValidator, StrictInt, StringConstraints
 
-from generator.common.schema import ProjectRealm, StrictModel
+from generator.common.schema import Port, ProjectRealm, StrictModel
 
 PROJECT_NAME_MAX_LENGTH = 127
-PROJECT_MIN_PORT = 1
-PROJECT_MAX_PORT = 65535
 
 
 def _ensure_absolute(path: Path) -> Path:
-    """Przepuszcza tylko ścieżki bezwzględne w systemie, na którym działa generator, a pozostałe odrzuca błędem walidacji."""
+    """Odrzuca ścieżki, które nie są bezwzględne w systemie, na którym działa generator."""
 
     if not path.is_absolute():
         raise ValueError("Ścieżka musi być bezwzględna")
@@ -35,5 +33,5 @@ class ConfigFile(StrictModel):
     project: ProjectConfig
     frontend: str
     backend: str
-    ports: dict[ProjectRealm, Annotated[int, Field(ge=PROJECT_MIN_PORT, le=PROJECT_MAX_PORT)] | None]
+    ports: dict[ProjectRealm, Port | None]
     envs: dict[ProjectRealm, dict[str, str | StrictInt]]

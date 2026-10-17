@@ -1,10 +1,16 @@
 from enum import StrEnum
+from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
+
+PROJECT_MIN_PORT = 1
+PROJECT_MAX_PORT = 65535
+
+Port = Annotated[int, Field(ge=PROJECT_MIN_PORT, le=PROJECT_MAX_PORT)]
 
 
 class ProjectRealm(StrEnum):
-    """Części wygenerowanego projektu, które mają własny katalog i własny plik .env. Służą jako klucze w sekcjach ports i envs."""
+    """Części wygenerowanego projektu, z własnym katalogiem i plikiem .env."""
 
     BACKEND = "backend"
     FRONTEND = "frontend"
@@ -12,6 +18,6 @@ class ProjectRealm(StrEnum):
 
 
 class StrictModel(BaseModel):
-    """Baza modeli wejścia: nieznane klucze są błędem, a wczytana konfiguracja jest niezmienna."""
+    """Baza modeli wejścia: nieznane klucze są błędem, a wczytane dane są niezmienne."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
