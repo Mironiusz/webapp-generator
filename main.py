@@ -1,5 +1,5 @@
-from generator.config.logger import configure_logging
 from generator.core import Core
+from generator.settings.logger import configure_logging
 
 configure_logging()
 

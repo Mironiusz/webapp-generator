@@ -1,0 +1,18 @@
+name: "FastAPI + SQLite"
+type: "backend-db"
+version: "0.0.1"
+framework:
+  name: "FastAPI"
+  version: "0.141.1"
+language:
+  name: "Python"
+  version: "3.13"
+database:
+  engine: "SQLite"
+  version: "3.46.1"
+stability: "alpha"
+ports:
+  backend: 8000
+contributions: ["docker-compose.yml"]
+required_envs:
+  backend: ["AUTH__SECRET_KEY"]

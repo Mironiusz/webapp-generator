@@ -102,8 +102,8 @@ Kryterium jest spełnione, jeśli wygenerowany projekt zawiera co najmniej:
 |--/frontend
 |--/backend
 |--/database \*opcjonalny
-|--.env
-|--.env.example
+|--.env \*opcjonalny
+|--.env.example \*opcjonalny
 |--README.md
 |--docker-compose.yml
 |--.gitignore
@@ -162,7 +162,7 @@ Typ weryfikacji: automatyczna.
 
 ### KA-DOCKER-03 - Konfiguracja środowiskowa
 
-Kryterium jest spełnione, jeśli projekt zawiera pliki .env i .env.example, a wartości w .env umożliwiają uruchomienie projektu bez dodatkowej konfiguracji.
+Kryterium jest spełnione, jeśli każda część projektu zawiera pliki .env i .env.example, a wartości w tych plikach umożliwiają uruchomienie projektu bez dodatkowej konfiguracji.
 
 Typ weryfikacji: automatyczna i ręczna.
 
@@ -530,15 +530,17 @@ Typ weryfikacji: automatyczna i ręczna.
 Kryterium jest spełnione, jeśli nowa technologia musi jawnie określić:
 
 - Nazwa
-- Rodzaj
+- Rodzaj {frontend, backend-db, containerization, infrastructure}
 - Wersja template packa
 - \*Nazwa i wersja frameworka
+- \*Silnik i wersja bazy danych
 - Język programowania
 - Poziom stabilności
-- Uruchomienie testów
-- Lista zależności
-- Zapotrzebowanie na zasoby i porty
-- Kontrybucje i generowane pliki
+- Zapotrzebowanie na porty
+- Lista zmiennych środowiskowych wymaganych od użytkownika
+- Kontrybucje
+
+Nowa technologia musi też dostarczać makefile z targetem `test`, który uruchamia jej testy, oraz deklarować swoje zależności w natywnym pliku zależności.
 
 Typ weryfikacji: ręczna.
 

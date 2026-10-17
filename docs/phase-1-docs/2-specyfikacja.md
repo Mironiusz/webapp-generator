@@ -95,8 +95,8 @@ Generowane są:
 |--/frontend
 |--/backend
 |--/database \*opcjonalny
-|--.env
-|--.env.example
+|--.env \*opcjonalny
+|--.env.example \*opcjonalny
 |--README.md
 |--docker-compose.yml
 |--.gitignore
@@ -461,8 +461,7 @@ Kontener backend ma healthcheck oparty o `GET /health/ready`.
 
 Wymagane pliki poza kontenerami:
 
-- .env
-- .env.example
+- .env i .env.example w każdej części projektu
 - docker-compose.yml
 - Dockerfile frontendowy
 - Dockerfile backendowy

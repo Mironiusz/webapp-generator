@@ -40,7 +40,7 @@ Te pliki pozwolą mi łatwiej układać sobie pracę krok po kroku i dzielić j�
 
 #### Forma template packa
 
-- [ ] Manifest i parametry dla generatora
+- [x] Manifest i parametry dla generatora
 - [ ] Wkład packa do wspólnych plików projektu
 - [ ] Wykluczenie plików sandboxa
 
@@ -60,7 +60,7 @@ Te pliki pozwolą mi łatwiej układać sobie pracę krok po kroku i dzielić j�
 
 #### Konfiguracja
 
-- [ ] Format pliku konfiguracyjnego
+- [x] Format pliku konfiguracyjnego
 - [ ] Odczyt manifestu
 - [ ] Normalizacja konifguracji (pełne 6.5)
 - [ ] Walidacja konfiguracji (pełne 6.6)

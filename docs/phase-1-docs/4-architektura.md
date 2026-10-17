@@ -94,7 +94,7 @@ Template pack jest podstawową jednostką rozszerzalności generatora. Nowa tech
 
 Opis template packa zawierający informacje potrzebne generatorowi do jego użycia.
 
-Manifest określa między innymi typ template packa, obsługiwaną technologię, generowane pliki oraz inne, potrzebne informacje.
+Manifest określa między innymi typ template packa, obsługiwaną technologię oraz inne, potrzebne informacje.
 
 ### 2.9 Template registry
 
@@ -136,7 +136,7 @@ Generation plan określa, jakie template packi zostaną użyte, jakie pliki zost
 
 Wkład template packa lub templata do pliku albo elementu, który jest składany z wielu źródeł.
 
-Contribution jest używane tam, gdzie jeden plik powstaje z informacji dostarczanych przez wiele template packów. Przykładami takich plików są docker-compose.yml, .env oraz README.md.
+Contribution jest używane tam, gdzie jeden plik powstaje z informacji dostarczanych przez wiele template packów. Przykładami takich plików są docker-compose.yml, .env w katalogu głównym projektu oraz README.md.
 
 ### 2.16 Staging
 
@@ -419,7 +419,7 @@ Walidacja obejmuje sprawdzenie:
 - czy output_dir jest poprawny
 - czy wymagane wartości env istnieją albo mogą zostać wygenerowane
 - czy istnieją template packi potrzebne dla tej konfiguracji
-- czy wybrane template packi deklarują wymagane kontrakty oraz czy nie powodują konfliktów plików, portów, zmiennych środowiskowych i contributions
+- czy wybrane template packi nie powodują konfliktów plików, portów, zmiennych środowiskowych i contributions
 
 ### 6.7 Budowanie planu generacji
 
@@ -563,7 +563,7 @@ Wzór listy kroków:
 
 - pobranie parametrów z generation planu
 - utworzenie folderu stagingu
-- utworzenie struktury plików na podstawie manifestów template packów
+- utworzenie struktury plików na podstawie templatów całościowych template packów
 - utworzenie plików z contributions na podstawie manifestów template packów
 - rendering globalnych template packów, na przykład Docker
 - rendering template packa backend-db stacka
@@ -662,9 +662,9 @@ Niektóre opcje, jak na przykład zajęty katalog lub chwilowo niedostępny port
 
 ### 10.3 Konfiguracja projektu
 
-Ścieżka bezwzględna do katalogu docelowego oraz jego nazwa.
+Ścieżka bezwzględna do katalogu nadrzędnego output_dir oraz nazwa projektu. Projekt powstaje w katalogu output_dir/name.
 
-Ścieżka musi prowadzić do istniejącego miejsca na dysku, a katalog musi umożliwiać zapis i odczyt plików. Jeśli docelowy katalog nie jest pusty, należy potwierdzić uzycie go - wtedy zawartość zostanie wyczyszczona.
+Ścieżka output_dir musi prowadzić do istniejącego miejsca na dysku, a katalog musi umożliwiać zapis i odczyt plików. Jeśli katalog output_dir/name istnieje i nie jest pusty, należy potwierdzić użycie go - wtedy jego zawartość zostanie wyczyszczona. Czyszczenie nigdy nie obejmuje pozostałej zawartości output_dir.
 
 ### 10.4 Konfiguracja frontendu
 
@@ -680,7 +680,7 @@ Plik konfiguracyjny wymaga podania portów pod oczekiwane usługi. CLI będzie o
 
 ### 10.7 Konfiguracja środowiskowa
 
-Jeśli będą potrzebne jakieś secrety środowiskowe, trzeba je będzie tutaj podać. Każdy template pack może oczekiwać zmiennych środowiskowych.
+Jeśli będą potrzebne jakieś secrety środowiskowe, trzeba je będzie tutaj podać. Każdy template pack może oczekiwać zmiennych środowiskowych. Wartości są podawane osobno dla każdej części projektu i trafiają do jej własnego pliku .env.
 
 ### 10.8 Wartości domyślne
 
@@ -722,7 +722,7 @@ Minimalne wymagania funkcjonalne i strukturalne wobec danych wymaganych do dzia�
 
 ### 12.4 Zgodność template packów z kontraktami
 
-Każdy dodany template pack musi spełniać te kontrakty, inaczej nie będzie kompatybilny z innymi.
+Każdy dodany template pack musi spełniać kontrakty przypisane do jego rodzaju, inaczej nie będzie kompatybilny z innymi. Frontend musi być zgodny z kontraktem HTTP API, a backend-db stack z kontraktem HTTP API oraz kontraktem danych. Ponieważ kontrakty wynikają z rodzaju template packa, nie są deklarowane w manifeście.
 
 ### 12.5 Testowanie zgodności z kontraktami
 
@@ -739,7 +739,7 @@ Template to pojedynczy plik, będący częścią template packa, odwzorowywany n
 Template pack składa się ze zbioru templatów całościowych, częściowych oraz manifestu.
 Templaty całościowe są po prostu katalogiem do skopiowania.
 Templaty częściowe zawierają treść oraz informację, do jakiego pliku kontrybuują.
-Manifest określa rodzaj template packa, zależności, wersję.
+Manifest określa rodzaj template packa i jego wersję.
 
 ### 13.3 Template pack jako jednostka rozszerzalności
 
@@ -747,26 +747,28 @@ Kiedy core zostanie ukończony, rozszerzanie generatora o kolejne wspierane fram
 
 ### 13.4 Manifest template packa
 
-Manifest zawiera wszystkie potrzebne informacje o template packu. To na podstawie manifestu zostaje dopasowany odpowiedni template pack.
+Manifest zawiera potrzebne informacje o template packu. To na podstawie manifestu zostaje dopasowany odpowiedni template pack.
 
 Dane zawarte w manifeście (\* oznacza daną opcjonalną):
 
 - Nazwa
-- Rodzaj
+- Rodzaj {frontend, backend-db, containerization, infrastructure}
 - Wersja template packa
 - \*Nazwa frameworka
 - \*Wersja frameworka
+- \*Silnik bazy danych
+- \*Wersja bazy danych
 - Język programowania
-- Poziom stabilności {alfa, beta, stable}
-- Uruchomienie testów (komenda + ścieżka)
-- Lista zależności wymaganych przez template pack z zewnątrz
-- Lista zależności, jakie template pack zainstaluje
-- Zapotrzebowanie na zasoby
+- Poziom stabilności {alpha, beta, stable}
 - Zapotrzebowanie na porty
+- Lista zmiennych środowiskowych wymaganych od użytkownika
 - Kontrybucje
-- Generowane pliki
-- \*Zapewniane kontrakty
-- \*Wymagane kontrakty
+
+Sposób uruchomienia testów nie jest częścią manifestu. Każdy template pack musi dostarczać makefile z targetem `test`, który uruchamia jego testy.
+
+Zależności również nie są częścią manifestu. Template pack deklaruje je w natywnym pliku zależności swojej technologii, na przykład pyproject.toml albo package.json. Zależności między template packami wynikają z ich rodzajów.
+
+Generowane pliki nie są wymieniane w manifeście. Wynikają z zawartości katalogu templatów całościowych template packa.
 
 ### 13.5 Ograniczenie logiki w template'ach
 
@@ -889,12 +891,14 @@ Statystyki pozwolą podsumować i porównać różne template packi. Do tego, da
 |--/frontend
 |--/backend
 |--/database \*opcjonalny
-|--.env
-|--.env.example
+|--.env \*opcjonalny
+|--.env.example \*opcjonalny
 |--README.md
 |--docker-compose.yml
 |--.gitignore
 |--.dockerignore
+
+Każda część projektu (frontend, backend i opcjonalnie database) ma własne pliki .env i .env.example. Plik .env w katalogu głównym jest potrzebny tylko wtedy, gdy docker-compose.yml korzysta z interpolacji zmiennych.
 
 ## 19 Powiązanie architektury z kryteriami akceptacyjnymi
 
@@ -934,8 +938,7 @@ Wygenerowany projekt musi zawierać co najmniej:
 - frontend
 - backend
 - docker-compose.yml
-- .env
-- .env.example
+- .env i .env.example w każdej części projektu
 - README.md
 - testy
 
