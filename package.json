@@ -1,0 +1,7 @@
+{
+  "name": "generator",
+  "private": true,
+  "devDependencies": {
+    "prettier": "3.7.4"
+  }
+}
