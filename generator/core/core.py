@@ -1,4 +1,4 @@
-from config.logger import get_logger
+from generator.config.logger import get_logger
 
 logger = get_logger(__name__)
 

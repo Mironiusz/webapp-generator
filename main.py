@@ -1,5 +1,5 @@
-from config.logger import configure_logging
-from core import Core
+from generator.config.logger import configure_logging
+from generator.core import Core
 
 configure_logging()
 
