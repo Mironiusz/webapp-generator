@@ -178,7 +178,7 @@ Każdy błąd ma postać:
 
 ```json
 {
-	"detail": "Komunikat błędu"
+  "detail": "Komunikat błędu"
 }
 ```
 
@@ -207,10 +207,10 @@ Wszystkie endpointy zwracające użytkownika używają tego samego kształtu:
 
 ```json
 {
-	"id": 1,
-	"username": "admin",
-	"email": "admin@example.com",
-	"is_active": true
+  "id": 1,
+  "username": "admin",
+  "email": "admin@example.com",
+  "is_active": true
 }
 ```
 
@@ -224,7 +224,7 @@ Endpoint służy do sprawdzenia, czy backend odpowiada. Nie sprawdza bazy danych
 
 ```json
 {
-	"status": "ok"
+  "status": "ok"
 }
 ```
 
@@ -238,8 +238,8 @@ Pole `database_status` przyjmuje wartości `up` albo `down`.
 
 ```json
 {
-	"status": "ok",
-	"database_status": "up"
+  "status": "ok",
+  "database_status": "up"
 }
 ```
 
@@ -247,8 +247,8 @@ Pole `database_status` przyjmuje wartości `up` albo `down`.
 
 ```json
 {
-	"status": "degraded",
-	"database_status": "down"
+  "status": "degraded",
+  "database_status": "down"
 }
 ```
 
@@ -266,9 +266,9 @@ Pole `schema_status` przyjmuje wartości:
 
 ```json
 {
-	"status": "ok",
-	"database_status": "up",
-	"schema_status": "ready"
+  "status": "ok",
+  "database_status": "up",
+  "schema_status": "ready"
 }
 ```
 
@@ -276,9 +276,9 @@ Pole `schema_status` przyjmuje wartości:
 
 ```json
 {
-	"status": "degraded",
-	"database_status": "up",
-	"schema_status": "not_migrated"
+  "status": "degraded",
+  "database_status": "up",
+  "schema_status": "not_migrated"
 }
 ```
 
@@ -286,9 +286,9 @@ Pole `schema_status` przyjmuje wartości:
 
 ```json
 {
-	"status": "degraded",
-	"database_status": "down",
-	"schema_status": "unknown"
+  "status": "degraded",
+  "database_status": "down",
+  "schema_status": "unknown"
 }
 ```
 
@@ -300,9 +300,9 @@ Endpoint służy do utworzenia konta użytkownika. Pole `username` jest opcjonal
 
 ```json
 {
-	"username": "admin",
-	"email": "admin@example.com",
-	"password": "password"
+  "username": "admin",
+  "email": "admin@example.com",
+  "password": "password"
 }
 ```
 
@@ -310,10 +310,10 @@ Endpoint służy do utworzenia konta użytkownika. Pole `username` jest opcjonal
 
 ```json
 {
-	"id": 1,
-	"username": "admin",
-	"email": "admin@example.com",
-	"is_active": true
+  "id": 1,
+  "username": "admin",
+  "email": "admin@example.com",
+  "is_active": true
 }
 ```
 
@@ -321,7 +321,7 @@ Endpoint służy do utworzenia konta użytkownika. Pole `username` jest opcjonal
 
 ```json
 {
-	"detail": "Invalid request data"
+  "detail": "Invalid request data"
 }
 ```
 
@@ -331,7 +331,7 @@ Zwracany, gdy istnieje już użytkownik z takim samym `email` albo takim samym `
 
 ```json
 {
-	"detail": "User already exists"
+  "detail": "User already exists"
 }
 ```
 
@@ -343,8 +343,8 @@ Endpoint służy do zalogowania użytkownika i zwrócenia tokena JWT.
 
 ```json
 {
-	"email": "admin@example.com",
-	"password": "password"
+  "email": "admin@example.com",
+  "password": "password"
 }
 ```
 
@@ -352,8 +352,8 @@ Endpoint służy do zalogowania użytkownika i zwrócenia tokena JWT.
 
 ```json
 {
-	"access_token": "<jwt>",
-	"token_type": "bearer"
+  "access_token": "<jwt>",
+  "token_type": "bearer"
 }
 ```
 
@@ -361,7 +361,7 @@ Endpoint służy do zalogowania użytkownika i zwrócenia tokena JWT.
 
 ```json
 {
-	"detail": "Invalid request data"
+  "detail": "Invalid request data"
 }
 ```
 
@@ -371,7 +371,7 @@ Zwracany dla nieistniejącego adresu email i dla złego hasła. Odpowiedź nie r
 
 ```json
 {
-	"detail": "Invalid credentials"
+  "detail": "Invalid credentials"
 }
 ```
 
@@ -381,7 +381,7 @@ Zwracany, gdy dane logowania są poprawne, ale użytkownik jest nieaktywny. Niea
 
 ```json
 {
-	"detail": "Inactive user"
+  "detail": "Inactive user"
 }
 ```
 
@@ -403,10 +403,10 @@ Authorization: Bearer <access_token>
 
 ```json
 {
-	"id": 1,
-	"username": "admin",
-	"email": "admin@example.com",
-	"is_active": true
+  "id": 1,
+  "username": "admin",
+  "email": "admin@example.com",
+  "is_active": true
 }
 ```
 
@@ -416,7 +416,7 @@ Zwracany, gdy nagłówka brakuje, token jest niepoprawny, wygasł albo wskazuje 
 
 ```json
 {
-	"detail": "Not authenticated"
+  "detail": "Not authenticated"
 }
 ```
 
@@ -424,7 +424,7 @@ Zwracany, gdy nagłówka brakuje, token jest niepoprawny, wygasł albo wskazuje 
 
 ```json
 {
-	"detail": "Inactive user"
+  "detail": "Inactive user"
 }
 ```
 

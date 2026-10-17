@@ -51,3 +51,5 @@ Dokończyłem cały backend fastapi w wersji 1.0 (jeszcze bez testów i niektór
 Skończyłem podstawową wersję backendu, jeszcze bez dokłądniejszych zabezpieczeń i bez testów. Doszedł za to docker i user friendly readme.
 
 Okazuje się, że implementując backend, trochę rozjechałem się z moimi docsami specyfikacji. Jako że bardziej podoba mi się to, co wyszło mi w praktyce, po prostu zaktualizuję te docsy.
+
+Odłożę też na jakiś czas template pack frontendu - chcę zrobić w końću coś z właściwego generatora.

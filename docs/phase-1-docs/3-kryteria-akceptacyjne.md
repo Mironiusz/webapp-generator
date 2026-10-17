@@ -184,7 +184,7 @@ Kryterium jest spełnione, jeśli endpoint GET /health zwraca status HTTP 200 or
 
 ```json
 {
-	"status": "ok"
+  "status": "ok"
 }
 ```
 
@@ -198,8 +198,8 @@ Oczekiwany format odpowiedzi:
 
 ```json
 {
-	"access_token": "<jwt>",
-	"token_type": "bearer"
+  "access_token": "<jwt>",
+  "token_type": "bearer"
 }
 ```
 
@@ -225,10 +225,10 @@ Oczekiwany format odpowiedzi:
 
 ```json
 {
-	"id": 1,
-	"username": "admin",
-	"email": "admin@example.com",
-	"is_active": true
+  "id": 1,
+  "username": "admin",
+  "email": "admin@example.com",
+  "is_active": true
 }
 ```
 
@@ -248,10 +248,10 @@ Oczekiwany format odpowiedzi:
 
 ```json
 {
-	"id": 1,
-	"username": "admin",
-	"email": "admin@example.com",
-	"is_active": true
+  "id": 1,
+  "username": "admin",
+  "email": "admin@example.com",
+  "is_active": true
 }
 ```
 
@@ -280,8 +280,8 @@ Kryterium jest spełnione, jeśli endpoint GET /health/db przy działającej baz
 
 ```json
 {
-	"status": "ok",
-	"database_status": "up"
+  "status": "ok",
+  "database_status": "up"
 }
 ```
 
@@ -293,9 +293,9 @@ Kryterium jest spełnione, jeśli endpoint GET /health/ready po wdrożeniu wszys
 
 ```json
 {
-	"status": "ok",
-	"database_status": "up",
-	"schema_status": "ready"
+  "status": "ok",
+  "database_status": "up",
+  "schema_status": "ready"
 }
 ```
 

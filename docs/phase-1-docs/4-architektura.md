@@ -182,12 +182,12 @@ Folder lub plik tworzony przy przejściu między stanami generacji.
 
 1. Pozyskanie danych wejściowych.
    Generator zaczyna od otrzymania danych wejściowych. To jest jedynie deklaracja od użytkownika, co chce uzyskać:
-    - nazwa projektu
-    - katalog docelowy
-    - frontend
-    - backend-db stack
-    - porty
-    - zmienne środowiskowe
+   - nazwa projektu
+   - katalog docelowy
+   - frontend
+   - backend-db stack
+   - porty
+   - zmienne środowiskowe
 
 2. Normalizacja konfiguracji
    Generator przerabia dane wejściowe na spójną konfigurację wewnętrzną za pomocą wspólnego mechanizmu normalizacji danych wejściowych. Wartości zostają uporządkowane i zostaje z nich utworzony docelowy plik konfiguracyjny, na którego podstawie powstanie projekt. Dzięki temu zarówno kreator, jak i plik konfiguracyjny mogą być interpretowane tak samo.
