@@ -27,18 +27,17 @@ class Normalizer:
     def _get_default_ports(self) -> Mapping[ProjectRealm, Port]:
         default_ports = {}
         for manifest in self.manifests:
-            for port in manifest.ports:
-                default_ports[port] = manifest.ports[port]
+            default_ports.update(manifest.ports)
 
         return default_ports
 
-    def _get_required_envs(self) -> dict[ProjectRealm, list[str]]:
-        default_envs = {}
+    def _get_required_env_names(self) -> dict[ProjectRealm, list[str]]:
+        required_env_names = {}
         for manifest in self.manifests:
-            for env in ProjectRealm:
-                default_envs[env] = manifest.required_envs.get(env, [])
+            for realm in ProjectRealm:
+                required_env_names[realm] = manifest.required_envs.get(realm, [])
 
-        return default_envs
+        return required_env_names
 
     def _fill_default_ports(self) -> Mapping[ProjectRealm, Port]:
         """
@@ -71,22 +70,22 @@ class Normalizer:
         if self.config_file.envs is None:
             return None
 
-        default_envs = self._get_required_envs()
-        logger.debug(default_envs)
+        required_env_names = self._get_required_env_names()
+        logger.debug(required_env_names)
 
         target_envs: dict[ProjectRealm, dict[str, SecretStr | StrictInt]] = {}
-        for realm in default_envs:
-            realm_envs_config = self.config_file.envs.get(realm)
+        for realm, env_names in required_env_names.items():
+            realm_envs = self.config_file.envs.get(realm)
 
-            logger.debug(realm_envs_config)
-            logger.debug(default_envs[realm])
+            logger.debug(realm_envs)
+            logger.debug(env_names)
 
-            target_env_realm = {}
-            for env_variable in default_envs[realm]:
-                if realm_envs_config is not None:
-                    target_env_realm[env_variable] = realm_envs_config.get(env_variable, SecretStr(secrets.token_urlsafe(32)))
+            target_realm_envs = {}
+            for env_name in env_names:
+                if realm_envs is not None:
+                    target_realm_envs[env_name] = realm_envs.get(env_name, SecretStr(secrets.token_urlsafe(32)))
 
-            target_envs[realm] = target_env_realm
+            target_envs[realm] = target_realm_envs
 
         logger.debug(target_envs)
         return target_envs
