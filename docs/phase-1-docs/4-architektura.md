@@ -414,7 +414,7 @@ Walidacja obejmuje sprawdzenie:
 - czy porty nie mają konfliktów
 - czy output_dir jest poprawny
 - czy wymagane wartości env istnieją albo mogą zostać wygenerowane
-- czy wybrane template packi nie powodują konfliktów plików, portów, zmiennych środowiskowych i contributions
+- czy wybrane template packi nie powodują konfliktów plików, portów i contributions
 
 ### 6.7 Budowanie planu generacji
 
@@ -671,11 +671,11 @@ Wybór template packa z dostępnych backendów. Plik konfiguracyjny jest walidow
 
 ### 10.6 Konfiguracja portów
 
-Plik konfiguracyjny może podać port dla każdej części projektu. Null albo brak wpisu oznacza port domyślny z manifestu template packa. Część projektu, której nie ma żaden z wybranych template packów, nie dostaje portu. Podany dla niej port jest pomijany z ostrzeżeniem. CLI będzie od razu weryfikowało, czy port nie ma konfliktów i czy jest chwilowo dostępny. Nie można użyć portu z konfliktem, ale port niedostępny jest przepuszczany z ostrzeżeniem wymagającym potwierdzenia.
+Plik konfiguracyjny może podać port dla każdej części projektu. Null albo brak wpisu oznacza port domyślny z manifestu template packa. Część projektu istnieje w generowanym projekcie, jeśli któryś z wybranych template packów deklaruje dla niej port. Część, która nie istnieje, nie dostaje portu, a podany dla niej port jest pomijany z ostrzeżeniem. CLI będzie od razu weryfikowało, czy port nie ma konfliktów i czy jest chwilowo dostępny. Nie można użyć portu z konfliktem, ale port niedostępny jest przepuszczany z ostrzeżeniem wymagającym potwierdzenia.
 
 ### 10.7 Konfiguracja środowiskowa
 
-Sekrety środowiskowe można tutaj podać, a brakujące generator losuje osobno dla każdego projektu. Każdy template pack może oczekiwać zmiennych środowiskowych. Wartości są podawane osobno dla każdej części projektu i trafiają do jej własnego pliku .env. Zmienne, których nie wymaga żaden z wybranych template packów, są pomijane z ostrzeżeniem.
+Sekrety środowiskowe można tutaj podać, a brakujące generator losuje osobno dla każdego projektu. Każdy template pack może oczekiwać zmiennych środowiskowych. Wartości są podawane osobno dla każdej części projektu i trafiają do jej własnego pliku .env. Zmienne, których nie wymaga żaden z wybranych template packów, są pomijane z ostrzeżeniem. Każda istniejąca część projektu ma w znormalizowanej konfiguracji swoją sekcję zmiennych, nawet pustą, a część, która nie istnieje, nie ma jej wcale.
 
 ### 10.8 Wartości domyślne
 
@@ -758,6 +758,10 @@ Dane zawarte w manifeście (\* oznacza daną opcjonalną):
 - Domyślny port hosta dla każdej części projektu
 - Lista sekretów środowiskowych wymaganych przez każdą część projektu
 - Kontrybucje
+
+Domyślny port oznacza, że template pack dostarcza daną część projektu. Sekrety wymagane dla części projektu, dla której żaden z wybranych template packów nie deklaruje portu, są pomijane.
+
+Sekrety wymagane przez kilka template packów w tej samej części projektu są łączone i mają jedną wspólną wartość.
 
 Sposób uruchomienia testów nie jest częścią manifestu. Każdy template pack musi dostarczać makefile z targetem `test`, który uruchamia jego testy.
 

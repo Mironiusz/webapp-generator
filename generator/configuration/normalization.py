@@ -41,10 +41,13 @@ class Normalizer:
         Zbiera nazwy zmiennych środowiskowych wymaganych przez manifesty wybranych template packów.
         Nazwy z kilku manifestów są łączone bez powtórzeń, w kolejności z manifestów.
         Każda część projektu ma wpis, nawet z pustą listą.
+        Zmienne wymagane dla części projektu bez portu są pomijane.
         """
-        required_env_names: dict[ProjectRealm, list[str]] = {realm: [] for realm in ProjectRealm}
+        required_env_names: dict[ProjectRealm, list[str]] = {realm: [] for realm in self._get_default_ports()}
         for manifest in self.manifests:
             for realm, env_names in manifest.required_envs.items():
+                if realm not in required_env_names:
+                    continue
                 for env_name in env_names:
                     if env_name not in required_env_names[realm]:
                         required_env_names[realm].append(env_name)
@@ -59,7 +62,6 @@ class Normalizer:
         Część projektu, której nie deklaruje żaden z manifestów, nie dostaje portu.
         Podany dla niej port jest pomijany z ostrzeżeniem.
         """
-
         default_ports = self._get_default_ports()
 
         target_ports: dict[ProjectRealm, Port] = {}
@@ -86,12 +88,11 @@ class Normalizer:
         Niepodany sekret wymagany przez manifest jest losowany.
         Zmienna, której nie wymaga żaden z manifestów, jest pomijana z ostrzeżeniem.
         """
-
         config_file_envs = self.config_file.envs or {}
         required_env_names = self._get_required_env_names()
 
         for realm, realm_envs in config_file_envs.items():
-            for env_name in sorted(realm_envs.keys() - required_env_names[realm]):
+            for env_name in sorted(realm_envs.keys() - required_env_names.get(realm, [])):
                 logger.warning("Ignoring env %s for %s, no selected template pack requires it", env_name, realm)
 
         target_envs: dict[ProjectRealm, dict[str, SecretStr | StrictInt]] = {}
