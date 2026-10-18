@@ -35,7 +35,7 @@ class ConfigFile(StrictModel):
     frontend: str
     backend: str
     ports: Mapping[ProjectRealm, Port | None]
-    envs: dict[ProjectRealm, dict[str, SecretStr | StrictInt]]
+    envs: dict[ProjectRealm, dict[str, SecretStr | StrictInt]] | None
 
 
 class NormalizedConfig(ConfigFile):

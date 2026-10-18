@@ -2,8 +2,8 @@ from pathlib import Path
 
 from generator.common.errors import InvalidTemplatePackError, UnknownTemplatePackError
 from generator.configuration.loader import Loader as ConfLoader
+from generator.configuration.normalization import Normalizer
 from generator.configuration.schema import ConfigFile, NormalizedConfig
-from generator.core.normalization import Normalizer
 from generator.registry.resolver import Resolver
 from generator.registry.schema import Manifest, ManifestType
 from generator.settings.logger import get_logger

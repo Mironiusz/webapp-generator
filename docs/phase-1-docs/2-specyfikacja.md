@@ -1,6 +1,6 @@
 # Specyfikacja
 
-Stan: 17.10.2026
+Stan: 18.10.2026
 
 ## 1. Cel dokumentu
 
@@ -53,15 +53,15 @@ Generator przyjmuje plik konfiguracyjny i działa bez jakiejkolwiek interakcji.
 
 Dane wejściowe są określane na podstawie kreatora lub pliku konfiguracyjnego.
 
+- version (tylko w pliku konfiguracyjnym)
 - project.name
 - project.output_dir
-- frontend.framework
-- backend.framework
-- database.engine
+- frontend - nazwa katalogu template packa frontendu
+- backend - nazwa katalogu template packa backend-db stacka
 - ports.frontend
 - ports.backend
 - ports.database (gdy backend korzysta z osobnej bazy danych)
-- env
+- envs, osobno dla każdej części projektu
 
 Sekrety w env, np. klucz podpisu tokenów JWT, nie mają wartości domyślnych. Jeśli nie zostały podane, generator tworzy je losowo osobno dla każdego projektu.
 
@@ -69,9 +69,9 @@ Sekrety w env, np. klucz podpisu tokenów JWT, nie mają wartości domyślnych. 
 
 Generator musi wspierać następujące kombinacje:
 
-- Vue + FastAPI + SQLite
+- Nuxt + FastAPI + SQLite
 - React + FastAPI + SQLite
-- Vue + Django + PostgreSQL
+- Nuxt + Django + PostgreSQL
 - React + Django + PostgreSQL
 
 Generator w tej wersji nie musi obsługiwać kombinacji spoza tej listy, ale musi być rozszerzalny o nowe frameworki frontendowe i backendowe.

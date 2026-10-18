@@ -1,6 +1,6 @@
 # Kryteria akceptacyjne
 
-Stan: 17.10.2026
+Stan: 18.10.2026
 
 ## 1. Cel dokumentu
 
@@ -62,9 +62,9 @@ Typ weryfikacji: automatyczna i ręczna.
 
 ## 5. Kryteria dla wspieranych kombinacji technologicznych
 
-### KA-STACK-01 - Vue + FastAPI + SQLite
+### KA-STACK-01 - Nuxt + FastAPI + SQLite
 
-Kryterium jest spełnione, jeśli generator tworzy działający projekt dla kombinacji Vue + FastAPI + SQLite.
+Kryterium jest spełnione, jeśli generator tworzy działający projekt dla kombinacji Nuxt + FastAPI + SQLite.
 
 Typ weryfikacji: automatyczna.
 
@@ -74,9 +74,9 @@ Kryterium jest spełnione, jeśli generator tworzy działający projekt dla komb
 
 Typ weryfikacji: automatyczna.
 
-### KA-STACK-03 - Vue + Django + PostgreSQL
+### KA-STACK-03 - Nuxt + Django + PostgreSQL
 
-Kryterium jest spełnione, jeśli generator tworzy działający projekt dla kombinacji Vue + Django + PostgreSQL.
+Kryterium jest spełnione, jeśli generator tworzy działający projekt dla kombinacji Nuxt + Django + PostgreSQL.
 
 Typ weryfikacji: automatyczna.
 
@@ -536,8 +536,8 @@ Kryterium jest spełnione, jeśli nowa technologia musi jawnie określić:
 - \*Silnik i wersja bazy danych
 - Język programowania
 - Poziom stabilności
-- Zapotrzebowanie na porty
-- Lista zmiennych środowiskowych wymaganych od użytkownika
+- Domyślny port hosta dla każdej części projektu
+- Lista sekretów środowiskowych wymaganych przez każdą część projektu
 - Kontrybucje
 
 Nowa technologia musi też dostarczać makefile z targetem `test`, który uruchamia jej testy, oraz deklarować swoje zależności w natywnym pliku zależności.

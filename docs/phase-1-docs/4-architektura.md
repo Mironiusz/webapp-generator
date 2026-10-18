@@ -1,6 +1,6 @@
 # Architektura
 
-Stan: 17.10.2026
+Stan: 18.10.2026
 
 ## 1 Wstęp
 
@@ -100,7 +100,7 @@ Manifest określa między innymi typ template packa, obsługiwaną technologię 
 
 Rejestr dostępnych template packów, tworzony podczas procesu generacji.
 
-Template registry pozwala generatorowi sprawdzić, jakie template packi są dostępne, które technologie obsługują, z jakimi kontraktami są zgodne i czy mogą zostać użyte dla wybranej konfiguracji. Dzięki temu core generatora nie musi znać szczegółów konkretnych frameworków.
+Template registry pozwala generatorowi sprawdzić, jakie template packi są dostępne, które technologie obsługują i czy mogą zostać użyte dla wybranej konfiguracji. Dzięki temu core generatora nie musi znać szczegółów konkretnych frameworków.
 
 ### 2.10 Backend-db stack
 
@@ -193,7 +193,7 @@ Folder lub plik tworzony przy przejściu między stanami generacji.
    Generator przerabia dane wejściowe na spójną konfigurację wewnętrzną za pomocą wspólnego mechanizmu normalizacji danych wejściowych. Wartości zostają uporządkowane i zostaje z nich utworzony docelowy plik konfiguracyjny, na którego podstawie powstanie projekt. Dzięki temu zarówno kreator, jak i plik konfiguracyjny mogą być interpretowane tak samo.
 
 3. Walidacja
-   Generator waliduje konfigurację i sprawdza, czy jest ona obsługiwana. Sprawdza, czy istnieje wskazany frontend i backend, czy porty nie mają konfliktów oraz czy da się stworzyć output_dir.
+   Generator waliduje konfigurację i sprawdza, czy jest ona obsługiwana. Sprawdza, czy porty nie mają konfliktów oraz czy da się stworzyć output_dir.
 
 4. Stworzenie planu generacji
    Plan generacji jest zbiorem danych parametryzujących generację projektu. Zostanie on przekazany do pipeline'u. Plan generacji powinien wykryć konflikty między packami - na przykład jeśli chcą wyrenderować ten sam plik. Odróżnia renderowanie pliku od składania go z kilku packów, informuje, jakie pliki składane zostaną stworzone.
@@ -251,11 +251,11 @@ Dzięki temu nie trzeba będzie dodawać sztucznych adapterów, bo kontrakty zap
 
 ### 4.5 Natywność template packów
 
-Template pack będzie generował kod, który jest naturalny dla danej technologii. Django nie zostanie wciśnięte w typową strukturę FastAPI, a Vue nie będzie udawać Reacta. Dlatego kluczowe będzie dokładne zapoznanie się ze wzorcami standardowymi dla obsługiwanych technologii, a następnie utworzenie każdego template packa zgodnie z nimi. Przykład konwencji:
+Template pack będzie generował kod, który jest naturalny dla danej technologii. Django nie zostanie wciśnięte w typową strukturę FastAPI, a Nuxt nie będzie udawać Reacta. Dlatego kluczowe będzie dokładne zapoznanie się ze wzorcami standardowymi dla obsługiwanych technologii, a następnie utworzenie każdego template packa zgodnie z nimi. Przykład konwencji:
 
 - Django -> Django ORM, migracje Django, struktura Django
 - FastAPI -> struktura FastAPI, osobna konfiguracja aplikacji, osobne modele/schemy
-- Vue -> Vue Router, Vite, struktura typowa dla Vue
+- Nuxt -> routing oparty na plikach, struktura typowa dla Nuxta
 - React -> React Router, Vite, struktura typowa dla Reacta
 
 Jeśli wspólne będą jedynie wymagania, a nie struktura kodu, osiągniemy naturalny projekt, pozbawiony złych nawyków lub wymuszeń związanych z innymi frameworkami.
@@ -394,7 +394,7 @@ CLI wyświetla użytkownikowi:
 
 ### 6.4 Ładowanie konfiguracji
 
-Kiedy CLI już przygotuje dane wejściowe, przekazuje je do core'a. Dane są sprawdzane pod kątem poprawności struktury i syntaktyki, a następnie przekazywane do modułu normalizacji konfiguracji.
+Kiedy CLI już przygotuje dane wejściowe, przekazuje je do core'a. Dane są sprawdzane pod kątem poprawności struktury i syntaktyki. Sprawdzane jest też, czy template packi wskazane jako frontend i backend istnieją w rejestrze template packów i mają właściwy rodzaj. CLI robi to przy wyborze packa, a tryb pliku konfiguracyjnego zaraz po wczytaniu pliku. Następnie dane są przekazywane do modułu normalizacji konfiguracji.
 
 ### 6.5 Normalizacja konfiguracji
 
@@ -402,22 +402,17 @@ Tutaj konfiguracja zostaje uporządkowana i znormalizowana. Wynikiem normalizacj
 Normalizacja obejmuje:
 
 - uzupełnienie domyślnych portów
-- ujednolicenie nazw technologii
-- zamiana ścieżki względnej na docelową ścieżkę output_dir
-- uzupełnienie domyślnych wartości env
+- wylosowanie brakujących sekretów wymaganych przez template packi
 
 ### 6.6 Walidacja konfiguracji
 
 Walidacja sprawdza, czy z tej konfiguracji można bezpiecznie wygenerować projekt. Ten etap upewnia się, że wszystkie technologie zawarte w konfigu są obsługiwane, a także nie mają konfliktów.
 Walidacja obejmuje sprawdzenie:
 
-- czy frontend jest obsługiwany
-- czy backend jest obsługiwany
 - czy kombinacja technologiczna jest wspierana
 - czy porty nie mają konfliktów
 - czy output_dir jest poprawny
 - czy wymagane wartości env istnieją albo mogą zostać wygenerowane
-- czy istnieją template packi potrzebne dla tej konfiguracji
 - czy wybrane template packi nie powodują konfliktów plików, portów, zmiennych środowiskowych i contributions
 
 ### 6.7 Budowanie planu generacji
@@ -675,15 +670,15 @@ Wybór template packa z dostępnych backendów. Plik konfiguracyjny jest walidow
 
 ### 10.6 Konfiguracja portów
 
-Plik konfiguracyjny wymaga podania portów pod oczekiwane usługi. CLI będzie od razu weryfikowało, czy port nie ma konfliktów i czy jest chwilowo dostępny. Nie można użyć portu z konfliktem, ale port niedostępny jest przepuszczany z ostrzeżeniem wymagającym potwierdzenia.
+Plik konfiguracyjny podaje port dla każdej części projektu albo null. Null oznacza port domyślny z manifestu template packa. Wpis z null dla części projektu, której nie ma żaden z wybranych template packów, jest pomijany. CLI będzie od razu weryfikowało, czy port nie ma konfliktów i czy jest chwilowo dostępny. Nie można użyć portu z konfliktem, ale port niedostępny jest przepuszczany z ostrzeżeniem wymagającym potwierdzenia.
 
 ### 10.7 Konfiguracja środowiskowa
 
-Jeśli będą potrzebne jakieś secrety środowiskowe, trzeba je będzie tutaj podać. Każdy template pack może oczekiwać zmiennych środowiskowych. Wartości są podawane osobno dla każdej części projektu i trafiają do jej własnego pliku .env.
+Sekrety środowiskowe można tutaj podać, a brakujące generator losuje osobno dla każdego projektu. Każdy template pack może oczekiwać zmiennych środowiskowych. Wartości są podawane osobno dla każdej części projektu i trafiają do jej własnego pliku .env.
 
 ### 10.8 Wartości domyślne
 
-Domyślnie może być wybrany pierwszy dostępny frontend, backend-db stack, dostępny port. Ścieżka do katalogu docelowego, nazwa projektu i zmienne środowiskowe muszą być podane.
+Frontend, backend-db stack, ścieżka do katalogu docelowego i nazwa projektu muszą być podane. Domyślny port to port z manifestu template packa, a brakujące sekrety są losowane.
 
 ## 11 Generation plan
 
@@ -759,8 +754,8 @@ Dane zawarte w manifeście (\* oznacza daną opcjonalną):
 - \*Wersja bazy danych
 - Język programowania
 - Poziom stabilności {alpha, beta, stable}
-- Zapotrzebowanie na porty
-- Lista zmiennych środowiskowych wymaganych od użytkownika
+- Domyślny port hosta dla każdej części projektu
+- Lista sekretów środowiskowych wymaganych przez każdą część projektu
 - Kontrybucje
 
 Sposób uruchomienia testów nie jest częścią manifestu. Każdy template pack musi dostarczać makefile z targetem `test`, który uruchamia jego testy.
@@ -796,6 +791,8 @@ Zawiera konfigurację związaną z infrastrukturą inną niż konteneryzacja. Se
 #### 13.7.1 Rejestr template packów
 
 Rejestr jest tworzony podczas każdego wykonania programu. Wszystkie dostępne template packi znajdujące się w katalogu template_packs są sprawdzane, a dane pobierane z ich manifestów. Na tej podstawie następuje kategoryzacja.
+
+Identyfikatorem template packa jest nazwa jego katalogu. Katalog bez pliku manifest.yaml jest pomijany z ostrzeżeniem. Niepoprawny manifest przerywa działanie generatora błędem, który wskazuje, co należy poprawić.
 
 #### 13.7.2 Dobór template packów
 
@@ -919,9 +916,9 @@ Każda wspierana technologia jest dostarczana przez odpowiedni template pack. Ge
 
 W podstawowym zakresie projektu obsługiwane są kombinacje wynikające ze specyfikacji:
 
-- Vue + FastAPI + SQLite
+- Nuxt + FastAPI + SQLite
 - React + FastAPI + SQLite
-- Vue + Django + PostgreSQL
+- Nuxt + Django + PostgreSQL
 - React + Django + PostgreSQL
 
 Niewspierane kombinacje są odrzucane na etapie walidacji, zanim generator rozpocznie zapis plików.
