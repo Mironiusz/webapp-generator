@@ -22,8 +22,23 @@ class Normalizer:
 
     def __init__(self, config_file: ConfigFile, frontend_manifest: Manifest, backend_manifest: Manifest):
         self.config_file = config_file
-        self.frontend_manifest = frontend_manifest
-        self.backend_manifest = backend_manifest
+        self.manifests = (frontend_manifest, backend_manifest)
+
+    def _get_default_ports(self) -> Mapping[ProjectRealm, Port]:
+        default_ports = {}
+        for manifest in self.manifests:
+            for port in manifest.ports:
+                default_ports[port] = manifest.ports[port]
+
+        return default_ports
+
+    def _get_required_envs(self) -> dict[ProjectRealm, list[str]]:
+        default_envs = {}
+        for manifest in self.manifests:
+            for env in ProjectRealm:
+                default_envs[env] = manifest.required_envs.get(env, [])
+
+        return default_envs
 
     def _fill_default_ports(self) -> Mapping[ProjectRealm, Port]:
         """
@@ -33,15 +48,7 @@ class Normalizer:
         Niepodany port części projektu, której nie deklaruje żaden z manifestów, jest usuwany.
         """
 
-        def get_default_ports() -> Mapping[ProjectRealm, Port]:
-            default_ports = {}
-            for manifest in (self.frontend_manifest, self.backend_manifest):
-                for port in manifest.ports:
-                    default_ports[port] = manifest.ports[port]
-
-            return default_ports
-
-        default_ports = get_default_ports()
+        default_ports = self._get_default_ports()
 
         target_ports: dict[ProjectRealm, Port] = {}
         for realm in ProjectRealm:
@@ -64,15 +71,7 @@ class Normalizer:
         if self.config_file.envs is None:
             return None
 
-        def get_required_envs() -> dict[ProjectRealm, list[str]]:
-            default_envs = {}
-            for manifest in (self.frontend_manifest, self.backend_manifest):
-                for env in ProjectRealm:
-                    default_envs[env] = manifest.required_envs.get(env, [])
-
-            return default_envs
-
-        default_envs = get_required_envs()
+        default_envs = self._get_required_envs()
         logger.debug(default_envs)
 
         target_envs: dict[ProjectRealm, dict[str, SecretStr | StrictInt]] = {}
