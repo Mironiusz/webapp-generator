@@ -403,6 +403,7 @@ Normalizacja obejmuje:
 
 - uzupełnienie domyślnych portów
 - wylosowanie brakujących sekretów wymaganych przez template packi
+- pominięcie z ostrzeżeniem portów i zmiennych środowiskowych, których nie deklarują wybrane template packi
 
 ### 6.6 Walidacja konfiguracji
 
@@ -670,11 +671,11 @@ Wybór template packa z dostępnych backendów. Plik konfiguracyjny jest walidow
 
 ### 10.6 Konfiguracja portów
 
-Plik konfiguracyjny podaje port dla każdej części projektu albo null. Null oznacza port domyślny z manifestu template packa. Wpis z null dla części projektu, której nie ma żaden z wybranych template packów, jest pomijany. CLI będzie od razu weryfikowało, czy port nie ma konfliktów i czy jest chwilowo dostępny. Nie można użyć portu z konfliktem, ale port niedostępny jest przepuszczany z ostrzeżeniem wymagającym potwierdzenia.
+Plik konfiguracyjny może podać port dla każdej części projektu. Null albo brak wpisu oznacza port domyślny z manifestu template packa. Część projektu, której nie ma żaden z wybranych template packów, nie dostaje portu. Podany dla niej port jest pomijany z ostrzeżeniem. CLI będzie od razu weryfikowało, czy port nie ma konfliktów i czy jest chwilowo dostępny. Nie można użyć portu z konfliktem, ale port niedostępny jest przepuszczany z ostrzeżeniem wymagającym potwierdzenia.
 
 ### 10.7 Konfiguracja środowiskowa
 
-Sekrety środowiskowe można tutaj podać, a brakujące generator losuje osobno dla każdego projektu. Każdy template pack może oczekiwać zmiennych środowiskowych. Wartości są podawane osobno dla każdej części projektu i trafiają do jej własnego pliku .env.
+Sekrety środowiskowe można tutaj podać, a brakujące generator losuje osobno dla każdego projektu. Każdy template pack może oczekiwać zmiennych środowiskowych. Wartości są podawane osobno dla każdej części projektu i trafiają do jej własnego pliku .env. Zmienne, których nie wymaga żaden z wybranych template packów, są pomijane z ostrzeżeniem.
 
 ### 10.8 Wartości domyślne
 

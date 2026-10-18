@@ -15,4 +15,4 @@ ports:
 
 envs:
   backend:
-    AUTH__SECOND_KEY: "g4ylfFc1LmTbX-Dr-3eNXNES-3Q5hBsWCQhkXvX5v_I"
+    AUTH__SECRET_KEY: "g4ylfFc1LmTbX-Dr-3eNXNES-3Q5hBsWCQhkXvX5v_I"

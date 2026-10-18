@@ -18,6 +18,7 @@ class Normalizer:
 
     - uzupełnienie domyślnych portów
     - wylosowanie brakujących sekretów wymaganych przez template packi
+    - pominięcie z ostrzeżeniem portów i zmiennych środowiskowych, których nie deklarują wybrane template packi
     """
 
     def __init__(self, config_file: ConfigFile, frontend_manifest: Manifest, backend_manifest: Manifest):
@@ -46,18 +47,24 @@ class Normalizer:
         Uzupełnia porty domyślnymi wartościami z manifestów wybranych template packów.
         Port podany przez użytkownika zostaje bez zmian.
         Niepodany port jest brany z manifestu, który go deklaruje.
-        Niepodany port części projektu, której nie deklaruje żaden z manifestów, jest usuwany.
+        Część projektu, której nie deklaruje żaden z manifestów, nie dostaje portu.
+        Podany dla niej port jest pomijany z ostrzeżeniem.
         """
 
         default_ports = self._get_default_ports()
 
         target_ports: dict[ProjectRealm, Port] = {}
         for realm in ProjectRealm:
-            target_port = self.config_file.ports[realm]
-            if target_port is None:
-                target_port = default_ports.get(realm)
-            if target_port is None:
+            target_port = self.config_file.ports.get(realm)
+
+            if realm not in default_ports:
+                if target_port is not None:
+                    logger.warning("Ignoring port %s for %s, no selected template pack declares it", target_port, realm)
                 continue
+
+            if target_port is None:
+                target_port = default_ports[realm]
+
             target_ports[realm] = target_port
 
         return target_ports
@@ -65,14 +72,20 @@ class Normalizer:
     def _fill_default_envs(self) -> dict[ProjectRealm, dict[str, SecretStr | StrictInt]]:
         """
         Uzupełnia zmienne środowiskowe sekretami wymaganymi przez manifesty wybranych template packów.
-        Zmienna podana przez użytkownika zostaje bez zmian.
+        Wymagana zmienna podana przez użytkownika zostaje bez zmian.
         Niepodany sekret wymagany przez manifest jest losowany.
+        Zmienna, której nie wymaga żaden z manifestów, jest pomijana z ostrzeżeniem.
         """
 
         config_file_envs = self.config_file.envs or {}
+        required_env_names = self._get_required_env_names()
+
+        for realm, realm_envs in config_file_envs.items():
+            for env_name in sorted(realm_envs.keys() - required_env_names[realm]):
+                logger.warning("Ignoring env %s for %s, no selected template pack requires it", env_name, realm)
 
         target_envs: dict[ProjectRealm, dict[str, SecretStr | StrictInt]] = {}
-        for realm, env_names in self._get_required_env_names().items():
+        for realm, env_names in required_env_names.items():
             realm_envs = config_file_envs.get(realm, {})
 
             target_realm_envs: dict[str, SecretStr | StrictInt] = {}

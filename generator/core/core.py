@@ -72,9 +72,11 @@ class Core:
         backend_manifest = self.available_packs[config_file.backend]
 
         normalizer = Normalizer(config_file, frontend_manifest, backend_manifest)
-        logger.info("[mock] Config normalized")
+        normalized_config = normalizer.run_normalization()
 
-        return normalizer.run_normalization()
+        logger.info("Config normalized")
+
+        return normalized_config
 
     def _validate_config(self, config: NormalizedConfig) -> NormalizedConfig:
         """Spełnia 6.6"""
