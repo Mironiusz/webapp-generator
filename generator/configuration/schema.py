@@ -42,3 +42,4 @@ class NormalizedConfig(ConfigFile):
     """Konfiguracja znormalizowana generatora w wersji 1 formatu."""
 
     ports: Mapping[ProjectRealm, Port]
+    envs: dict[ProjectRealm, dict[str, SecretStr | StrictInt]]

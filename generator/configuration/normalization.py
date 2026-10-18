@@ -32,10 +32,12 @@ class Normalizer:
         return default_ports
 
     def _get_required_env_names(self) -> dict[ProjectRealm, list[str]]:
-        required_env_names: dict[ProjectRealm, list[str]] = {}
+        required_env_names: dict[ProjectRealm, list[str]] = {realm: [] for realm in ProjectRealm}
         for manifest in self.manifests:
-            for realm in ProjectRealm:
-                required_env_names[realm] = manifest.required_envs.get(realm, [])
+            for realm, env_names in manifest.required_envs.items():
+                for env_name in env_names:
+                    if env_name not in required_env_names[realm]:
+                        required_env_names[realm].append(env_name)
 
         return required_env_names
 
@@ -60,19 +62,18 @@ class Normalizer:
 
         return target_ports
 
-    def _fill_default_envs(self) -> dict[ProjectRealm, dict[str, SecretStr | StrictInt]] | None:
+    def _fill_default_envs(self) -> dict[ProjectRealm, dict[str, SecretStr | StrictInt]]:
         """
         Uzupełnia zmienne środowiskowe sekretami wymaganymi przez manifesty wybranych template packów.
         Zmienna podana przez użytkownika zostaje bez zmian.
         Niepodany sekret wymagany przez manifest jest losowany.
         """
 
-        if self.config_file.envs is None:
-            return None
+        config_file_envs = self.config_file.envs or {}
 
         target_envs: dict[ProjectRealm, dict[str, SecretStr | StrictInt]] = {}
         for realm, env_names in self._get_required_env_names().items():
-            realm_envs = self.config_file.envs.get(realm, {})
+            realm_envs = config_file_envs.get(realm, {})
 
             target_realm_envs: dict[str, SecretStr | StrictInt] = {}
             for env_name in env_names:
