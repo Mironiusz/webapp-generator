@@ -26,6 +26,10 @@ class Normalizer:
         self.manifests = (frontend_manifest, backend_manifest)
 
     def _get_default_ports(self) -> dict[ProjectRealm, Port]:
+        """
+        Zbiera domyślne porty z manifestów wybranych template packów.
+        Klucze wyniku wyznaczają części projektu, które istnieją w generowanym projekcie.
+        """
         default_ports: dict[ProjectRealm, Port] = {}
         for manifest in self.manifests:
             default_ports.update(manifest.ports)
@@ -33,6 +37,11 @@ class Normalizer:
         return default_ports
 
     def _get_required_env_names(self) -> dict[ProjectRealm, list[str]]:
+        """
+        Zbiera nazwy zmiennych środowiskowych wymaganych przez manifesty wybranych template packów.
+        Nazwy z kilku manifestów są łączone bez powtórzeń, w kolejności z manifestów.
+        Każda część projektu ma wpis, nawet z pustą listą.
+        """
         required_env_names: dict[ProjectRealm, list[str]] = {realm: [] for realm in ProjectRealm}
         for manifest in self.manifests:
             for realm, env_names in manifest.required_envs.items():
@@ -72,6 +81,7 @@ class Normalizer:
     def _fill_default_envs(self) -> dict[ProjectRealm, dict[str, SecretStr | StrictInt]]:
         """
         Uzupełnia zmienne środowiskowe sekretami wymaganymi przez manifesty wybranych template packów.
+        Każda część projektu, która ma port, dostaje swoją sekcję zmiennych, nawet pustą.
         Wymagana zmienna podana przez użytkownika zostaje bez zmian.
         Niepodany sekret wymagany przez manifest jest losowany.
         Zmienna, której nie wymaga żaden z manifestów, jest pomijana z ostrzeżeniem.
@@ -100,6 +110,10 @@ class Normalizer:
         return target_envs
 
     def run_normalization(self) -> NormalizedConfig:
+        """
+        Buduje znormalizowaną konfigurację z portami i zmiennymi środowiskowymi uzupełnionymi na podstawie manifestów.
+        Konfiguracja wejściowa zostaje bez zmian.
+        """
         target_ports = self._fill_default_ports()
         target_envs = self._fill_default_envs()
 
