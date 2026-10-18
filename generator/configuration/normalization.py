@@ -24,15 +24,15 @@ class Normalizer:
         self.config_file = config_file
         self.manifests = (frontend_manifest, backend_manifest)
 
-    def _get_default_ports(self) -> Mapping[ProjectRealm, Port]:
-        default_ports = {}
+    def _get_default_ports(self) -> dict[ProjectRealm, Port]:
+        default_ports: dict[ProjectRealm, Port] = {}
         for manifest in self.manifests:
             default_ports.update(manifest.ports)
 
         return default_ports
 
     def _get_required_env_names(self) -> dict[ProjectRealm, list[str]]:
-        required_env_names = {}
+        required_env_names: dict[ProjectRealm, list[str]] = {}
         for manifest in self.manifests:
             for realm in ProjectRealm:
                 required_env_names[realm] = manifest.required_envs.get(realm, [])
@@ -70,17 +70,11 @@ class Normalizer:
         if self.config_file.envs is None:
             return None
 
-        required_env_names = self._get_required_env_names()
-        logger.debug(required_env_names)
-
         target_envs: dict[ProjectRealm, dict[str, SecretStr | StrictInt]] = {}
-        for realm, env_names in required_env_names.items():
+        for realm, env_names in self._get_required_env_names().items():
             realm_envs = self.config_file.envs.get(realm, {})
 
-            logger.debug(realm_envs)
-            logger.debug(env_names)
-
-            target_realm_envs = {}
+            target_realm_envs: dict[str, SecretStr | StrictInt] = {}
             for env_name in env_names:
                 if env_name in realm_envs:
                     target_realm_envs[env_name] = realm_envs[env_name]
@@ -89,7 +83,6 @@ class Normalizer:
 
             target_envs[realm] = target_realm_envs
 
-        logger.debug(target_envs)
         return target_envs
 
     def run_normalization(self) -> NormalizedConfig:
