@@ -405,7 +405,6 @@ Normalizacja obejmuje:
 - ujednolicenie nazw technologii
 - zamiana ścieżki względnej na docelową ścieżkę output_dir
 - uzupełnienie domyślnych wartości env
-- utworzenie nazwy technicznej projektu
 
 ### 6.6 Walidacja konfiguracji
 

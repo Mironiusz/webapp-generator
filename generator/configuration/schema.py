@@ -1,7 +1,8 @@
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Annotated, Literal
 
-from pydantic import AfterValidator, StrictInt, StringConstraints
+from pydantic import AfterValidator, SecretStr, StrictInt, StringConstraints
 
 from generator.common.schema import Port, ProjectRealm, StrictModel
 
@@ -12,7 +13,7 @@ def _ensure_absolute(path: Path) -> Path:
     """Odrzuca ścieżki, które nie są bezwzględne w systemie, na którym działa generator."""
 
     if not path.is_absolute():
-        raise ValueError("Ścieżka musi być bezwzględna")
+        raise ValueError("Path must be absolute")
 
     return path
 
@@ -33,5 +34,11 @@ class ConfigFile(StrictModel):
     project: ProjectConfig
     frontend: str
     backend: str
-    ports: dict[ProjectRealm, Port | None]
-    envs: dict[ProjectRealm, dict[str, str | StrictInt]]
+    ports: Mapping[ProjectRealm, Port | None]
+    envs: dict[ProjectRealm, dict[str, SecretStr | StrictInt]]
+
+
+class NormalizedConfig(ConfigFile):
+    """Konfiguracja znormalizowana generatora w wersji 1 formatu."""
+
+    ports: Mapping[ProjectRealm, Port]

@@ -125,7 +125,7 @@ class Logger:
     def _validate_config(self) -> None:
         """Odrzuca niepoprawną konfigurację bez stosowania fallbacków."""
         if not isinstance(self._base_logger_name, str) or not self._base_logger_name.strip():
-            raise ValueError("BASE_LOGGER_NAME musi być niepustym stringiem")
+            raise ValueError("BASE_LOGGER_NAME must be a non-empty string")
 
         self._validate_log_level(
             setting_name="CONSOLE_LOG_LEVEL",
@@ -140,10 +140,10 @@ class Logger:
     def _validate_log_level(setting_name: str, level: int) -> None:
         """Sprawdza, czy poziom jest standardową wartością modułu logging."""
         if isinstance(level, bool) or not isinstance(level, int):
-            raise TypeError(f"{setting_name} musi być wartością typu int z modułu logging")
+            raise TypeError(f"{setting_name} must be an int level from the logging module")
 
         if level not in _VALID_LOG_LEVELS:
-            raise ValueError(f"{setting_name} ma nieobsługiwaną wartość: {level}")
+            raise ValueError(f"{setting_name} has an unsupported value: {level}")
 
     def _configure_base_logger(self) -> logging.Logger:
         """Buduje bazowy logger z handlerem konsolowym i plikowym."""
@@ -211,12 +211,12 @@ def get_logger(name: str) -> logging.Logger:
 def _normalize_logger_name(name: str) -> str:
     """Buduje nazwę loggera należącą do przestrzeni nazw aplikacji."""
     if not isinstance(name, str):
-        raise TypeError("Nazwa loggera musi być stringiem")
+        raise TypeError("Logger name must be a string")
 
     normalized_name = name.strip()
 
     if not normalized_name:
-        raise ValueError("Nazwa loggera nie może być pusta")
+        raise ValueError("Logger name must not be empty")
 
     if normalized_name == "__main__":
         return BASE_LOGGER_NAME

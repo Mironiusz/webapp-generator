@@ -53,7 +53,7 @@ Te pliki pozwolą mi łatwiej układać sobie pracę krok po kroku i dzielić j�
 
 #### Szkielet core
 
-- [ ] Obiekty i architektoniczne fundamenty core
+- [x] Obiekty i architektoniczne fundamenty core
 - [ ] Korzystanie z CLI i obserwowalność
 - [ ] Wykonanywanie planu generacji
 - [ ] Obsługa pipelinu
@@ -61,7 +61,7 @@ Te pliki pozwolą mi łatwiej układać sobie pracę krok po kroku i dzielić j�
 #### Konfiguracja
 
 - [x] Format pliku konfiguracyjnego
-- [ ] Odczyt manifestu
+- [x] Odczyt manifestu
 - [ ] Normalizacja konifguracji (pełne 6.5)
 - [ ] Walidacja konfiguracji (pełne 6.6)
 

@@ -1,0 +1,14 @@
+name: "Nuxt"
+type: "frontend"
+version: "0.0.1"
+framework:
+  name: "Nuxt"
+  version: "4.6.2"
+language:
+  name: "TypeScript"
+  version: "7.0"
+stability: "alpha"
+ports:
+  frontend: 3000
+contributions: ["docker-compose.yml"]
+required_envs: {}
