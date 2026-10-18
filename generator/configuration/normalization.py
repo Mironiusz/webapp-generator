@@ -75,15 +75,17 @@ class Normalizer:
 
         target_envs: dict[ProjectRealm, dict[str, SecretStr | StrictInt]] = {}
         for realm, env_names in required_env_names.items():
-            realm_envs = self.config_file.envs.get(realm)
+            realm_envs = self.config_file.envs.get(realm, {})
 
             logger.debug(realm_envs)
             logger.debug(env_names)
 
             target_realm_envs = {}
             for env_name in env_names:
-                if realm_envs is not None:
-                    target_realm_envs[env_name] = realm_envs.get(env_name, SecretStr(secrets.token_urlsafe(32)))
+                if env_name in realm_envs:
+                    target_realm_envs[env_name] = realm_envs[env_name]
+                else:
+                    target_realm_envs[env_name] = SecretStr(secrets.token_urlsafe(32))
 
             target_envs[realm] = target_realm_envs
 
