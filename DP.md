@@ -44,65 +44,6 @@ Po przejściu przez kreator aplikacji lub uruchomieniu generatora z plikiem konf
 
 Następnie generator tworzy gotowy projekt.
 
-## Kluczowe decyzje projektowe i założenia architekroniczne
-
-1. Frontend zależy wyłącznie od kontraktu HTTP API
-   Frontend nie wie nic o tym, jaki backend został wybrany. Dla frontendu istotne jest jedynie to, żeby backend wystawiał mu określone endpointy. Dzięki temu, rozszerzanie generatora o wsparcie dla dowolnych frontendów jest bardzo proste - ponieważ frontend pełni rolę warstwy prezentacji oraz klienta korzystającego z publicznego API backendu.
-
-2. Backend i baza danych traktowane są jako backend-db stack
-   Być może na papierze wygodne byłoby rozdzielenie backendu i bazy danych, żeby tworzyć dowolne kombinacje. Niestety, backend ma zbyt duży wpływ na sposób działania bazy danych:
-   - ORM
-   - migracje
-   - modele
-   - auth
-   - struktura danych wymagana do uwierzytelniania
-   - tabele techniczne
-   - testy backend-db
-
-   To wszystko sprawia, że obsługa takiej macierzy kombinacji szybko stałaby się nienatywna i pełna sztucznych warunków. Stąd decyzja o utrzymaniu backendu i bazy danych jako jednego backend-db stacka.
-
-3. Baza danych wynika z wybranego backend-db stacka
-
-   Jest to świadome ograniczenie zakresu pracy. Użytkownik nie będzie mógł w podstawowej wersji dowolnie łączyć backendu z bazą danych. Jego decyzją będzie wybór jednego ze wspieranych backend-db stacków: FastAPI + SQLite albo Django + PostgreSQL. Dodanie większej liczby obsługiwanych stacków nie powinno wymagać zmiany założeń architektonicznych, ale zwiększyłoby ilość pracy implementacyjnej, testowej i dokumentacyjnej oraz spowodowałoby konieczność dodawania kolejnych stacków jeden po drugim. Dlatego podstawowa wersja pracy zawiera tylko stacki wskazane w specyfikacji.
-
-4. Kontrakty zamiast jakichkolwiek adapterów
-
-   Ta zasada chroni wygenerowany projekt przed sztuczną warstwą abstrakcji, jaką byłby dowolny adapter. Nie chcę, żeby projekt miał dodatkowe adaptery tylko dlatego, że generator obsłuży inne kombinacje. Dzięki temu spójność i natywność wygenerowanego kodu zostanie osiągnięta przez kontrakty:
-   - Frontend jest kompatybilny z backendem, bo spełniają kontrakt API,
-   - Backend-db stack jest zgodny z wymaganiami projektu, bo spełnia kontrakt danych.
-
-5. Natywność template packów
-
-   Template pack będzie generował kod, który jest naturalny dla danej technologii. Django nie zostanie wciśnięte w typową strukturę FastAPI, a Nuxt nie będzie udawać Reacta. Dlatego kluczowe będzie dokładne zapoznanie się ze wzorcami standardowymi dla obsługiwanych technologii, a następnie utworzenie każdego template packa zgodnie z nimi. Przykład konwencji:
-   - Django -> Django ORM, migracje Django, struktura Django
-   - FastAPI -> struktura FastAPI, osobna konfiguracja aplikacji, osobne modele/schemy
-   - Nuxt -> routing oparty na plikach, struktura typowa dla Nuxta
-   - React -> React Router, Vite, struktura typowa dla Reacta
-
-   Jeśli wspólne będą jedynie wymagania, a nie struktura kodu, osiągniemy naturalny projekt, pozbawiony złych nawyków lub wymuszeń związanych z innymi frameworkami.
-
-6. Wygenerowany projekt nie zależy runtime'owo od generatora
-
-   Generator jest jedynie narzędziem do tworzenia projektu, a nie jego częścią. Projekt po skopiowaniu do katalogu docelowego ma funkcjonować bez generatora. Wygenerowany projekt nie powinien importować bibliotek generatora ani wymagać go do uruchamiania, testowania lub dalszego rozwijania.
-
-7. Kontrolowane powtórzenia zamiast sztucznych abstrakcji
-
-   W zwykłym projekcie często dąży się do DRY. W wypadku generatora zbyt agresywne DRY mogłoby jednak sprawić, że ucierpią na tym generowane projekty. Współdzielenie jednej abstrakcji między różnymi frameworkami skończyłoby się strukturą nienaturalną dla żadnego z nich. Z tego powodu akceptuję pewne powtórzenia, jeśli są konieczne, żeby:
-   - template pack pozostał natywny
-   - wygenerowany kod pozostał czytelny
-   - framework działał zgodnie z typowymi dla siebie konwencjami
-   - nowa technologia nie wymagała modyfikowania starej
-
-   Dlatego wygenerowane projekty powinny być możliwie DRY, ale sam generator może świadomie zawierać kontrolowane powtórzenia w template packach.
-
-## Ryzyka projektowe
-
-- największe ryzyka projektu mają charakter architektoniczny, ponieważ błędne decyzje dotyczące kontraktów, template packów lub pipeline'u mogą utrudnić dalsze rozszerzanie generatora
-- zbyt duża liczba kombinacji technologicznych sprawi, że mogę nie zdążyć stworzyć pracy
-- zbyt mała liczba kombinacji technologicznych może nie dać pewności, że dodawanie kolejnych nie wymaga modyfikacji istniejących
-- ponieważ podstawowy zakres obejmuje wyłącznie backendy z ekosystemu Pythona, projekt w ograniczonym stopniu weryfikuje i testuje możliwość dodania backendu z innego języka programowania, np. Node.js, Java lub C#, mimo że z perspektywy architektonicznej powinno to być możliwe
-- zbyt agresywne stosowanie zasady DRY może prowadzić do sztucznych abstrakcji między technologiami. W projekcie ważniejsze jest zachowanie natywności template packów oraz zgodność z zasadą open/closed, nawet kosztem kontrolowanego powtórzenia części kodu lub konfiguracji
-
 ## Specyfikacja
 
 Specyfikacja określa, co generator ma robić oraz jakie warunki musi spełniać wygenerowany projekt, ale nie narzuca sposobu implementacji wewnętrznej generatora.
@@ -256,6 +197,65 @@ Wygenerowany projekt musi spełniać szeroko pojęte dobre praktyki programistyc
 - pliki dokumentacyjne informujące, jak rozszerzać moduły i zgodnie z jakimi standardami zostały one stworzone
 
 Projekt ma być łatwy do rozszerzenia dla użytkownika generatora, bez konieczności tworzenia zupełnie nowych modułów i wprowadzania nowych standardów.
+
+## Kluczowe decyzje projektowe i założenia architekroniczne
+
+1. Frontend zależy wyłącznie od kontraktu HTTP API
+   Frontend nie wie nic o tym, jaki backend został wybrany. Dla frontendu istotne jest jedynie to, żeby backend wystawiał mu określone endpointy. Dzięki temu, rozszerzanie generatora o wsparcie dla dowolnych frontendów jest bardzo proste - ponieważ frontend pełni rolę warstwy prezentacji oraz klienta korzystającego z publicznego API backendu.
+
+2. Backend i baza danych traktowane są jako backend-db stack
+   Być może na papierze wygodne byłoby rozdzielenie backendu i bazy danych, żeby tworzyć dowolne kombinacje. Niestety, backend ma zbyt duży wpływ na sposób działania bazy danych:
+   - ORM
+   - migracje
+   - modele
+   - auth
+   - struktura danych wymagana do uwierzytelniania
+   - tabele techniczne
+   - testy backend-db
+
+   To wszystko sprawia, że obsługa takiej macierzy kombinacji szybko stałaby się nienatywna i pełna sztucznych warunków. Stąd decyzja o utrzymaniu backendu i bazy danych jako jednego backend-db stacka.
+
+3. Baza danych wynika z wybranego backend-db stacka
+
+   Jest to świadome ograniczenie zakresu pracy. Użytkownik nie będzie mógł w podstawowej wersji dowolnie łączyć backendu z bazą danych. Jego decyzją będzie wybór jednego ze wspieranych backend-db stacków: FastAPI + SQLite albo Django + PostgreSQL. Dodanie większej liczby obsługiwanych stacków nie powinno wymagać zmiany założeń architektonicznych, ale zwiększyłoby ilość pracy implementacyjnej, testowej i dokumentacyjnej oraz spowodowałoby konieczność dodawania kolejnych stacków jeden po drugim. Dlatego podstawowa wersja pracy zawiera tylko stacki wskazane w specyfikacji.
+
+4. Kontrakty zamiast jakichkolwiek adapterów
+
+   Ta zasada chroni wygenerowany projekt przed sztuczną warstwą abstrakcji, jaką byłby dowolny adapter. Nie chcę, żeby projekt miał dodatkowe adaptery tylko dlatego, że generator obsłuży inne kombinacje. Dzięki temu spójność i natywność wygenerowanego kodu zostanie osiągnięta przez kontrakty:
+   - Frontend jest kompatybilny z backendem, bo spełniają kontrakt API,
+   - Backend-db stack jest zgodny z wymaganiami projektu, bo spełnia kontrakt danych.
+
+5. Natywność template packów
+
+   Template pack będzie generował kod, który jest naturalny dla danej technologii. Django nie zostanie wciśnięte w typową strukturę FastAPI, a Nuxt nie będzie udawać Reacta. Dlatego kluczowe będzie dokładne zapoznanie się ze wzorcami standardowymi dla obsługiwanych technologii, a następnie utworzenie każdego template packa zgodnie z nimi. Przykład konwencji:
+   - Django -> Django ORM, migracje Django, struktura Django
+   - FastAPI -> struktura FastAPI, osobna konfiguracja aplikacji, osobne modele/schemy
+   - Nuxt -> routing oparty na plikach, struktura typowa dla Nuxta
+   - React -> React Router, Vite, struktura typowa dla Reacta
+
+   Jeśli wspólne będą jedynie wymagania, a nie struktura kodu, osiągniemy naturalny projekt, pozbawiony złych nawyków lub wymuszeń związanych z innymi frameworkami.
+
+6. Wygenerowany projekt nie zależy runtime'owo od generatora
+
+   Generator jest jedynie narzędziem do tworzenia projektu, a nie jego częścią. Projekt po skopiowaniu do katalogu docelowego ma funkcjonować bez generatora. Wygenerowany projekt nie powinien importować bibliotek generatora ani wymagać go do uruchamiania, testowania lub dalszego rozwijania.
+
+7. Kontrolowane powtórzenia zamiast sztucznych abstrakcji
+
+   W zwykłym projekcie często dąży się do DRY. W wypadku generatora zbyt agresywne DRY mogłoby jednak sprawić, że ucierpią na tym generowane projekty. Współdzielenie jednej abstrakcji między różnymi frameworkami skończyłoby się strukturą nienaturalną dla żadnego z nich. Z tego powodu akceptuję pewne powtórzenia, jeśli są konieczne, żeby:
+   - template pack pozostał natywny
+   - wygenerowany kod pozostał czytelny
+   - framework działał zgodnie z typowymi dla siebie konwencjami
+   - nowa technologia nie wymagała modyfikowania starej
+
+   Dlatego wygenerowane projekty powinny być możliwie DRY, ale sam generator może świadomie zawierać kontrolowane powtórzenia w template packach.
+
+## Ryzyka projektowe
+
+- największe ryzyka projektu mają charakter architektoniczny, ponieważ błędne decyzje dotyczące kontraktów, template packów lub pipeline'u mogą utrudnić dalsze rozszerzanie generatora
+- zbyt duża liczba kombinacji technologicznych sprawi, że mogę nie zdążyć stworzyć pracy
+- zbyt mała liczba kombinacji technologicznych może nie dać pewności, że dodawanie kolejnych nie wymaga modyfikacji istniejących
+- ponieważ podstawowy zakres obejmuje wyłącznie backendy z ekosystemu Pythona, projekt w ograniczonym stopniu weryfikuje i testuje możliwość dodania backendu z innego języka programowania, np. Node.js, Java lub C#, mimo że z perspektywy architektonicznej powinno to być możliwe
+- zbyt agresywne stosowanie zasady DRY może prowadzić do sztucznych abstrakcji między technologiami. W projekcie ważniejsze jest zachowanie natywności template packów oraz zgodność z zasadą open/closed, nawet kosztem kontrolowanego powtórzenia części kodu lub konfiguracji
 
 ## Architektura
 

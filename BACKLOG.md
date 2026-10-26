@@ -56,6 +56,7 @@ Te pliki pozwolą mi łatwiej układać sobie pracę krok po kroku i dzielić j�
 - [ ] przegląd architektury i próba doszukania się potencjalnych problemów
 - [ ] doprecyzowanie nazewnictwa i usunięcie ewentualnych rozjazdów
 - [ ] rozważenie rezygnacji ze State lub State jako nice-to-have (chyba że dosłownie wyniknie z pipelinu, że to jest łatwe: hash konfiigu + zapisanie stanu pipelinu)
+- [ ] opisanie moich rozważań co do rezygnacji z powodu braku czasu z Reacta (lub zrobienie bardzo bazowego, niekoniecznie dopracowanego template packa) oraz przejścia z Django na ASP.Net
 
 #### Szkielet core
 
