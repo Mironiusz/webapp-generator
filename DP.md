@@ -67,11 +67,9 @@ Następnie generator tworzy gotowy projekt.
 
 4. Kontrakty zamiast jakichkolwiek adapterów
 
-   Ta zasada chroni projekt przed sztuczną warstwą abstrakcji, jaką byłby dowolny adapter. Nie chcę, żeby projekt miał dodatkowe adaptery tylko dlatego, że generator obsłuży inne kombinacje. Dzięki temu spójność zostanie osiągnięta przez kontrakty:
+   Ta zasada chroni wygenerowany projekt przed sztuczną warstwą abstrakcji, jaką byłby dowolny adapter. Nie chcę, żeby projekt miał dodatkowe adaptery tylko dlatego, że generator obsłuży inne kombinacje. Dzięki temu spójność i natywność wygenerowanego kodu zostanie osiągnięta przez kontrakty:
    - Frontend jest kompatybilny z backendem, bo spełniają kontrakt API,
    - Backend-db stack jest zgodny z wymaganiami projektu, bo spełnia kontrakt danych.
-
-   Dzięki temu nie trzeba będzie dodawać sztucznych adapterów, bo kontrakty zapewnią spójność, a template packi zachowają natywność wygenerowanego kodu.
 
 5. Natywność template packów
 
@@ -300,7 +298,7 @@ Core jest głównym modułem sterującym generatora. Core nie może znać szczeg
 - uruchomienie CLI
 - wczytanie danych
 - normalizacja konfiguracji
-- walidacja
+- walidacja konfuguracji
 - planning
 - zarządzanie wykonaniem kroków pipeline'u
 - zapis i odczyt stanu generacji
@@ -364,6 +362,49 @@ Mogą też służyć do porównywania czasu trwania etapów oraz czasu generacji
 
 ## Dotychczasowe wyniki pracy (5min)
 
+### Dokumentacje
+
+- dokumentacja wstępna (117)
+- specyfikacja (522)
+- kryteria akceptacyjne (586)
+- architektura (1001)
+
+### Template packi
+
+- przygotowana infra dla wszystkich packów opartych na Pythonie
+- utworzony template pack FastAPI + SQLite
+
+### Generator
+
+- przygotowana infra dla generatora
+- ustrukturyzowanie i zaplanowanie całej pracy
+- ukończony moduł konfiguracji
+
 ## Plan prac na ten semestr + programin minimum (2min)
 
+### Faza 2
+
+- implementacja core: CLI, wykonanie planu generacji, obsługa pipelinu
+- implementacja kroków pipelinu
+- określenie formatu planu generacji, implementacja
+- implementacja renderera i outputu, procedura weryfikacji i finalizacji
+
+### Faza 3
+
+- template pack Nuxta
+
+### Faza 4
+
+- dokończenie generatora
+
+### Faza 5
+
+- napisanie pracy inżynierskiej w docelowym formacie
+
+### Faza 6
+
+- dodanie template packa React i ASP.Net
+
 ## Slajd końcowy
+
+- powtórzenie slajdu tytułowego

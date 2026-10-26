@@ -51,6 +51,12 @@ Te pliki pozwolą mi łatwiej układać sobie pracę krok po kroku i dzielić j�
 
 ### 2. Szkielet całego pipelinu oraz core
 
+#### Ponowny przegląd architektury
+
+- [ ] przegląd architektury i próba doszukania się potencjalnych problemów
+- [ ] doprecyzowanie nazewnictwa i usunięcie ewentualnych rozjazdów
+- [ ] rozważenie rezygnacji ze State lub State jako nice-to-have (chyba że dosłownie wyniknie z pipelinu, że to jest łatwe: hash konfiigu + zapisanie stanu pipelinu)
+
 #### Szkielet core
 
 - [x] Obiekty i architektoniczne fundamenty core
@@ -86,3 +92,42 @@ Te pliki pozwolą mi łatwiej układać sobie pracę krok po kroku i dzielić j�
 - [ ] Procedura weryfikacyjna ze stagingiem
 - [ ] Procedura finalizacji
 - [ ] Wygenerowany backend wstaje przez docker compose
+
+### 3. Template pack nuxta
+
+#### Fundament
+
+- [ ] nowy projekt Nuxta
+- [ ] wybór docelowego układu plików i modułów
+- [ ] routing
+
+#### Strony bez backendu
+
+- [ ] strona logowania
+- [ ] strona rejestracji
+- [ ] strona aplikacji
+- [ ] strona 404
+
+#### Integracja z backendem
+
+- [ ] integracja stron z backendem
+- [ ] obsługa tokena JWT
+- [ ] obsługa błędu logowania
+
+#### Testy
+
+- [ ] testy jednostkowe
+- [ ] testy integracyjne
+
+### 4. Ukończenie generatora
+
+### 5. Stworzenie pracy inżynierskiej
+
+- [ ] napisanie tekstu pracy w md
+- [ ] przeniesienie pracy na docelowy format w latechu
+- [ ] zrobienie wszystkiego co konieczne przed złożeniem pracy
+
+### 6. Dodanie kolejnych dwóch template packów
+
+- [ ] React
+- [ ] ASP.Net
