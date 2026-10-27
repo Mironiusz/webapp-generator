@@ -11,6 +11,7 @@ Opiekun: dr Szymon Kijas, IAiIS
 ## Plan prezentacji (1min)
 
 - Omówienie problemu
+- Przegląd podobnych rozwiązań
 - Cel pracy i efekt dla użytkownika
 - Opis oczekiwanego działania
 - Specyfikacja
@@ -22,7 +23,7 @@ Opiekun: dr Szymon Kijas, IAiIS
 
 ## Omówienie problemu (2min)
 
-Wielu programistów doskonale potrafi rozszerzać i edytować aplikacje webowe. Gorzej, kiedy trzeba postawić nową. Sam wiele razy musiałem stawiać nowy projekt i za każdym razem kończyło się to tak samo: za każdym razem pisałem niemal identyczny boilerplate'owy kod i wykonywałem niemal identyczne procedury, lub po prostu kopiowałem i okrajałem stary projekt. Oba podejścia mają wady: duża strata czasu lub mniejsza strata czasu z ryzykiem pomyłki, pozostawieniem czegoś, co nie powinno się znakleźć w repo oraz narzucenie sobie starej, nieaktualizowanej struktury.
+Wielu programistów doskonale potrafi rozszerzać i edytować aplikacje webowe. Gorzej, kiedy trzeba postawić nową. Sam wiele razy musiałem stawiać nowy projekt i zawsze kończyło się to tak samo: albo pisałem niemal identyczny boilerplate'owy kod i wykonywałem niemal identyczne procedury, albo po prostu kopiowałem i okrajałem stary projekt. Oba podejścia mają wady. Pierwsze to duża strata czasu. Drugie zabiera mniej czasu, ale niesie ryzyko pomyłki, pozostawienia czegoś, co nie powinno znaleźć się w repo, oraz narzucenia sobie starej, nieaktualizowanej struktury.
 
 Samo postawienie projektu od nowa zwykle wymaga sięgnięcia do dokumentacji, żeby:
 
@@ -39,15 +40,33 @@ Do tego dochodzą elementy, które ma prawie każda aplikacja:
 - testy
 - healthchecki
 
-Problematyczne dla początkujących jest też pilnowanie od początku standardów i konwencji oraz pisanie aplikacji gotowej do testowania na docelowej infrastrukturze.
+Problematyczne dla początkujących jest też pilnowanie od początku standardów i konwencji oraz pisanie aplikacji gotowej do uruchomienia i testowania w kontenerach Docker.
 
-Do tego to wszystko po prostu zabiera czas, nieważne, jak dobry programista by nie był. Dlatego postanowiłem stworzyć generator szkieletów aplikacji webowych, który wszystkie te nieprzyjemne, boilerplate'owe kroki wykona za użytkownika.
+Wszystko to po prostu zabiera czas, nieważne, jak dobry programista by nie był. Dlatego postanowiłem stworzyć generator szkieletów aplikacji webowych, który wszystkie te nieprzyjemne, boilerplate'owe kroki wykona za użytkownika.
+
+## Przegląd podobnych rozwiązań
+
+| Rozwiązanie                                                               | Pełny stack        | Wybór frontend × backend | Auth, testy, Docker od razu | Weryfikacja projektu przed oddaniem                           | Aktualizacja z szablonu              | Główne ograniczenie                                                |
+| ------------------------------------------------------------------------- | ------------------ | ------------------------ | --------------------------- | ------------------------------------------------------------- | ------------------------------------ | ------------------------------------------------------------------ |
+| Własny stary projekt (kopiuj i okrój)                                     | zależy             | nie                      | zależy                      | nie                                                           | nie                                  | ryzyko pomyłki, pozostałości w repo (np. sekrety), stara struktura |
+| Kreatory frameworków (create-vite, create-nuxt, django-admin, dotnet new) | nie / częściowo    | nie                      | nie / częściowo             | nie                                                           | nie                                  | tylko jedna część aplikacji                                        |
+| Silniki szablonów (cookiecutter, Copier, Yeoman)                          | zależy od szablonu | zależy od szablonu       | zależy od szablonu          | możliwa, ale trzeba ją zbudować w szablonie                   | Copier tak, cookiecutter przez cruft | jakość zależy od autora szablonu                                   |
+| full-stack-fastapi-template                                               | tak                | nie                      | tak                         | nie (tylko CI szablonu)                                       | nie                                  | jeden, stały stack                                                 |
+| JHipster                                                                  | tak                | tak                      | tak                         | nie (testy uruchamia użytkownik)                              | tak                                  | backend domyślnie Spring Boot, inne przez blueprinty               |
+| Asystenci AI (LLM)                                                        | tak                | tak                      | zależy od promptu           | niegwarantowana                                               | nie                                  | wynik niedeterministyczny, wymaga przeglądu                        |
+| Generator szkieletów aplikacji webowych                                   | tak                | tak\*                    | tak                         | tak, domyślnie (Docker Compose, testy, happy path w stagingu) | nie (świadomie)                      | mało stacków                                                       |
+
+\* z założenia architektury. W programie minimum jest jedna kombinacja.
+
+Weryfikacja konkretnego wygenerowanego projektu jest w moim generatorze wbudowana i domyślna, a projekt trafia do katalogu docelowego dopiero po sukcesie. W Copierze i cookiecutterze da się to zbudować samemu w szablonie.
 
 ## Cel pracy i efekt dla użytkownika (2min)
 
 Celem projektu jest zaprojektowanie i implementacja narzędzia CLI generującego konteneryzowane szkielety aplikacji webowych na podstawie kreatora lub pliku konfiguracyjnego. Generator ma ograniczyć ilość powtarzalnej pracy potrzebnej do uruchomienia nowej aplikacji oraz zapewnić spójny, testowalny i rozszerzalny punkt startowy dla dalszego rozwoju projektu.
 
 Po przejściu przez kreator aplikacji lub uruchomieniu generatora z plikiem konfiguracyjnym powstaje działający, konteneryzowany szkielet aplikacji webowej z konfiguracją środowiskową, który wystarczy rozszerzać i modyfikować.
+
+Generator jest przeznaczony zarówno dla doświadczonych programistów, którzy chcą zaoszczędzić czas, jak i dla początkujących, którym pozwala zacząć od projektu zgodnego ze standardami i konwencjami.
 
 ## Opis oczekiwanego działania
 
@@ -56,6 +75,42 @@ Po przejściu przez kreator aplikacji lub uruchomieniu generatora z plikiem konf
 - wybiera lub deklaruje backend-db stack (FastAPI + SQLite oraz drugi stack z PostgreSQL: ASP.NET Core albo Django)
 
 Następnie generator tworzy projekt, weryfikuje go testami i dopiero wtedy zapisuje w katalogu docelowym.
+
+Przykładowy plik konfiguracyjny (bez sekcji ze zmiennymi środowiskowymi, bo brakujące sekrety generator losuje sam):
+
+```yaml
+version: 1
+
+project:
+  name: "moj_projekt"
+  output_dir: 'C:\Projects'
+
+frontend: "frontend_nuxt"
+
+backend: "backend_fastapi_sqlite"
+
+ports:
+  frontend: Null
+  backend: Null
+  database: Null
+```
+
+Struktura wygenerowanego projektu:
+
+```
+|--/docs
+|--/frontend
+|--/backend
+|--/database (opcjonalny)
+|--.env (opcjonalny)
+|--.env.example (opcjonalny)
+|--README.md
+|--docker-compose.yml
+|--.gitignore
+|--.dockerignore
+```
+
+Wygenerowany projekt uruchamia się jednym poleceniem: `docker compose up -d --build`.
 
 ## Specyfikacja
 
@@ -129,7 +184,9 @@ Generator musi przerwać działanie przed rozpoczęciem generacji, jeśli:
 - testy jednostkowe
 - testy integracyjne
 
-2. Backend
+2. Backend (kontrakt API)
+
+Endpointy health są wystawione bez prefiksu, a pozostałe pod prefiksem `/api/v1`. Requesty i odpowiedzi są w formacie JSON.
 
 - endpointy stanu: `GET /health`, `GET /health/db`, `GET /health/ready`
 - rejestracja: `POST /api/v1/auth/register`
@@ -202,6 +259,11 @@ Jakość jest sprawdzana automatycznie narzędziami jakości (lint, formatowanie
 
 Projekt ma być łatwy do rozszerzenia dla użytkownika generatora, bez konieczności tworzenia zupełnie nowych modułów i wprowadzania nowych standardów.
 
+### Ograniczenia
+
+- infrastruktura: brak Kubernetes, TLS, Nginx i reverse proxy, load balancingu, CI/CD oraz osobnych kontenerów dev i prod
+- funkcjonalność: brak SSO, resetu hasła i wysyłki emaili
+
 ## Kluczowe decyzje projektowe i założenia architektoniczne
 
 1. Frontend zależy wyłącznie od kontraktu HTTP API
@@ -258,10 +320,15 @@ Projekt ma być łatwy do rozszerzenia dla użytkownika generatora, bez konieczn
 ## Ryzyka projektowe
 
 - największe ryzyka projektu mają charakter architektoniczny, ponieważ błędne decyzje dotyczące kontraktów, template packów lub pipeline'u mogą utrudnić dalsze rozszerzanie generatora
+  - ryzyko akceptowane: dotyczy błędów, których nie wyłapie nawet przegląd architektury, więc ujawnią się dopiero w trakcie implementacji
 - zbyt duża liczba kombinacji technologicznych może sprawić, że nie zdążę z pracą
+  - mitygacja: program minimum obejmuje jedną kombinację, Faza 6 jest dopiero po napisaniu pracy, a decyzję o drugim backend-db stacku podejmę do końca listopada
 - zbyt mała liczba kombinacji technologicznych może nie dać pewności, że dodawanie kolejnych nie wymaga modyfikacji istniejących
+  - mitygacja: Faza 6, jeśli wystarczy czasu. Model manifestu już obsługuje oba typy template packów, ale ryzyko częściowo pozostaje
 - jeśli drugim stackiem zostanie Django, podstawowy zakres obejmie wyłącznie backendy z ekosystemu Pythona. Wtedy projekt w ograniczonym stopniu zweryfikuje możliwość dodania backendu z innego języka programowania, np. Node.js, Java lub C#, mimo że z perspektywy architektonicznej powinno to być możliwe
+  - mitygacja: ASP.NET Core jako drugi backend-db stack, jeśli wystarczy czasu
 - zbyt agresywne stosowanie zasady DRY może prowadzić do sztucznych abstrakcji między technologiami. W projekcie ważniejsze jest zachowanie natywności template packów oraz zgodność z zasadą open/closed, nawet kosztem kontrolowanego powtórzenia części kodu lub konfiguracji
+  - mitygacja: kontrolowane powtórzenia zamiast sztucznych abstrakcji (decyzja 7)
 
 ## Architektura
 
@@ -330,6 +397,30 @@ Zarządzany przez core iterowalny proces, przechodzący przez renderowanie, wery
 Część systemu, która dostarcza kod i konfigurację dla konkretnych technologii. Template packi znają szczegóły frameworków, mieści się w nich docelowa struktura generowanego kodu.
 Template packi powinny być możliwie niezależne od siebie i komunikować się przez kontrakty oraz contributions. Jeśli autor chce rozszerzyć generator o obsługę kolejnej technologii, po prostu dodaje kolejny template pack. To tam mieści się cały kod, konfiguracja, obsługa kontraktów. Dzięki temu wystarczy w zasadzie dobrze znać wybrany framework, żeby móc utworzyć dla niego template pack.
 Template packi dzielą się na dwa rodzaje: frontend i backend-db. Każdy template pack zawiera template'y całościowe, z których powstają całe pliki, oraz template'y częściowe (contributions), z których składany jest wspólny plik. Na przykład `docker-compose.yml`, `.env` i `README.md` w katalogu głównym projektu powstają z contributions kilku packów.
+Każdy template pack ma manifest, który opisuje jego typ, framework, język, bazę danych, domyślne porty, wymagane zmienne środowiskowe oraz contributions. Generator wykrywa dostępne template packi po ich manifestach, a normalizacja konfiguracji bierze z nich wartości domyślne.
+
+Przykład: manifest template packa FastAPI + SQLite
+
+```yaml
+name: "FastAPI + SQLite"
+type: "backend-db"
+version: "0.0.1"
+framework:
+  name: "FastAPI"
+  version: "0.141.1"
+language:
+  name: "Python"
+  version: "3.13"
+database:
+  engine: "SQLite"
+  version: "3.46.1"
+stability: "alpha"
+ports:
+  backend: 8000
+contributions: ["docker-compose.yml"]
+required_envs:
+  backend: ["AUTH__SECRET_KEY"]
+```
 
 4. Planning
 
@@ -401,33 +492,99 @@ Zatwierdzona przez promotora:
 
 ## Plan prac na ten semestr i program minimum (2min)
 
-### Faza 1
+Termin złożenia pracy: koniec stycznia 2027.
+
+### Faza 1 (listopad)
 
 - domknięcie template packa FastAPI: testy, contributions, poprawki
 
-### Faza 2
+### Faza 2 (listopad)
 
 - implementacja core: CLI, wykonanie planu generacji, obsługa pipeline'u
 - implementacja kroków pipeline'u
 - określenie formatu planu generacji, implementacja
 - implementacja renderera i outputu, procedura weryfikacji i finalizacji
 
-### Faza 3
+Decyzja o drugim backend-db stacku: do końca listopada.
+
+### Faza 3 (grudzień)
 
 - template pack Nuxta
 
-### Faza 4
+### Faza 4 (grudzień)
 
 - dokończenie generatora
 
-### Faza 5
+Najwięcej czasu na pracę będę miał w okresie świątecznym.
+
+### Faza 5 (styczeń)
 
 - napisanie pracy inżynierskiej w docelowym formacie
 
-### Faza 6
+### Faza 6 (tylko przy zapasie czasu)
 
 - okrojony template pack React oraz drugi backend-db stack (ASP.NET Core albo Django)
+
+### Program minimum
+
+Fazy 1-5:
+
+- generator z pełnym przepływem: walidacja, plan generacji, pipeline, weryfikacja i finalizacja
+- template packi Nuxt oraz FastAPI + SQLite, czyli jedna kombinacja
+- praca inżynierska
+
+Faza 6 jest rozszerzeniem. Jeśli wystarczy czasu, dochodzi okrojony React i drugi backend-db stack, a praca zostanie zaktualizowana. Jeśli nie, praca i tak będzie kompletna.
 
 ## Slajd końcowy
 
 - powtórzenie slajdu tytułowego
+
+## Pytania zapasowe 1
+
+1. Czym generator różni się od innych narzędzi?
+
+   Najbliżej jest JHipster. Też łączy różne frontendy z backendami, ale weryfikację projektu zostawia użytkownikowi, a backend domyślnie to Spring Boot. full-stack-fastapi-template to jeden stały stack, testowany tylko w CI szablonu. Copier i cookiecutter dają mechanizm, w którym weryfikację trzeba napisać samemu. W czym inni są lepsi: aktualizacja projektu z szablonu (Copier, JHipster) i generowanie encji (JHipster).
+
+2. Czemu nie LLM?
+
+   Generator jest deterministyczny i powtarzalny, a jego wynik jest zweryfikowany testami przed oddaniem, więc nie trzeba przeglądać boilerplate'u. LLM świetnie sprawdza się przy rozwijaniu gotowego szkieletu, więc oba narzędzia się uzupełniają.
+
+## Pytania zapasowe 2
+
+3. Jak wykażesz rozszerzalność bez Fazy 6?
+
+   Rozszerzalność wynika z architektury: core nie zna frameworków, template packi są wykrywane po manifestach, a frontend i backend łączy wyłącznie kontrakt API. Model manifestu już obsługuje oba typy template packów. Faza 6 potwierdzi to w praktyce, jeśli wystarczy czasu.
+
+4. Dlaczego backend i baza są razem?
+
+   Backend narzuca ORM, migracje, modele, auth i tabele techniczne. Macierz backend × baza byłaby nienatywna i pełna sztucznych warunków.
+
+5. Ile trwa generacja z weryfikacją?
+
+   Jeszcze nie mierzyłem, bo pipeline jeszcze nie istnieje. Będzie to mierzył komponent Statistics. Najwięcej czasu zajmie build obrazów i testy.
+
+6. Czy da się zaktualizować wygenerowany projekt, gdy template'y się zmienią?
+
+   Nie, i to świadoma decyzja. Wygenerowany projekt jest niezależny od generatora i stanowi punkt startowy, a nie zależność.
+
+7. Gdzie frontend trzyma JWT i czy to bezpieczne?
+
+   {TODO: gdzie frontend przechowuje JWT i dlaczego}
+
+8. Dlaczego SQLite?
+
+   To najprostszy stack, bez osobnego kontenera bazy danych. W parze z PostgreSQL pokazuje, że pipeline obsługuje oba warianty: bazę jako plik i bazę jako osobną usługę.
+
+9. Jak losowe sekrety mają się do deterministyczności?
+
+   Deterministyczność dotyczy struktury projektu. Sekrety są losowane osobno dla każdego projektu celowo, bo te same sekrety w każdym projekcie byłyby luką bezpieczeństwa. Jeśli użytkownik poda wszystkie sekrety w konfiguracji, wynik jest w pełni powtarzalny.
+
+10. Dlaczego CLI, a nie aplikacja webowa?
+
+    Generacja to jednorazowa akcja, tryb pliku konfiguracyjnego łatwo zautomatyzować, a CLI nie wymaga stawiania serwera.
+
+11. Dlaczego bez komentarzy linijkowych?
+
+12. Czy template packi też się nie zestarzeją?
+
+    Zestarzeją się, ale aktualizuje się je raz, w template packu, a nie w każdym projekcie osobno. Weryfikacja testami wyłapie wersję, która przestała działać.
