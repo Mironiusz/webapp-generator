@@ -1,0 +1,501 @@
+\documentclass[aspectratio=169, 11pt]{beamer}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[polish]{babel}
+\usepackage{lmodern}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{adjustbox}
+\usepackage{tikz}
+\usepackage{appendixnumberbeamer}
+\usetikzlibrary{arrows.meta, fit, backgrounds, babel}
+
+\usetheme[numbering=fraction, progressbar=frametitle, sectionpage=none]{metropolis}
+
+\newcommand{\rowrule}{\specialrule{0.3pt}{1.5pt}{1.5pt}}
+
+\definecolor{diagmain}{HTML}{23373B}
+\definecolor{diagaccent}{HTML}{EB811B}
+
+\lstdefinestyle{code}{
+  basicstyle=\ttfamily\scriptsize,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  upquote=true,
+  frame=single,
+  rulecolor=\color{black!25},
+  backgroundcolor=\color{black!3},
+  xleftmargin=2pt,
+  xrightmargin=2pt
+}
+
+\tikzset{
+  stage/.style={draw=diagmain, fill=diagmain!8, rounded corners=2pt, align=center, font=\scriptsize, text width=24mm, minimum height=10mm, inner sep=2pt},
+  aux/.style={draw=diagaccent, fill=diagaccent!10, rounded corners=2pt, align=center, font=\scriptsize, text width=24mm, minimum height=8mm, inner sep=2pt},
+  arrow/.style={-{Stealth[length=2mm]}, thick, draw=diagmain},
+  dashedarrow/.style={-{Stealth[length=2mm]}, thick, dashed, draw=black!50},
+  group/.style={draw=#1, rounded corners=4pt, thick},
+  grouplabel/.style={font=\scriptsize\bfseries, text=black!70, inner sep=2pt}
+}
+
+\title{Generator szkieletów aplikacji webowych}
+\author{Rafał Mironko}
+\institute{Informatyka, Inżynieria Oprogramowania\\[2mm] Opiekun: dr Szymon Kijas, IAiIS}
+\date{}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{Plan prezentacji}
+  \begin{itemize}
+    \item Problem i~istniejące rozwiązania
+    \item Cel pracy i~oczekiwane działanie
+    \item Specyfikacja i~architektura
+    \item Kluczowe decyzje i~ryzyka
+    \item Dotychczasowe wyniki i~plan prac
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Problem}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \textbf{Postawienie projektu od nowa}
+      \begin{itemize}
+        \item Inicjalizacja frontendu
+        \item Podstawowy routing
+        \item Instalacja pakietów
+        \item Połączenie frontendu z~backendem bez problemów z~CORS
+        \item Działający Dockerfile
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \textbf{Prawie każda aplikacja}
+      \begin{itemize}
+        \item Rejestracja i~logowanie z~JWT
+        \item Migracje bazy danych
+        \item Testy
+        \item Healthchecki
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Przegląd podobnych rozwiązań}
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \begin{adjustbox}{max width=1.08\textwidth, max totalheight=0.85\textheight, center}
+  \begin{tabularx}{1.08\textwidth}{>{\raggedright\arraybackslash}p{2.5cm} *{4}{>{\centering\arraybackslash}X} >{\raggedright\arraybackslash}p{3.0cm}}
+    \toprule
+    Rozwiązanie & Wybór frontend x~backend & Auth, testy, Docker & Weryfikacja przed oddaniem & Aktualizacja z~szablonu & Główne ograniczenie \\
+    \midrule
+    Stary projekt (kopiuj i~okrój) & nie & zależy & nie & nie & pomyłki, pozostałości w~repo, stara struktura \\
+    \rowrule
+    Kreatory frameworków & nie & nie / częściowo & nie & nie & tylko jedna część aplikacji \\
+    \rowrule
+    cookiecutter, Copier, Yeoman & zależy od szablonu & zależy od szablonu & do zbudowania w~szablonie & Copier: tak & zależy od autora szablonu \\
+    \rowrule
+    full-stack-fastapi-template & nie & tak & nie, tylko CI szablonu & nie & jeden stały stack \\
+    \rowrule
+    JHipster & tak & tak & nie, robi to użytkownik & tak & domyślnie Spring Boot \\
+    \rowrule
+    Asystenci AI & tak & zależy od promptu & niegwarantowana & nie & wynik niedeterministyczny \\
+    \midrule
+    \textbf{Generator (ta praca)} & \textbf{tak} & \textbf{tak} & \textbf{tak, domyślnie} & \textbf{nie (świadomie)} & \textbf{mało stacków} \\
+    \bottomrule
+  \end{tabularx}
+  \end{adjustbox}
+\end{frame}
+
+\begin{frame}{Cel pracy i~efekt dla użytkownika}
+  \begin{block}{Cel pracy}
+    \vspace{2mm}
+    Celem projektu jest zaprojektowanie i~implementacja narzędzia CLI generującego konteneryzowane szkielety aplikacji webowych na podstawie kreatora lub pliku konfiguracyjnego. Generator ma ograniczyć ilość powtarzalnej pracy potrzebnej do uruchomienia nowej aplikacji oraz zapewnić spójny, testowalny i~rozszerzalny punkt startowy dla dalszego rozwoju projektu.
+  \end{block}
+  \begin{itemize}
+    \item Efekt: działający, konteneryzowany szkielet aplikacji z~konfiguracją środowiskową, gotowy do rozszerzania
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Oczekiwane działanie}
+  \begin{adjustbox}{max width=\textwidth, max totalheight=0.36\textheight, center}
+    \begin{tikzpicture}[x=1mm, y=1mm]
+      \node[stage, text width=28mm] (in) at (0,7) {Kreator albo plik YAML};
+      \node[aux, text width=28mm] (tp) at (0,-7) {Template packi};
+      \node[stage, text width=20mm] (gen) at (36,0) {Generator};
+      \node[stage, text width=32mm] (out) at (74,0) {Projekt zweryfikowany testami\\ w~katalogu docelowym};
+      \node[stage, text width=32mm, font=\scriptsize\ttfamily] (run) at (116,0) {docker compose up -d -{}-build};
+      \draw[arrow] (in) -- (gen);
+      \draw[arrow] (tp) -- (gen);
+      \draw[arrow] (gen) -- (out);
+      \draw[arrow] (out) -- (run);
+    \end{tikzpicture}
+  \end{adjustbox}
+
+  \vspace{2mm}
+  {\small
+  \begin{itemize}
+    \item Tryby: kreator albo plik YAML bez interakcji (niepusty katalog docelowy: flaga -f)
+    \item Template pack: paczka szablonów dla jednej technologii
+  \end{itemize}
+  }
+\end{frame}
+
+\begin{frame}[fragile]{Przykład}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \textbf{Plik konfiguracyjny}
+\begin{lstlisting}[style=code]
+version: 1
+
+project:
+  name: "moj_projekt"
+  output_dir: 'C:\Projects'
+
+frontend: "frontend_nuxt"
+
+backend: "backend_fastapi_sqlite"
+
+ports:
+  frontend: Null
+  backend: Null
+  database: Null
+\end{lstlisting}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \textbf{Wygenerowany projekt}
+\begin{lstlisting}[style=code]
+|--/docs
+|--/frontend
+|--/backend
+|--/database (opcjonalny)
+|--.env (opcjonalny)
+|--.env.example (opcjonalny)
+|--README.md
+|--docker-compose.yml
+|--.gitignore
+|--.dockerignore
+\end{lstlisting}
+    \end{column}
+  \end{columns}
+
+  \begin{center}
+    \texttt{docker compose up -d -{}-build}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Wspierane technologie}
+  \begin{itemize}
+    \item Pierwotnie: Nuxt albo React z~FastAPI + SQLite albo z~Django + PostgreSQL
+    \item Planowana zmiana: okrojony React (głównie bez testów i~obsługi błędów), działa z~oboma stackami
+    \item Planowana zmiana: ASP.NET Core + PostgreSQL zamiast Django, jeśli starczy czasu
+    \item Decyzja do końca listopada, priorytet: zapas czasu na generator i~pracę
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Wymagania funkcjonalne}
+  \begin{columns}[T]
+    \begin{column}{0.44\textwidth}
+      \textbf{Generator}
+      {\small
+      \begin{itemize}
+        \item Kreator albo plik konfiguracyjny
+        \item Walidacja przed generacją
+        \item Weryfikacja testami przed zapisem
+        \item Raport czasu i~statystyk
+        \item Opcjonalnie: wznowienie po błędzie
+      \end{itemize}
+      }
+    \end{column}
+    \begin{column}{0.54\textwidth}
+      \textbf{Wygenerowana aplikacja}
+      {\small
+      \begin{itemize}
+        \item Frontend: logowanie, rejestracja, strona aplikacji, 404, JWT
+        \item Backend: \texttt{/health}, \texttt{/health/db}, \texttt{/health/ready}, \texttt{/api/v1/auth/register}, \texttt{/login}, \texttt{/me}
+        \item Baza: migracje, minimalny model użytkownika
+        \item Działanie = testy integracyjne + test dymny happy path
+      \end{itemize}
+      }
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Wymagania niefunkcjonalne i~ograniczenia}
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      \textbf{Wymagania niefunkcjonalne}
+      {\small
+      \begin{itemize}
+        \item Deterministyczność (poza losowanymi sekretami)
+        \item Rozszerzalność bez zmian istniejących kombinacji
+        \item Niezależność projektu od generatora
+        \item Jakość sprawdzana automatycznie
+      \end{itemize}
+      }
+    \end{column}
+    \begin{column}{0.44\textwidth}
+      \textbf{Poza zakresem}
+      {\small
+      \begin{itemize}
+        \item Kubernetes, TLS, reverse proxy, load balancing
+        \item CI/CD, osobne środowiska dev i~prod
+        \item SSO, reset hasła, wysyłka emaili
+      \end{itemize}
+      }
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Najważniejsze części}
+  \begin{itemize}
+    \item Core: orkiestracja, obsługa błędów i~cleanup, bez wiedzy o~frameworkach
+    \item Pipeline: kroki ze znanymi artefaktami i~efektami ubocznymi
+    \item Template packi: frontend i~backend-db
+    \begin{itemize}
+      \item template\textquotesingle{}y całościowe i~częściowe (contributions)
+      \item contributions składają wspólne pliki: \texttt{docker-compose.yml}, \texttt{.env}, \texttt{README.md}
+    \end{itemize}
+    \item State (opcjonalny) i~Statistics
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Manifest template packa}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{Fragment manifestu FastAPI + SQLite}
+\begin{lstlisting}[style=code]
+name: "FastAPI + SQLite"
+type: "backend-db"
+framework:
+  name: "FastAPI"
+language:
+  name: "Python"
+ports:
+  backend: 8000
+contributions: ["docker-compose.yml"]
+required_envs:
+  backend: ["AUTH__SECRET_KEY"]
+\end{lstlisting}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \vspace{6mm}
+      \begin{itemize}
+        \item Generator wykrywa template packi po manifestach
+        \item Normalizacja bierze z~nich wartości domyślne
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Przepływ generacji}
+  \begin{adjustbox}{max width=1.08\textwidth, max totalheight=0.85\textheight, center}
+    \begin{tikzpicture}[x=1mm, y=1mm]
+      \tikzset{stage/.append style={text width=16.5mm}, aux/.append style={text width=16.5mm}}
+      \node[stage] (e1) at (0,0) {Etap 1\\ Dane wejściowe\\ kreator albo YAML};
+      \node[stage] (e2) at (21.5,0) {Etap 2\\ Normalizacja};
+      \node[stage] (e3) at (43,0) {Etap 3\\ Walidacja};
+      \node[stage] (e4) at (64.5,0) {Etap 4\\ Planning\\ plan generacji};
+      \node[stage] (e5) at (86,0) {Etap 5\\ Rendering\\ w~stagingu};
+      \node[stage] (e6) at (107.5,0) {Etap 6\\ Verification\\ Docker Compose, testy, happy path};
+      \node[stage] (e7) at (129,0) {Etap 7\\ Finalizacja\\ Output};
+      \node[aux] (tp) at (43,-36) {Template packi\\ manifest i~template\textquotesingle{}y};
+      \node[aux] (stats) at (78,-36) {Statistics};
+      \node[aux] (state) at (100,-36) {State, opcjonalny};
+      \node[aux] (dest) at (129,-36) {Katalog docelowy};
+
+      \draw[arrow] (e1) -- (e2);
+      \draw[arrow] (e2) -- (e3);
+      \draw[arrow] (e3) -- (e4);
+      \draw[arrow] (e4) -- (e5);
+      \draw[arrow] (e5) -- (e6);
+      \draw[arrow] (e6) -- (e7);
+      \draw[arrow] (e7) -- (dest);
+      \draw[arrow] (tp) -- (e2);
+      \draw[arrow] (tp) -- (e4);
+
+      \begin{scope}[on background layer]
+        \node[group=diagmain!60, fit=(e5)(e6)(e7), inner xsep=2mm, inner ysep=5mm] (pipe) {};
+        \node[group=diagmain, fit=(e1)(e4)(pipe), inner xsep=3mm, inner ysep=5mm] (core) {};
+        \node[group=diagaccent, fit=(stats)(state), inner xsep=3mm, inner ysep=5mm] (auxgroup) {};
+      \end{scope}
+
+      \node[grouplabel, anchor=north west] at (pipe.north west) {Pipeline};
+      \node[grouplabel, anchor=north west] at (core.north west) {Core: orkiestracja całego procesu};
+      \node[grouplabel, anchor=south west] at (auxgroup.south west) {Moduły pomocnicze};
+
+      \draw[dashedarrow] (auxgroup.north |- core.south) -- (auxgroup.north);
+    \end{tikzpicture}
+  \end{adjustbox}
+\end{frame}
+
+\begin{frame}{Decyzja 1: kontrakty zamiast adapterów}
+  \begin{itemize}
+    \item Frontend zależy wyłącznie od kontraktu HTTP API
+    \item Backend-db stack spełnia kontrakt danych
+    \item Brak sztucznych adapterów w~wygenerowanym projekcie
+    \item Nowy frontend = frontend zgodny z~kontraktem API
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Decyzja 2: backend-db stack}
+  \begin{itemize}
+    \item Backend narzuca ORM, migracje, modele, auth i~tabele techniczne
+    \item Dowolna macierz backend x~baza byłaby nienatywna
+    \item Baza danych wynika z~wybranego stacka
+    \item Ograniczenie zakresu, a~nie architektury
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Decyzja 3: natywność template packów}
+  \begin{itemize}
+    \item Kod naturalny dla każdej technologii
+    \item Django nie udaje FastAPI, Nuxt nie udaje Reacta
+    \item Wspólne są wymagania, a~nie struktura kodu
+    \item Cena: kontrolowane powtórzenia w~template packach
+    \item Nowa technologia nie zmienia starej
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Ryzyka projektowe}
+  \begin{itemize}
+    \item Błędy architektury niewidoczne w~przeglądzie
+    \begin{itemize}
+      \item ryzyko akceptowane
+    \end{itemize}
+    \item Za dużo kombinacji
+    \begin{itemize}
+      \item program minimum, Faza 6 po napisaniu pracy
+    \end{itemize}
+    \item Za mało kombinacji
+    \begin{itemize}
+      \item Faza 6, ryzyko częściowo zostaje
+    \end{itemize}
+    \item Tylko Python przy Django
+    \begin{itemize}
+      \item ASP.NET Core, jeśli starczy czasu
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Dotychczasowe wyniki pracy}
+  \begin{columns}[T]
+    \begin{column}{0.32\textwidth}
+      \textbf{Dokumentacja}\\
+      {\scriptsize (zatwierdzona przez promotora)}
+      {\footnotesize
+      \begin{itemize}
+        \item Dokumentacja wstępna (117 linii)
+        \item Specyfikacja (522 linie)
+        \item Kryteria akceptacyjne (586 linii, 65 kryteriów)
+        \item Architektura (1004 linie)
+      \end{itemize}
+      }
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      \textbf{Template packi}
+      {\footnotesize
+      \begin{itemize}
+        \item FastAPI + SQLite: API, Docker, README, \texttt{make check}
+        \item W~toku: testy, test dymny, contributions
+        \item Manifest packa Nuxt
+      \end{itemize}
+      }
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      \textbf{Generator}
+      {\footnotesize
+      \begin{itemize}
+        \item Infrastruktura i~narzędzia jakości (\texttt{make check})
+        \item Schematy konfiguracji i~manifestu
+        \item Wczytywanie i~dopasowywanie template packów
+        \item Normalizacja gotowa, walidacja w~toku
+        \item Szkielet core na atrapach
+      \end{itemize}
+      }
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Plan prac}
+  Termin złożenia pracy: koniec stycznia 2027
+
+  \begin{itemize}
+    \item Listopad: Faza 1 (domknięcie FastAPI) i~Faza 2 (core i~pipeline)
+    \item Do końca listopada: decyzja o~drugim backend-db stacku
+    \item Grudzień: Faza 3 (Nuxt) i~Faza 4 (dokończenie generatora)
+    \item Styczeń: Faza 5 (praca inżynierska)
+    \item Faza 6 (okrojony React, drugi stack): tylko przy zapasie czasu
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Program minimum}
+  \begin{itemize}
+    \item Fazy 1-5
+    \item Generator z~pełnym przepływem: walidacja, plan, pipeline, weryfikacja, finalizacja
+    \item Jedna kombinacja: Nuxt + FastAPI + SQLite
+    \item Praca inżynierska
+    \item Faza 6 to rozszerzenie, praca jest kompletna bez niej
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\appendix
+
+\begin{frame}{Pytania zapasowe 1}
+  \begin{itemize}
+    \item Czym generator różni się od innych narzędzi
+    \item Czemu nie LLM
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Pytania zapasowe 2}
+  \small
+  \begin{itemize}
+    \item Jak wykażesz rozszerzalność bez Fazy 6
+    \item Dlaczego backend i~baza są razem
+    \item Ile trwa generacja z~weryfikacją
+    \item Czy da się zaktualizować wygenerowany projekt, gdy template\textquotesingle{}y się zmienią
+    \item Dlaczego SQLite
+    \item Jak losowe sekrety mają się do deterministyczności
+    \item Dlaczego CLI, a~nie aplikacja webowa
+    \item Dlaczego bez komentarzy linijkowych
+    \item Czy template packi też się nie zestarzeją
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Pytania zapasowe 3: pełne porównanie}
+  \tiny
+  \setlength{\tabcolsep}{3pt}
+  \begin{adjustbox}{max width=1.08\textwidth, max totalheight=0.85\textheight, center}
+  \begin{tabularx}{1.08\textwidth}{>{\raggedright\arraybackslash}p{2.6cm} *{4}{>{\raggedright\arraybackslash}X} >{\raggedright\arraybackslash}p{3.0cm}}
+    \toprule
+    Rozwiązanie & Wybór frontend x~backend & Auth, testy, Docker od razu & Weryfikacja projektu przed oddaniem & Aktualizacja z~szablonu & Główne ograniczenie \\
+    \midrule
+    Własny stary projekt (kopiuj i~okrój) & nie & zależy & nie & nie & ryzyko pomyłki, pozostałości w~repo (np. sekrety), stara struktura \\
+    \rowrule
+    Kreatory frameworków (create-vite, create-nuxt, django-admin, dotnet new) & nie & nie / częściowo & nie & nie & tylko jedna część aplikacji \\
+    \rowrule
+    Silniki szablonów (cookiecutter, Copier, Yeoman) & zależy od szablonu & zależy od szablonu & możliwa, ale trzeba ją zbudować w~szablonie & Copier tak, cookiecutter przez cruft & jakość zależy od autora szablonu \\
+    \rowrule
+    full-stack-fastapi-template & nie & tak & nie (tylko CI szablonu) & nie & jeden, stały stack \\
+    \rowrule
+    JHipster & tak & tak & nie (testy uruchamia użytkownik) & tak & backend domyślnie Spring Boot, inne przez blueprinty \\
+    \rowrule
+    Asystenci AI (LLM) & tak & zależy od promptu & niegwarantowana & nie & wynik niedeterministyczny, wymaga przeglądu \\
+    \midrule
+    \textbf{Generator szkieletów aplikacji webowych} & \textbf{tak} & \textbf{tak} & \textbf{tak, domyślnie (Docker Compose, testy, happy path w~stagingu)} & \textbf{nie (świadomie)} & \textbf{mało stacków} \\
+    \bottomrule
+  \end{tabularx}
+  \end{adjustbox}
+\end{frame}
+
+\end{document}
