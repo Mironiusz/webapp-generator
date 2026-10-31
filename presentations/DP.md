@@ -57,7 +57,7 @@ Wszystko to po prostu zabiera czas, nieważne, jak dobry programista by nie był
 | Asystenci AI (LLM)                                                        | tak                      | zależy od promptu           | niegwarantowana                                               | nie                                  | wynik niedeterministyczny, wymaga przeglądu                        |
 | Generator szkieletów aplikacji webowych                                   | tak\*                    | tak                         | tak, domyślnie (Docker Compose, testy, happy path w stagingu) | nie (świadomie)                      | mało stacków                                                       |
 
-\* z założenia architektury. W programie minimum jest jedna kombinacja.
+\* z założenia architektury. W zakresie pracy jest jeden frontend i dwa backend-db stacki.
 
 Weryfikacja konkretnego wygenerowanego projektu jest w moim generatorze wbudowana i domyślna, a projekt trafia do katalogu docelowego dopiero po sukcesie. W Copierze i cookiecutterze da się to zbudować samemu w szablonie.
 
@@ -84,12 +84,12 @@ flowchart LR
 Generator działa w dwóch trybach:
 
 - kreator: użytkownik odpowiada na pytania o nazwę projektu, katalog docelowy, frontend, backend-db stack, porty i zmienne środowiskowe. Porty i zmienne mogą przyjąć wartości domyślne
-- plik konfiguracyjny YAML: generator działa bez interakcji. Jeśli katalog docelowy nie jest pusty, przerywa działanie, chyba że uruchomiono go z flagą -f
+- plik konfiguracyjny YAML: generator działa bez interakcji. Jeśli katalog projektu istnieje i nie jest pusty, przerywa działanie, chyba że uruchomiono go z flagą `--force`
 
 Użytkownik wybiera:
 
-- frontend: Nuxt, opcjonalnie React
-- backend-db stack, czyli backend razem ze swoją bazą danych: FastAPI + SQLite oraz drugi stack z PostgreSQL (ASP.NET Core albo Django)
+- frontend: Nuxt
+- backend-db stack, czyli backend razem ze swoją bazą danych: FastAPI + SQLite albo Django + PostgreSQL
 
 Każdą technologię dostarcza template pack, czyli paczka szablonów dla jednej technologii. Generator tworzy projekt, weryfikuje go testami i dopiero wtedy zapisuje w katalogu docelowym.
 
@@ -135,24 +135,24 @@ Wygenerowany projekt uruchamia się jednym poleceniem: `docker compose up -d --b
 
 ### Slajd 8: Wspierane technologie (1:00)
 
-Pierwotna specyfikacja zakłada cztery kombinacje: Nuxt albo React z FastAPI + SQLite albo z Django + PostgreSQL. Generator w tej wersji nie musi obsługiwać kombinacji spoza tej listy, ale musi być rozszerzalny o nowe frameworki frontendowe i backendowe.
+Pierwotna specyfikacja zakładała cztery kombinacje: Nuxt albo React z FastAPI + SQLite albo z Django + PostgreSQL. Generator w tej wersji nie musi obsługiwać kombinacji spoza listy, ale musi być rozszerzalny o nowe frameworki frontendowe i backendowe.
 
-Planowane zmiany względem specyfikacji:
+Zmiany względem specyfikacji:
 
-- React prawdopodobnie powstanie w wersji okrojonej, głównie o testy i obsługę błędów. Nadal będzie spełniał kontrakt API, więc zadziała z oboma backend-db stackami.
-- Drugim backend-db stackiem może zostać ASP.NET Core + PostgreSQL zamiast Django + PostgreSQL. Backend spoza ekosystemu Pythona lepiej sprawdza, czy rozszerzanie generatora rzeczywiście nie zależy od technologii. Jeśli zabraknie czasu, zostaje Django + PostgreSQL, które korzysta z istniejącej infrastruktury dla Pythona.
+- Zakres obejmuje dwie kombinacje: Nuxt + FastAPI + SQLite oraz Nuxt + Django + PostgreSQL. Pack FastAPI zajął mi 6 dni pracy, a do końca grudnia muszę jeszcze skończyć generator, pack Nuxta i Django. Pracę piszę głównie w weekendy, więc czasu wcale nie mam aż tak dużo.
+- Drugi backend zamiast drugiego frontendu. Frontend zależy wyłącznie od kontraktu HTTP API, więc drugi frontend najmniej sprawdza generator. Drugi backend-db stack sprawdza bazę danych jako osobną usługę, sekrety używane przez kilka usług i niezależność kontraktu API od frameworka, więc lepiej dopracować drugi backend-db stack, niż włożyć ten czas we frontend.
+- Django zamiast ASP.NET Core. Generator nie uruchamia kodu projektu lokalnie i komunikuje się z template packami wyłącznie przez manifest i Dockera, więc język backendu ma dla niego małe znaczenie.
 
-Decyzję podejmę najpóźniej do końca listopada. Priorytetem jest zapas czasu na dokończenie generatora i napisanie pracy, nawet kosztem okrojonego Reacta i pozostania przy Django.
+React zostaje potencjalnym rozszerzeniem.
 
 ### Slajd 9: Wymagania funkcjonalne (1:00)
 
 #### Wymagania funkcjonalne generatora
 
 - utworzenie projektu na podstawie kreatora albo pliku konfiguracyjnego
-- walidacja konfiguracji przed generacją: niewspierana kombinacja, brak wymaganych danych, niepoprawny katalog docelowy, konflikt portów, niepoprawne zmienne środowiskowe
+- walidacja konfiguracji przed generacją: nieznany template pack, brak wymaganych danych, niepoprawny katalog docelowy, konflikt portów, niepoprawne zmienne środowiskowe
 - weryfikacja wygenerowanego projektu testami przed zapisem w katalogu docelowym
 - raport czasu generacji i podstawowych statystyk
-- opcjonalnie wznowienie generacji po błędzie. Zmiana względem specyfikacji: powstanie, jeśli wystarczy czasu
 
 #### Wymagania wobec wygenerowanej aplikacji
 
@@ -161,7 +161,7 @@ Decyzję podejmę najpóźniej do końca listopada. Priorytetem jest zapas czasu
 - baza danych (kontrakt danych): PostgreSQL albo SQLite, migracje i minimalny model użytkownika, który pozwala na jednoznaczną identyfikację, rejestrację i logowanie emailem, weryfikację hasła zapisanego jako hash oraz oznaczenie konta jako aktywnego lub nieaktywnego
 - testy: jednostkowe i integracyjne we frontendzie i backendzie
 
-"Działanie" definiuję przejściem testów integracyjnych oraz testu dymnego happy path: rejestracja -> logowanie -> pobranie danych użytkownika.
+"Działanie" definiuję przejściem testów integracyjnych oraz testu happy path: rejestracja -> logowanie -> pobranie danych użytkownika.
 
 ### Slajd 10: Wymagania niefunkcjonalne i ograniczenia (1:00)
 
@@ -180,10 +180,10 @@ Decyzję podejmę najpóźniej do końca listopada. Priorytetem jest zapas czasu
 ### Slajd 11: Najważniejsze części (1:30)
 
 - Core: główny moduł sterujący. Orkiestruje cały proces, obsługuje błędy i decyduje o cleanupie. Nie zna szczegółów frameworków, więc kolejne technologie nie wymagają jego istotnych zmian.
-- Pipeline: zarządzana przez core lista kroków od renderowania przez weryfikację po output. Każdy krok zna swoje artefakty i efekty uboczne, dzięki czemu core może po nim posprzątać.
+- Pipeline: zarządzana przez core lista kroków od renderowania przez weryfikację po output.
 - Template packs: dostarczają kod i konfigurację dla konkretnych technologii i komunikują się wyłącznie przez kontrakty oraz contributions. Dodanie technologii to dodanie kolejnego template packa, więc w zasadzie wystarczy dobrze znać framework, żeby go napisać. Template packi dzielą się na dwa rodzaje: frontend i backend-db. Każdy zawiera template'y całościowe, z których powstają całe pliki, oraz template'y częściowe (contributions), z których składany jest wspólny plik. Na przykład `docker-compose.yml`, `.env` i `README.md` w katalogu głównym projektu powstają z contributions kilku packów.
-- State (opcjonalny): zapisuje stan po każdym kroku i pozwala wznowić generację. Zmiana hasha konfiguracji oznacza start od nowa.
-- Statistics: mierzy czas całej generacji i poszczególnych etapów, liczbę plików i template packów, status weryfikacji oraz błędy.
+- Cleanup: po błędzie albo przerwaniu generacji sprząta cały run, czyli staging, zasoby Dockera i częściową kopię projektu. Katalog docelowy pozostaje nietknięty.
+- Statystyki: mierzą czas całej generacji i poszczególnych etapów, liczbę plików i template packów, status weryfikacji oraz błędy.
 
 ### Slajd 12: Manifest template packa (1:00)
 
@@ -219,10 +219,10 @@ flowchart LR
     subgraph CORE["Core - orkiestracja całego procesu"]
         IN["Etap 1: Dane wejściowe<br/>kreator albo YAML"] --> NORM["Etap 2: Normalizacja"]
         NORM --> VAL["Etap 3: Walidacja"]
-        VAL --> PLAN["Etap 4: Planning<br/>plan generacji"]
+        VAL --> PLAN["Etap 4: Planowanie<br/>plan generacji"]
         PLAN --> REN
         subgraph PIPE["Pipeline"]
-            REN["Etap 5: Rendering<br/>w stagingu"] --> VER["Etap 6: Verification<br/>Docker Compose, testy, happy path"]
+            REN["Etap 5: Renderowanie<br/>w stagingu"] --> VER["Etap 6: Weryfikacja<br/>Docker Compose, testy, happy path"]
             VER --> FIN["Etap 7: Finalizacja<br/>Output"]
         end
     end
@@ -230,18 +230,18 @@ flowchart LR
     TP --> PLAN
     FIN --> DEST["Katalog docelowy"]
     subgraph AUX["Moduły pomocnicze"]
-        STATS["Statistics"]
-        STATE["State, opcjonalny"]
+        STATS["Statystyki"]
+        CLEANUP["Cleanup"]
     end
     CORE -.-> AUX
 ```
 
 1. Dane wejściowe: deklaracja użytkownika z kreatora albo pliku YAML, czyli nazwa projektu, katalog docelowy, frontend, backend-db stack, porty i zmienne środowiskowe.
 2. Normalizacja: wspólny mechanizm dla kreatora i pliku. Porządkuje dane, uzupełnia wartości domyślne z manifestów template packów i losuje brakujące sekrety, a w efekcie powstaje znormalizowana konfiguracja wewnętrzna.
-3. Walidacja: sprawdza, czy kombinacja jest obsługiwana, czy porty nie mają konfliktów i czy da się utworzyć katalog docelowy. Niepusty katalog docelowy wymaga potwierdzenia w kreatorze albo flagi -f w trybie pliku.
-4. Planning: tłumaczy konfigurację na plan generacji, czyli zestaw template packów, plików i contributions. Wykrywa konflikty między packami, na przykład gdy dwa packi chcą wyrenderować ten sam plik.
-5. Rendering w stagingu: generator nie zaczyna od katalogu docelowego, tylko renderuje template'y w stagingu, czyli tymczasowym katalogu roboczym. Powstaje tam struktura katalogów, pliki całościowe, pliki składane z contributions i konfiguracja kontenerów.
-6. Verification: główna różnica względem kopiowania template'ów. Docker Compose uruchamia kontenery, backend odpowiada na `GET /health/ready`, działa komunikacja frontend-backend i backend-db, przechodzą wszystkie testy i działa happy path rejestracji, logowania i pobrania danych użytkownika. Test happy path jest częścią wygenerowanego projektu, więc użytkownik może go później uruchomić samodzielnie.
+3. Walidacja: sprawdza, czy porty nie mają konfliktów, czy katalog docelowy istnieje i czy katalog projektu nie istnieje albo jest pusty. Niepusty katalog projektu wymaga potwierdzenia w kreatorze albo flagi `--force` w trybie pliku.
+4. Planowanie: tłumaczy konfigurację na plan generacji, czyli zestaw template packów, plików i contributions. Wykrywa konflikty między packami, na przykład gdy dwa packi chcą wyrenderować ten sam plik.
+5. Renderowanie w stagingu: generator nie zaczyna od katalogu docelowego, tylko renderuje template'y w stagingu, czyli tymczasowym katalogu roboczym. Powstaje tam struktura katalogów, pliki całościowe, pliki składane z contributions i konfiguracja kontenerów.
+6. Weryfikacja: główna różnica względem kopiowania template'ów. Docker Compose uruchamia kontenery, backend odpowiada na `GET /health/ready`, działa komunikacja frontend-backend i backend-db, przechodzą wszystkie testy i działa happy path rejestracji, logowania i pobrania danych użytkownika. Test happy path jest częścią wygenerowanego projektu, więc użytkownik może go później uruchomić samodzielnie.
 7. Finalizacja: Output przenosi zweryfikowany projekt do katalogu docelowego. Jeśli weryfikacja się nie powiedzie, katalog docelowy pozostaje nietknięty.
 
 ## Kluczowe decyzje i ryzyka
@@ -266,7 +266,6 @@ flowchart LR
    - Django -> Django ORM, migracje Django, struktura Django
    - FastAPI -> struktura FastAPI, osobna konfiguracja aplikacji, osobne modele/schemy
    - Nuxt -> routing oparty na plikach, struktura typowa dla Nuxta
-   - React -> React Router, Vite, struktura typowa dla Reacta
 
    Wspólne są tylko wymagania, a nie struktura kodu. Ceną jest świadome powtórzenie części kodu i konfiguracji w template packach, bo zbyt agresywne DRY skończyłoby się wspólną abstrakcją nienaturalną dla żadnego frameworka. Dlatego wygenerowane projekty są możliwie DRY, a generator akceptuje kontrolowane powtórzenia, żeby nowa technologia nie wymagała modyfikowania starej.
 
@@ -275,11 +274,11 @@ flowchart LR
 - największe ryzyka projektu mają charakter architektoniczny, ponieważ błędne decyzje dotyczące kontraktów, template packów lub pipeline'u mogą utrudnić dalsze rozszerzanie generatora
   - ryzyko akceptowane: dotyczy błędów, których nie wyłapie nawet przegląd architektury, więc ujawnią się dopiero w trakcie implementacji
 - zbyt duża liczba kombinacji technologicznych może sprawić, że nie zdążę z pracą
-  - mitygacja: program minimum obejmuje jedną kombinację, Faza 6 jest dopiero po napisaniu pracy, a decyzję o drugim backend-db stacku podejmę do końca listopada
+  - mitygacja: zakres obejmuje dwie kombinacje z jednym frontendem, a React jest dopiero w Fazie 6, po napisaniu pracy
 - zbyt mała liczba kombinacji technologicznych może nie dać pewności, że dodawanie kolejnych nie wymaga modyfikacji istniejących
-  - mitygacja: Faza 6, jeśli wystarczy czasu. Model manifestu już obsługuje oba typy template packów, ale ryzyko częściowo pozostaje
-- jeśli drugim stackiem zostanie Django, zakres obejmie wyłącznie backendy z ekosystemu Pythona i w ograniczonym stopniu zweryfikuje możliwość dodania backendu z innego języka, np. Node.js, Java lub C#
-  - mitygacja: ASP.NET Core jako drugi backend-db stack, jeśli wystarczy czasu
+  - mitygacja: Django jako drugi backend-db stack sprawdza rozszerzalność w praktyce. Drugi frontend sprawdzam tylko na poziomie architektury, więc ryzyko częściowo pozostaje
+- zakres obejmuje wyłącznie backendy z ekosystemu Pythona i w ograniczonym stopniu weryfikuje możliwość dodania backendu z innego języka, np. Node.js, Java lub C#
+  - mitygacja: generator komunikuje się z template packami wyłącznie przez manifest i Dockera, więc język backendu ma dla niego małe znaczenie
 
 ## Dotychczasowe wyniki i plan prac
 
@@ -289,15 +288,15 @@ flowchart LR
 
 Zatwierdzona przez promotora:
 
-- dokumentacja wstępna (117 linii)
-- specyfikacja (522 linie)
-- kryteria akceptacyjne (586 linii, 65 kryteriów)
-- architektura (1004 linie)
+- dokumentacja wstępna (104 linie)
+- specyfikacja (529 linii)
+- kryteria akceptacyjne (541 linii, 59 kryteriów)
+- architektura (904 linie)
 
 #### Template packi
 
 - działający backend FastAPI + SQLite (API, Docker, README) z narzędziami jakości (ruff, mypy, pytest, `make check`)
-- w toku: testy backend-db, test dymny i contributions
+- w toku: testy backend-db, testy integracyjne endpointów i contributions
 - manifest template packa Nuxt
 
 #### Generator
@@ -323,12 +322,11 @@ Termin złożenia pracy: koniec stycznia 2027.
 - implementacja kroków pipeline'u
 - określenie formatu planu generacji, implementacja
 - implementacja renderera i outputu, procedura weryfikacji i finalizacji
-
-Decyzja o drugim backend-db stacku: do końca listopada.
+- manifest i szkic docker-compose.yml dla Django + PostgreSQL, żeby sprawdzić model manifestu przed napisaniem renderera
 
 #### Faza 3 (grudzień)
 
-- template pack Nuxta
+- template packi Nuxta i Django + PostgreSQL
 
 #### Faza 4 (grudzień)
 
@@ -342,17 +340,17 @@ Najwięcej czasu na pracę będę miał w okresie świątecznym.
 
 #### Faza 6 (tylko przy zapasie czasu)
 
-- okrojony template pack React oraz drugi backend-db stack (ASP.NET Core albo Django)
+- template pack React
 
 ### Slajd 20: Program minimum (0:45)
 
 Fazy 1-5:
 
 - generator z pełnym przepływem: walidacja, plan generacji, pipeline, weryfikacja i finalizacja
-- template packi Nuxt oraz FastAPI + SQLite, czyli jedna kombinacja
+- template packi Nuxt, FastAPI + SQLite oraz Django + PostgreSQL, czyli dwie kombinacje
 - praca inżynierska
 
-Faza 6 jest rozszerzeniem. Jeśli wystarczy czasu, dochodzi okrojony React i drugi backend-db stack, a praca zostanie zaktualizowana. Jeśli nie, praca i tak będzie kompletna.
+Faza 6 jest rozszerzeniem. Jeśli wystarczy czasu, dochodzi React, a praca zostanie zaktualizowana. Jeśli nie, praca i tak będzie kompletna.
 
 ## Zakończenie
 
@@ -374,9 +372,9 @@ Faza 6 jest rozszerzeniem. Jeśli wystarczy czasu, dochodzi okrojony React i dru
 
 ### Slajd 23: Pytania zapasowe 2
 
-3. Jak wykażesz rozszerzalność bez Fazy 6?
+3. Jak wykażesz rozszerzalność z jednym frontendem?
 
-   Rozszerzalność wynika z architektury: core nie zna frameworków, template packi są wykrywane po manifestach, a frontend i backend łączy wyłącznie kontrakt API. Model manifestu już obsługuje oba typy template packów. Faza 6 potwierdzi to w praktyce, jeśli wystarczy czasu.
+   Rozszerzalność wynika z architektury: core nie zna frameworków, template packi są wykrywane po manifestach, a frontend i backend łączy wyłącznie kontrakt API. W praktyce pokazuje ją Django: dodanie go nie może wymagać zmian w template packu Nuxta ani w core. Drugi frontend to prostszy przypadek, bo zależy wyłącznie od kontraktu API.
 
 4. Dlaczego backend i baza są razem?
 
@@ -384,7 +382,7 @@ Faza 6 jest rozszerzeniem. Jeśli wystarczy czasu, dochodzi okrojony React i dru
 
 5. Ile trwa generacja z weryfikacją?
 
-   Jeszcze nie mierzyłem, bo pipeline jeszcze nie istnieje. Będzie to mierzył komponent Statistics. Najwięcej czasu zajmie build obrazów i testy.
+   Jeszcze nie mierzyłem, bo pipeline jeszcze nie istnieje. Będzie to mierzył komponent statystyk. Najwięcej czasu zajmie build obrazów i testy.
 
 6. Czy da się zaktualizować wygenerowany projekt, gdy template'y się zmienią?
 

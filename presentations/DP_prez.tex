@@ -140,7 +140,7 @@
   \vspace{2mm}
   {\small
   \begin{itemize}
-    \item Tryby: kreator albo plik YAML bez interakcji (niepusty katalog docelowy: flaga -f)
+    \item Tryby: kreator albo plik YAML bez interakcji (niepusty katalog projektu: flaga \texttt{-{}-force})
     \item Template pack: paczka szablonów dla jednej technologii
   \end{itemize}
   }
@@ -192,9 +192,10 @@ ports:
 \begin{frame}{Wspierane technologie}
   \begin{itemize}
     \item Pierwotnie: Nuxt albo React z~FastAPI + SQLite albo z~Django + PostgreSQL
-    \item Planowana zmiana: okrojony React (głównie bez testów i~obsługi błędów), działa z~oboma stackami
-    \item Planowana zmiana: ASP.NET Core + PostgreSQL zamiast Django, jeśli starczy czasu
-    \item Decyzja do końca listopada, priorytet: zapas czasu na generator i~pracę
+    \item Zakres: Nuxt + FastAPI + SQLite oraz Nuxt + Django + PostgreSQL
+    \item Drugi backend zamiast drugiego frontendu: baza jako osobna usługa, sekrety kilku usług, kontrakt API niezależny od frameworka
+    \item Django zamiast ASP.NET Core: generator rozmawia z~packami tylko przez manifest i~Dockera
+    \item React jako potencjalne rozszerzenie
   \end{itemize}
 \end{frame}
 
@@ -208,7 +209,6 @@ ports:
         \item Walidacja przed generacją
         \item Weryfikacja testami przed zapisem
         \item Raport czasu i~statystyk
-        \item Opcjonalnie: wznowienie po błędzie
       \end{itemize}
       }
     \end{column}
@@ -219,7 +219,7 @@ ports:
         \item Frontend: logowanie, rejestracja, strona aplikacji, 404, JWT
         \item Backend: \texttt{/health}, \texttt{/health/db}, \texttt{/health/ready}, \texttt{/api/v1/auth/register}, \texttt{/login}, \texttt{/me}
         \item Baza: migracje, minimalny model użytkownika
-        \item Działanie = testy integracyjne + test dymny happy path
+        \item Działanie = testy integracyjne + test happy path
       \end{itemize}
       }
     \end{column}
@@ -255,13 +255,13 @@ ports:
 \begin{frame}{Najważniejsze części}
   \begin{itemize}
     \item Core: orkiestracja, obsługa błędów i~cleanup, bez wiedzy o~frameworkach
-    \item Pipeline: kroki ze znanymi artefaktami i~efektami ubocznymi
+    \item Pipeline: kroki od renderowania przez weryfikację po output
     \item Template packi: frontend i~backend-db
     \begin{itemize}
       \item template\textquotesingle{}y całościowe i~częściowe (contributions)
       \item contributions składają wspólne pliki: \texttt{docker-compose.yml}, \texttt{.env}, \texttt{README.md}
     \end{itemize}
-    \item State (opcjonalny) i~Statistics
+    \item Cleanup i~statystyki
   \end{itemize}
 \end{frame}
 
@@ -300,13 +300,13 @@ required_envs:
       \node[stage] (e1) at (0,0) {Etap 1\\ Dane wejściowe\\ kreator albo YAML};
       \node[stage] (e2) at (21.5,0) {Etap 2\\ Normalizacja};
       \node[stage] (e3) at (43,0) {Etap 3\\ Walidacja};
-      \node[stage] (e4) at (64.5,0) {Etap 4\\ Planning\\ plan generacji};
-      \node[stage] (e5) at (86,0) {Etap 5\\ Rendering\\ w~stagingu};
-      \node[stage] (e6) at (107.5,0) {Etap 6\\ Verification\\ Docker Compose, testy, happy path};
+      \node[stage] (e4) at (64.5,0) {Etap 4\\ Planowanie\\ plan generacji};
+      \node[stage] (e5) at (86,0) {Etap 5\\ Renderowanie\\ w~stagingu};
+      \node[stage] (e6) at (107.5,0) {Etap 6\\ Weryfikacja\\ Docker Compose, testy, happy path};
       \node[stage] (e7) at (129,0) {Etap 7\\ Finalizacja\\ Output};
       \node[aux] (tp) at (43,-36) {Template packi\\ manifest i~template\textquotesingle{}y};
-      \node[aux] (stats) at (78,-36) {Statistics};
-      \node[aux] (state) at (100,-36) {State, opcjonalny};
+      \node[aux] (stats) at (78,-36) {Statystyki};
+      \node[aux] (cleanup) at (100,-36) {Cleanup};
       \node[aux] (dest) at (129,-36) {Katalog docelowy};
 
       \draw[arrow] (e1) -- (e2);
@@ -322,7 +322,7 @@ required_envs:
       \begin{scope}[on background layer]
         \node[group=diagmain!60, fit=(e5)(e6)(e7), inner xsep=2mm, inner ysep=5mm] (pipe) {};
         \node[group=diagmain, fit=(e1)(e4)(pipe), inner xsep=3mm, inner ysep=5mm] (core) {};
-        \node[group=diagaccent, fit=(stats)(state), inner xsep=3mm, inner ysep=5mm] (auxgroup) {};
+        \node[group=diagaccent, fit=(stats)(cleanup), inner xsep=3mm, inner ysep=5mm] (auxgroup) {};
       \end{scope}
 
       \node[grouplabel, anchor=north west] at (pipe.north west) {Pipeline};
@@ -370,15 +370,15 @@ required_envs:
     \end{itemize}
     \item Za dużo kombinacji
     \begin{itemize}
-      \item program minimum, Faza 6 po napisaniu pracy
+      \item dwie kombinacje, React dopiero w~Fazie 6
     \end{itemize}
     \item Za mało kombinacji
     \begin{itemize}
-      \item Faza 6, ryzyko częściowo zostaje
+      \item Django sprawdza rozszerzalność w~praktyce, drugi frontend tylko w~architekturze
     \end{itemize}
-    \item Tylko Python przy Django
+    \item Tylko backendy w~Pythonie
     \begin{itemize}
-      \item ASP.NET Core, jeśli starczy czasu
+      \item generator rozmawia z~packami tylko przez manifest i~Dockera
     \end{itemize}
   \end{itemize}
 \end{frame}
@@ -390,10 +390,10 @@ required_envs:
       {\scriptsize (zatwierdzona przez promotora)}
       {\footnotesize
       \begin{itemize}
-        \item Dokumentacja wstępna (117 linii)
-        \item Specyfikacja (522 linie)
-        \item Kryteria akceptacyjne (586 linii, 65 kryteriów)
-        \item Architektura (1004 linie)
+        \item Dokumentacja wstępna (104 linie)
+        \item Specyfikacja (529 linii)
+        \item Kryteria akceptacyjne (541 linii, 59 kryteriów)
+        \item Architektura (904 linie)
       \end{itemize}
       }
     \end{column}
@@ -402,7 +402,7 @@ required_envs:
       {\footnotesize
       \begin{itemize}
         \item FastAPI + SQLite: API, Docker, README, \texttt{make check}
-        \item W~toku: testy, test dymny, contributions
+        \item W~toku: testy, contributions
         \item Manifest packa Nuxt
       \end{itemize}
       }
@@ -426,11 +426,10 @@ required_envs:
   Termin złożenia pracy: koniec stycznia 2027
 
   \begin{itemize}
-    \item Listopad: Faza 1 (domknięcie FastAPI) i~Faza 2 (core i~pipeline)
-    \item Do końca listopada: decyzja o~drugim backend-db stacku
-    \item Grudzień: Faza 3 (Nuxt) i~Faza 4 (dokończenie generatora)
+    \item Listopad: Faza 1 (domknięcie FastAPI) i~Faza 2 (core, pipeline, szkic manifestu Django)
+    \item Grudzień: Faza 3 (Nuxt i~Django) i~Faza 4 (dokończenie generatora)
     \item Styczeń: Faza 5 (praca inżynierska)
-    \item Faza 6 (okrojony React, drugi stack): tylko przy zapasie czasu
+    \item Faza 6 (React): tylko przy zapasie czasu
   \end{itemize}
 \end{frame}
 
@@ -438,7 +437,7 @@ required_envs:
   \begin{itemize}
     \item Fazy 1-5
     \item Generator z~pełnym przepływem: walidacja, plan, pipeline, weryfikacja, finalizacja
-    \item Jedna kombinacja: Nuxt + FastAPI + SQLite
+    \item Dwie kombinacje: Nuxt + FastAPI + SQLite i~Nuxt + Django + PostgreSQL
     \item Praca inżynierska
     \item Faza 6 to rozszerzenie, praca jest kompletna bez niej
   \end{itemize}
@@ -460,7 +459,7 @@ required_envs:
 \begin{frame}{Pytania zapasowe 2}
   \small
   \begin{itemize}
-    \item Jak wykażesz rozszerzalność bez Fazy 6
+    \item Jak wykażesz rozszerzalność z~jednym frontendem
     \item Dlaczego backend i~baza są razem
     \item Ile trwa generacja z~weryfikacją
     \item Czy da się zaktualizować wygenerowany projekt, gdy template\textquotesingle{}y się zmienią

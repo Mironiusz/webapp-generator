@@ -1,6 +1,6 @@
 # Specyfikacja
 
-Stan: 18.10.2026
+Stan: 31.10.2026
 
 ## 1. Cel dokumentu
 
@@ -27,7 +27,7 @@ Specyfikacja nie obejmuje:
 
 ## 3. Role użytkowników
 
-- Użytkownik generatora - programista, który chce utworzyć początkowy szkielet aplikacji webowej.
+- Użytkownik generatora - programista, który chce wygenerować szkielet aplikacji webowej.
 - Autor rozszerzenia - programista dodający obsługę nowej technologii
 
 ## 4. Tryby pracy generatora
@@ -39,15 +39,17 @@ Generator zapewni dwa tryby: kreatora i pliku konfiguracyjnego. Wynika to z zał
 Użytkownik odpowiada na pytania i podejmuje decyzje:
 
 - nazwa projektu
-- ścieżka docelowa
+- katalog docelowy, czyli istniejący katalog, w którym powstanie projekt
 - frontend
 - backend-db stack
 - porty albo wartości domyślne
-- dane środowiskowe albo wartości domyślne
+- zmienne środowiskowe albo wartości domyślne
+
+Po zakończeniu kreatora generator zapisuje odpowiedzi jako plik konfiguracyjny i podaje jego ścieżkę, żeby można było ponowić generację bez kreatora.
 
 ### 4.2 Tryb pliku konfiguracyjnego
 
-Generator przyjmuje plik konfiguracyjny i działa bez jakiejkolwiek interakcji.
+Generator przyjmuje plik konfiguracyjny i działa bez jakiejkolwiek interakcji. Sytuacje, które w kreatorze wymagają potwierdzenia użytkownika, czyli niepusty katalog projektu i port zajęty przez inny proces, w trybie pliku konfiguracyjnego kończą się błędem, chyba że generator uruchomiono z flagą `--force`.
 
 ## 5. Dane wejściowe generatora
 
@@ -55,7 +57,7 @@ Dane wejściowe są określane na podstawie kreatora lub pliku konfiguracyjnego.
 
 - version (tylko w pliku konfiguracyjnym)
 - project.name
-- project.output_dir
+- project.output_dir - katalog docelowy
 - frontend - nazwa katalogu template packa frontendu
 - backend - nazwa katalogu template packa backend-db stacka
 - ports.frontend
@@ -63,16 +65,16 @@ Dane wejściowe są określane na podstawie kreatora lub pliku konfiguracyjnego.
 - ports.database (gdy backend korzysta z osobnej bazy danych)
 - envs, osobno dla każdej części projektu
 
-Sekrety w env, np. klucz podpisu tokenów JWT, nie mają wartości domyślnych. Jeśli nie zostały podane, generator tworzy je losowo osobno dla każdego projektu.
+Projekt powstaje w katalogu projektu o nazwie project.name wewnątrz katalogu docelowego. Katalog docelowy musi istnieć, ale nie musi być pusty. Katalog projektu nie może istnieć albo musi być pusty, chyba że użytkownik potwierdzi jego użycie w kreatorze albo uruchomi generator z flagą `--force`.
+
+Sekrety, np. klucz podpisu tokenów JWT, to zmienne środowiskowe bez wartości domyślnych. Jeśli nie zostały podane, generator tworzy je losowo osobno dla każdego projektu.
 
 ## 6. Wspierane technologie i kombinacje
 
 Generator musi wspierać następujące kombinacje:
 
 - Nuxt + FastAPI + SQLite
-- React + FastAPI + SQLite
 - Nuxt + Django + PostgreSQL
-- React + Django + PostgreSQL
 
 Generator w tej wersji nie musi obsługiwać kombinacji spoza tej listy, ale musi być rozszerzalny o nowe frameworki frontendowe i backendowe.
 
@@ -91,35 +93,38 @@ Generowane są:
 
 ### 7.1 Struktura wygenerowanego projektu
 
+```text
 |--/docs
 |--/frontend
 |--/backend
-|--/database \*opcjonalny
-|--.env \*opcjonalny
-|--.env.example \*opcjonalny
+|--/database *opcjonalny
+|--.env
+|--.env.example
 |--README.md
 |--docker-compose.yml
 |--.gitignore
 |--.dockerignore
+```
 
 ## 8. Wymagania funkcjonalne generatora
 
 - Generator musi umożliwiać utworzenie projektu na podstawie kreatora.
 - Generator musi umożliwiać utworzenie projektu na podstawie pliku konfiguracyjnego.
 - Generator musi walidować konfigurację przed rozpoczęciem generacji.
-- Generator musi wykrywać niewspierane kombinacje technologiczne.
+- Generator musi odrzucać konfigurację, która wskazuje nieistniejący template pack albo template pack złego typu, np. frontend jako backend.
 - Generator musi wykrywać konflikty portów.
 - Generator musi utworzyć projekt w katalogu docelowym.
-- Generator musi umożliwiać wznowienie generacji po błędzie.
+- Generator nie może pozostawić częściowo wygenerowanego projektu w katalogu projektu.
 - Generator musi raportować czas generacji i podstawowe statystyki.
 
 Generator musi przerwać działanie przed rozpoczęciem generacji, jeśli:
 
-- wybrano niewspieraną kombinację technologii
+- wskazany template pack nie istnieje albo ma zły typ
 - brakuje wymaganych danych wejściowych
-- wskazana ścieżka outputu jest niepoprawna
-- porty wymagane przez usługi są skonfliktowane
-- wartości środowiskowe są niepoprawne
+- katalog docelowy nie istnieje albo nie pozwala na zapis
+- katalog projektu istnieje i nie jest pusty, a użytkownik nie potwierdził jego użycia ani nie użył flagi `--force`
+- porty części projektu są skonfliktowane
+- zmienne środowiskowe są niepoprawne
 
 ## 9. Wymagania funkcjonalne wygenerowanej aplikacji
 
@@ -135,6 +140,7 @@ Generator musi przerwać działanie przed rozpoczęciem generacji, jeśli:
 - obsługa błędu logowania
 - testy jednostkowe
 - testy integracyjne
+- test happy path
 
 ### 9.2 Backend
 
@@ -162,13 +168,13 @@ Backend zapewnia:
 - działa komunikacja frontend-backend
 - działa komunikacja backend-db
 
-"Działanie" definiuję przejściem testów integracyjnych.
+"Działanie" definiuję przejściem testów integracyjnych oraz testu happy path.
 
 ## 10. Kontrakt HTTP API
 
 ### 10.1 Zasady wspólne
 
-Endpointy health są wystawione bez prefixu. Pozostałe endpointy są wystawione pod prefixem `/api/v1`. Ścieżki w kontrakcie są podane w pełnej formie.
+Endpointy health są wystawione bez prefiksu. Pozostałe endpointy są wystawione pod prefiksem `/api/v1`. Ścieżki w kontrakcie są podane w pełnej formie.
 
 Każde body requestu i każda odpowiedź mają typ `application/json`.
 
@@ -461,7 +467,7 @@ Kontener backend ma healthcheck oparty o `GET /health/ready`.
 
 Wymagane pliki poza kontenerami:
 
-- .env i .env.example w każdej części projektu
+- .env i .env.example w katalogu głównym i w każdej części projektu
 - docker-compose.yml
 - Dockerfile frontendowy
 - Dockerfile backendowy
@@ -472,7 +478,7 @@ Wymagane pliki poza kontenerami:
 - testy jednostkowe frontendu
 - testy integracyjne backend-db
 - testy integracyjne frontend-backend
-- test uruchomieniowy potwierdzający, że wygenerowany projekt startuje przez docker compose
+- test happy path: rejestracja, logowanie i pobranie danych aktualnego użytkownika przez frontend na działającym projekcie
 
 Testy uruchamiane są w kontenerach Docker, bez instalowania zależności projektu na hoście.
 
@@ -510,13 +516,14 @@ Projekt ma być łatwy do rozszerzenia dla użytkownika generatora, bez konieczn
 ## 15. Ograniczenia
 
 - brak Kubernetes
-- brak TLS
-- brak SSO
-- brak Nginx
-- brak reverse proxy
+- brak TLS i obsługi certyfikatów
+- brak Nginx i reverse proxy
 - brak load balancingu
 - brak automatycznego CI/CD
+- brak deploymentu na serwer produkcyjny
 - brak osobnych kontenerów dev i prod
-- brak resetu hasła
-- brak wysyłki wiadomości email
-- brak integracji z dostawcą poczty
+- brak SSO i MFA
+- brak resetu hasła i potwierdzania adresu email
+- brak wysyłki wiadomości email i integracji z dostawcą poczty
+- brak pełnego systemu zarządzania tożsamością użytkownika
+- brak monitoringu i logowania produkcyjnego na poziomie infrastruktury serwerowej

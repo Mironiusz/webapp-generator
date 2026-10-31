@@ -1,16 +1,16 @@
 # Kryteria akceptacyjne
 
-Stan: 18.10.2026
+Stan: 31.10.2026
 
 ## 1. Cel dokumentu
 
-Dokument określa warunki, które muszą zostać spełnione, aby projekt generatora szablonów aplikacji webowych można było uznać za poprawnie zrealizowany.
+Dokument określa warunki, które muszą zostać spełnione, aby projekt generatora szkieletów aplikacji webowych można było uznać za poprawnie zrealizowany.
 
 Kryteria akceptacyjne wynikają ze specyfikacji projektu i służą do weryfikacji działania generatora oraz jakości wygenerowanych projektów.
 
 ## 2. Zasada akceptacji projektu
 
-Projekt zostaje uznany za zaakceptowany, jeśli:
+Projekt zostaje uznany za zaakceptowany, jeśli spełnia warunek końcowej akceptacji opisany w sekcji 16. W skrócie oznacza to, że:
 
 - generator poprawnie tworzy projekt dla każdej wspieranej kombinacji technologicznej
 - wygenerowany projekt uruchamia się przez Docker Compose
@@ -38,7 +38,7 @@ Typ weryfikacji: automatyczna.
 
 ### KA-GEN-02 - Generowanie projektu z kreatora
 
-Kryterium jest spełnione, jeśli użytkownik może przejść przez kreator, podać wymagane dane i wygenerować projekt.
+Kryterium jest spełnione, jeśli użytkownik może przejść przez kreator, podać wymagane dane i wygenerować projekt, a odpowiedzi z kreatora zostają zapisane jako plik konfiguracyjny, z którym można ponowić generację.
 
 Typ weryfikacji: automatyczna i ręczna.
 
@@ -68,46 +68,30 @@ Kryterium jest spełnione, jeśli generator tworzy działający projekt dla komb
 
 Typ weryfikacji: automatyczna.
 
-### KA-STACK-02 - React + FastAPI + SQLite
-
-Kryterium jest spełnione, jeśli generator tworzy działający projekt dla kombinacji React + FastAPI + SQLite.
-
-Typ weryfikacji: automatyczna.
-
-### KA-STACK-03 - Nuxt + Django + PostgreSQL
+### KA-STACK-02 - Nuxt + Django + PostgreSQL
 
 Kryterium jest spełnione, jeśli generator tworzy działający projekt dla kombinacji Nuxt + Django + PostgreSQL.
 
 Typ weryfikacji: automatyczna.
 
-### KA-STACK-04 - React + Django + PostgreSQL
-
-Kryterium jest spełnione, jeśli generator tworzy działający projekt dla kombinacji React + Django + PostgreSQL.
-
-Typ weryfikacji: automatyczna.
-
-### KA-STACK-05 - Brak obsługi niewspieranych kombinacji
-
-Kryterium jest spełnione, jeśli generator odrzuca konfigurację zawierającą kombinację technologiczną spoza listy wspieranych kombinacji.
-
-Typ weryfikacji: automatyczna.
-
 ## 6. Kryteria dla wygenerowanego projektu
 
-### KA-OUT-01 - Struktura katalogu wynikowego
+### KA-OUT-01 - Struktura wygenerowanego projektu
 
 Kryterium jest spełnione, jeśli wygenerowany projekt zawiera co najmniej:
 
+```text
 |--/docs
 |--/frontend
 |--/backend
-|--/database \*opcjonalny
-|--.env \*opcjonalny
-|--.env.example \*opcjonalny
+|--/database *opcjonalny
+|--.env
+|--.env.example
 |--README.md
 |--docker-compose.yml
 |--.gitignore
 |--.dockerignore
+```
 
 Typ weryfikacji: automatyczna.
 
@@ -162,7 +146,7 @@ Typ weryfikacji: automatyczna.
 
 ### KA-DOCKER-03 - Konfiguracja środowiskowa
 
-Kryterium jest spełnione, jeśli każda część projektu zawiera pliki .env i .env.example, a wartości w tych plikach umożliwiają uruchomienie projektu bez dodatkowej konfiguracji.
+Kryterium jest spełnione, jeśli katalog główny i każda część projektu zawierają pliki .env i .env.example, a wartości w tych plikach umożliwiają uruchomienie projektu bez dodatkowej konfiguracji.
 
 Typ weryfikacji: automatyczna i ręczna.
 
@@ -207,13 +191,13 @@ Typ weryfikacji: automatyczna.
 
 ### KA-API-03 - Endpoint POST /api/v1/auth/login dla niepoprawnych danych
 
-Kryterium jest spełnione, jeśli endpoint POST /api/v1/auth/login dla nieistniejącego adresu email oraz dla złego hasła zwraca status HTTP 401 z detail o wartości Invalid credentials.
+Kryterium jest spełnione, jeśli endpoint POST /api/v1/auth/login dla nieistniejącego adresu email oraz dla złego hasła zwraca status HTTP 401 z detail o wartości Invalid credentials. Dla brakującego pola albo niepoprawnego adresu email zwraca status HTTP 400 z detail o wartości Invalid request data.
 
 Typ weryfikacji: automatyczna.
 
-### KA-API-04 - Endpoint GET /api/v1/auth/me bez tokena
+### KA-API-04 - Endpoint GET /api/v1/auth/me bez poprawnego tokena
 
-Kryterium jest spełnione, jeśli endpoint GET /api/v1/auth/me bez nagłówka Authorization, z niepoprawnym tokenem oraz z wygasłym tokenem zwraca status HTTP 401 z detail o wartości Not authenticated.
+Kryterium jest spełnione, jeśli endpoint GET /api/v1/auth/me bez nagłówka Authorization, z niepoprawnym tokenem, z wygasłym tokenem oraz z tokenem wskazującym użytkownika, który nie istnieje, zwraca status HTTP 401 z detail o wartości Not authenticated.
 
 Typ weryfikacji: automatyczna.
 
@@ -242,7 +226,7 @@ Typ weryfikacji: automatyczna.
 
 ### KA-API-07 - Endpoint POST /api/v1/auth/register dla poprawnych danych
 
-Kryterium jest spełnione, jeśli endpoint POST /api/v1/auth/register dla poprawnych danych rejestracji zwraca status HTTP 201 oraz dane utworzonego użytkownika. Jeśli request nie zawiera username, pole username w odpowiedzi ma wartość null.
+Kryterium jest spełnione, jeśli endpoint POST /api/v1/auth/register dla poprawnych danych rejestracji zwraca status HTTP 201 oraz dane utworzonego użytkownika. Jeśli request nie zawiera username, pole username w odpowiedzi ma wartość null. Pola spoza kontraktu, np. is_active, są ignorowane.
 
 Oczekiwany format odpowiedzi:
 
@@ -270,7 +254,7 @@ Typ weryfikacji: automatyczna.
 
 ### KA-API-09 - Endpoint POST /api/v1/auth/register dla istniejącego użytkownika
 
-Kryterium jest spełnione, jeśli endpoint POST /api/v1/auth/register dla adresu email istniejącego użytkownika oraz dla username istniejącego użytkownika zwraca status HTTP 409 z detail o wartości User already exists.
+Kryterium jest spełnione, jeśli endpoint POST /api/v1/auth/register dla adresu email istniejącego użytkownika oraz dla username istniejącego użytkownika zwraca status HTTP 409 z detail o wartości User already exists, także gdy adres email różni się tylko wielkością liter.
 
 Typ weryfikacji: automatyczna.
 
@@ -284,6 +268,8 @@ Kryterium jest spełnione, jeśli endpoint GET /health/db przy działającej baz
   "database_status": "up"
 }
 ```
+
+Przy niedziałającej bazie danych zwraca status HTTP 503 z database_status o wartości down.
 
 Typ weryfikacji: automatyczna.
 
@@ -299,7 +285,7 @@ Kryterium jest spełnione, jeśli endpoint GET /health/ready po wdrożeniu wszys
 }
 ```
 
-a przed wdrożeniem migracji zwraca status HTTP 503 z schema_status o wartości not_migrated.
+a przed wdrożeniem migracji zwraca status HTTP 503 z schema_status o wartości not_migrated. Gdy baza danych nie odpowiada, zwraca status HTTP 503 z database_status o wartości down i schema_status o wartości unknown.
 
 Typ weryfikacji: automatyczna.
 
@@ -317,7 +303,7 @@ Typ weryfikacji: automatyczna.
 
 ### KA-API-14 - Format odpowiedzi błędu
 
-Kryterium jest spełnione, jeśli każda odpowiedź ze statusem HTTP 400, 401, 403 albo 409 ma body w postaci obiektu JSON z jednym polem detail, którego wartość jest zgodna ze specyfikacją.
+Kryterium jest spełnione, jeśli każda odpowiedź ze statusem HTTP 400, 401, 403 albo 409 ma body w postaci obiektu JSON z jednym polem detail, którego wartość jest zgodna ze specyfikacją. Każda odpowiedź ze statusem HTTP 401 zawiera nagłówek WWW-Authenticate: Bearer.
 
 Typ weryfikacji: automatyczna.
 
@@ -353,7 +339,7 @@ Kryterium jest spełnione, jeśli backend może posiadać dodatkowe tabele techn
 
 Typ weryfikacji: ręczna.
 
-## 10. Kryteria dla komunikacji między modułami
+## 10. Kryteria dla komunikacji między częściami projektu
 
 ### KA-COMM-01 - Komunikacja frontend-backend
 
@@ -395,11 +381,17 @@ Typ weryfikacji: automatyczna.
 
 ### KA-TEST-05 - Testy wygenerowanego projektu
 
-Kryterium jest spełnione, jeśli wygenerowany projekt posiada jeden udokumentowany sposób uruchomienia całego zestawu testów.
+Kryterium jest spełnione, jeśli README.md wygenerowanego projektu opisuje, jak uruchomić testy każdej części projektu i test happy path.
 
-Typ weryfikacji: automatyczna i ręczna.
+Typ weryfikacji: ręczna.
 
-## 12. Kryteria dla idempotentności i wznawiania
+### KA-TEST-06 - Test happy path
+
+Kryterium jest spełnione, jeśli frontend wygenerowanego projektu zawiera test happy path, który na działającym projekcie rejestruje użytkownika, loguje go i pobiera jego dane przez GET /api/v1/auth/me.
+
+Typ weryfikacji: automatyczna.
+
+## 12. Kryteria dla idempotentności
 
 ### KA-IDEMP-01 - Ponowne uruchomienie generatora
 
@@ -407,59 +399,41 @@ Kryterium jest spełnione, jeśli ponowne uruchomienie generatora dla tej samej 
 
 Typ weryfikacji: automatyczna.
 
-### KA-IDEMP-02 - Wznowienie po błędzie
+### KA-IDEMP-02 - Brak częściowego wyniku w katalogu projektu
 
-Kryterium jest spełnione, jeśli po błędzie generator umożliwia wznowienie generacji od ostatniego poprawnie zakończonego etapu.
-
-Typ weryfikacji: automatyczna i ręczna.
-
-### KA-IDEMP-03 - Brak częściowego wyniku w katalogu finalnym
-
-Kryterium jest spełnione, jeśli nieudany etap generacji nie pozostawia częściowo wygenerowanego projektu w katalogu finalnym.
-
-Typ weryfikacji: automatyczna.
-
-### KA-IDEMP-04 - Zmiana konfiguracji a wznowienie
-
-Kryterium jest spełnione, jeśli generator nie wznawia bezrefleksyjnie poprzedniej generacji po zmianie konfiguracji wejściowej.
+Kryterium jest spełnione, jeśli nieudany etap generacji nie pozostawia częściowo wygenerowanego projektu w katalogu projektu.
 
 Typ weryfikacji: automatyczna.
 
 ## 13. Kryteria negatywne
 
-### KA-NEG-01 - Niewspierany frontend
+### KA-NEG-01 - Nieznany frontend
 
-Kryterium jest spełnione, jeśli podanie niewspieranego frontendu kończy się błędem walidacji.
-
-Typ weryfikacji: automatyczna.
-
-### KA-NEG-02 - Niewspierany backend
-
-Kryterium jest spełnione, jeśli podanie niewspieranego backendu kończy się błędem walidacji.
+Kryterium jest spełnione, jeśli wskazanie frontendu, którego nie ma wśród template packów albo który nie jest template packiem frontendu, kończy się błędem walidacji.
 
 Typ weryfikacji: automatyczna.
 
-### KA-NEG-03 - Niewspierana baza danych albo backend-db stack
+### KA-NEG-02 - Nieznany backend-db stack
 
-Kryterium jest spełnione, jeśli podanie bazy danych albo backend-db stacka niezgodnego ze wspieranymi kombinacjami technologii kończy się błędem walidacji.
+Kryterium jest spełnione, jeśli wskazanie backend-db stacka, którego nie ma wśród template packów albo który nie jest template packiem backend-db stacka, kończy się błędem walidacji.
 
 Typ weryfikacji: automatyczna.
 
-### KA-NEG-04 - Konflikt portów
+### KA-NEG-03 - Konflikt portów
 
 Kryterium jest spełnione, jeśli konflikt portów kończy się błędem walidacji.
 
 Typ weryfikacji: automatyczna.
 
-### KA-NEG-05 - Brak wymaganych danych wejściowych
+### KA-NEG-04 - Brak wymaganych danych wejściowych
 
 Kryterium jest spełnione, jeśli brak wymaganych danych wejściowych kończy się błędem walidacji.
 
 Typ weryfikacji: automatyczna.
 
-### KA-NEG-06 - Niepoprawna ścieżka output_dir
+### KA-NEG-05 - Niepoprawny katalog docelowy albo niepusty katalog projektu
 
-Kryterium jest spełnione, jeśli niepoprawna ścieżka output_dir kończy się błędem walidacji.
+Kryterium jest spełnione, jeśli katalog docelowy, który nie istnieje albo nie pozwala na zapis, kończy się błędem walidacji, a katalog projektu, który istnieje i nie jest pusty, kończy się błędem walidacji w trybie pliku konfiguracyjnego uruchomionym bez flagi `--force`.
 
 Typ weryfikacji: automatyczna.
 
@@ -486,12 +460,6 @@ Typ weryfikacji: ręczna.
 ### KA-QUALITY-04 - Dokumentowanie kodu
 
 Kryterium jest spełnione, jeśli funkcje wymagające wyjaśnienia posiadają docstringi, a kod nie opiera się na komentarzach linijkowych jako głównym sposobie dokumentowania logiki.
-
-Typ weryfikacji: ręczna.
-
-### KA-QUALITY-05 - Dokumentacja rozszerzania projektu
-
-Kryterium jest spełnione, jeśli README.md opisuje, jak użytkownik może rozszerzać wygenerowany frontend i backend.
 
 Typ weryfikacji: ręczna.
 
@@ -527,20 +495,7 @@ Typ weryfikacji: automatyczna i ręczna.
 
 ### KA-EXT-05 - Jawne wymagania dla rozszerzenia
 
-Kryterium jest spełnione, jeśli nowa technologia musi jawnie określić:
-
-- Nazwa
-- Rodzaj {frontend, backend-db, containerization, infrastructure}
-- Wersja template packa
-- \*Nazwa i wersja frameworka
-- \*Silnik i wersja bazy danych
-- Język programowania
-- Poziom stabilności
-- Domyślny port hosta dla każdej części projektu
-- Lista sekretów środowiskowych wymaganych przez każdą część projektu
-- Kontrybucje
-
-Nowa technologia musi też dostarczać makefile z targetem `test`, który uruchamia jej testy, oraz deklarować swoje zależności w natywnym pliku zależności.
+Kryterium jest spełnione, jeśli nowa technologia dostarcza manifest ze wszystkimi danymi wymaganymi przez architekturę (13.4), makefile z targetem `test`, który uruchamia jej testy, a frontend dodatkowo z targetem `happy-path`, oraz deklaruje swoje zależności w natywnym pliku zależności.
 
 Typ weryfikacji: ręczna.
 
@@ -558,7 +513,7 @@ Typ weryfikacji: automatyczna i ręczna.
 
 Kryterium jest spełnione, jeśli dodanie nowej technologii nie wymaga istotnych zmian w głównej logice generatora odpowiedzialnej za konfigurację, walidację, generację i weryfikację.
 
-Dopuszczalne są zmiany rejestrujące nowe rozszerzenie albo aktualizujące listę wspieranych technologii.
+Nowy template pack jest wykrywany automatycznie po manifeście, więc nie wymaga rejestrowania w kodzie generatora.
 
 Typ weryfikacji: ręczna.
 
@@ -578,9 +533,9 @@ Projekt zostaje uznany za zaakceptowany, jeśli:
 - spełnione są wszystkie kryteria dotyczące środowiska Docker
 - spełnione są wszystkie kryteria dotyczące kontraktu HTTP API
 - spełnione są wszystkie kryteria dotyczące kontraktu danych
-- spełnione są wszystkie kryteria dotyczące komunikacji między modułami
+- spełnione są wszystkie kryteria dotyczące komunikacji między częściami projektu
 - spełnione są wszystkie kryteria dotyczące testów
-- spełnione są wszystkie kryteria dotyczące idempotentności i wznawiania
+- spełnione są wszystkie kryteria dotyczące idempotentności
 - spełnione są wszystkie kryteria negatywne
 - spełnione są wszystkie kryteria dotyczące rozszerzalności generatora
 - kryteria jakościowe zostały pozytywnie ocenione ręcznie

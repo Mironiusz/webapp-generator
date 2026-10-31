@@ -37,8 +37,8 @@ class Core:
     def _get_config(self) -> ConfigFile:
         """
         Uruchamia CLI.
-        W CLI użytkownik wybiera tryb (plik, wznowienie lub kontynuacja trybu CLI).
-        Następnie CLI pyta użytkownika o wszystko, czego potrzbuje,
+        W CLI użytkownik wybiera tryb: kreator albo plik konfiguracyjny.
+        Następnie CLI pyta użytkownika o wszystko, czego potrzebuje,
         a następnie zwraca pozyskane dane.
         """
 

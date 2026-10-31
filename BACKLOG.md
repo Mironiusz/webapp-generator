@@ -1,6 +1,6 @@
 # Stan
 
-17.10.2026
+31.10.2026
 
 ## Po co
 
@@ -28,7 +28,7 @@ Te pliki pozwolą mi łatwiej układać sobie pracę krok po kroku i dzielić j�
 
 - [x] Podstawowe testy jednostkowe konfiguracji by coś przechodziło `make check`
 - [ ] Testy jednostkowe i integracyjne backend-db
-- [ ] Test dymny rejestracji, logowania i pobrania użytkownika
+- [ ] Testy integracyjne endpointów rejestracji, logowania i pobrania użytkownika
 - [ ] Uruchamianie testów w kontenerach
 
 #### Uruchomienie i dokumentacja
@@ -43,6 +43,8 @@ Te pliki pozwolą mi łatwiej układać sobie pracę krok po kroku i dzielić j�
 - [x] Manifest i parametry dla generatora
 - [ ] Wkład packa do wspólnych plików projektu
 - [ ] Wykluczenie plików sandboxa
+- [ ] Port w docker-compose.yml ze zmiennej BACKEND_PORT z głównego .env (architektura 14.5)
+- [ ] Obraz w docker-compose.yml bez stałej nazwy (architektura 8.3)
 
 #### Poprawki
 
@@ -53,10 +55,10 @@ Te pliki pozwolą mi łatwiej układać sobie pracę krok po kroku i dzielić j�
 
 #### Ponowny przegląd architektury
 
-- [ ] przegląd architektury i próba doszukania się potencjalnych problemów
-- [ ] doprecyzowanie nazewnictwa i usunięcie ewentualnych rozjazdów
-- [ ] rozważenie rezygnacji ze State lub State jako nice-to-have (chyba że dosłownie wyniknie z pipelinu, że to jest łatwe: hash konfiigu + zapisanie stanu pipelinu)
-- [ ] opisanie moich rozważań co do rezygnacji z powodu braku czasu z Reacta (lub zrobienie bardzo bazowego, niekoniecznie dopracowanego template packa) oraz przejścia z Django na ASP.Net
+- [x] przegląd architektury i próba doszukania się potencjalnych problemów
+- [x] doprecyzowanie nazewnictwa i usunięcie ewentualnych rozjazdów
+- [x] rozważenie rezygnacji ze State lub State jako nice-to-have (chyba że dosłownie wyniknie z pipelinu, że to jest łatwe: hash konfiigu + zapisanie stanu pipelinu)
+- [x] opisanie moich rozważań co do rezygnacji z powodu braku czasu z Reacta (lub zrobienie bardzo bazowego, niekoniecznie dopracowanego template packa) oraz przejścia z Django na ASP.Net
 
 #### Szkielet core
 
@@ -71,11 +73,13 @@ Te pliki pozwolą mi łatwiej układać sobie pracę krok po kroku i dzielić j�
 - [x] Odczyt manifestu
 - [ ] Normalizacja konifguracji (pełne 6.5)
 - [ ] Walidacja konfiguracji (pełne 6.6)
+- [ ] Manifest i szkic docker-compose.yml Django + PostgreSQL, sprawdzenie modelu manifestu
 
 #### CLI
 
 - [ ] Wybór frameworka pod CLI. Sprawdzenie go i przetestowanie możliwości
 - [ ] Zebranie danych wejściowych od użytkownika
+- [ ] Zapis odpowiedzi kreatora jako plik konfiguracyjny
 - [ ] Obsługa przejścia przez cały proces przez CLI, na mockach
 
 #### Pipeline
@@ -91,7 +95,10 @@ Te pliki pozwolą mi łatwiej układać sobie pracę krok po kroku i dzielić j�
 #### Weryfikacja i finalizacja
 
 - [ ] Procedura weryfikacyjna ze stagingiem
+- [ ] Testy kontraktu HTTP API w katalogu contracts
 - [ ] Procedura finalizacji
+- [ ] Cleanup runa i ślad runa
+- [ ] Ignorowanie zawartości TEMP w .gitignore, z wyjątkiem .gitkeep
 - [ ] Wygenerowany backend wstaje przez docker compose
 
 ### 3. Template pack nuxta
@@ -119,16 +126,40 @@ Te pliki pozwolą mi łatwiej układać sobie pracę krok po kroku i dzielić j�
 
 - [ ] testy jednostkowe
 - [ ] testy integracyjne
+- [ ] test happy path
 
-### 4. Ukończenie generatora
+### 4. Template pack django
 
-### 5. Stworzenie pracy inżynierskiej
+#### Fundament
+
+- [ ] Struktura aplikacji Django
+- [ ] Konfiguracja z plików env z walidacją i ochroną sekretów
+- [ ] Narzędzia jakości i makefile
+- [ ] Baza PostgreSQL, model użytkownika i migracje
+
+#### Kontrakt HTTP API
+
+- [ ] Endpointy health ze sprawdzaniem bazy i migracji
+- [ ] Rejestracja, logowanie tokenem JWT i pobranie aktualnego użytkownika
+- [ ] Obsługa błędów zgodna z formatem kontraktu
+
+#### Testy
+
+- [ ] Testy jednostkowe i integracyjne backend-db
+- [ ] Testy integracyjne endpointów rejestracji, logowania i pobrania użytkownika
+
+#### Uruchomienie i forma template packa
+
+- [ ] Docker Compose z usługą bazy, migracjami i healthcheckiem
+- [ ] README z instrukcją uruchomienia
+- [ ] Manifest i wkład packa do wspólnych plików projektu
+
+### 5. Ukończenie generatora
+
+### 6. Stworzenie pracy inżynierskiej
 
 - [ ] napisanie tekstu pracy w md
 - [ ] przeniesienie pracy na docelowy format w latechu
 - [ ] zrobienie wszystkiego co konieczne przed złożeniem pracy
 
-### 6. Dodanie kolejnych dwóch template packów
-
-- [ ] React
-- [ ] ASP.Net
+### 7. Template pack reacta
