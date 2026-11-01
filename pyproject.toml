@@ -91,6 +91,12 @@ strict = true
 [tool.vulture]
 paths = ["generator", "main.py"]
 ignore_decorators = ["@pytest.fixture"]
+ignore_names = [
+    "model_config",
+    "BACKEND", "DATABASE", "ALPHA", "BETA", "STABLE",
+    "version", "framework", "language", "database", "engine", "stability", "contributions",
+    "project", "output_dir",
+]
 
 [tool.deptry]
 optional_dependencies_dev_groups = ["dev"]

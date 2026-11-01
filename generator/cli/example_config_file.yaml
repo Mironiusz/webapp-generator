@@ -6,13 +6,4 @@ project:
 
 frontend: "frontend_nuxt"
 
-backend: "backend_fastapi_sqlite"
-
-ports:
-  frontend: Null
-  backend: Null
-  database: Null
-
-envs:
-  backend:
-    AUTH__SECRET_KEY: "g4ylfFc1LmTbX-Dr-3eNXNES-3Q5hBsWCQhkXvX5v_I"
+backend: "backend_django_postgres"

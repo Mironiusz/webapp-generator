@@ -47,7 +47,16 @@ class InvalidTemplatePackError(GeneratorError):
 class InvalidConfigFileError(GeneratorError):
     """Plik konfiguracyjny nie jest poprawny."""
 
-    def __init__(self, config_file: Path, reason: str) -> None:
-        self.config_file = config_file
+    def __init__(self, reason: str, config_file: Path) -> None:
         self.reason = reason
+        self.config_file = config_file
         super().__init__(f"Config file {config_file} is invalid: {reason}")
+
+
+class InvalidConfigurationError(GeneratorError):
+    """Konfiguracja wybrana przez użytkownika nie jest poprawna."""
+
+    def __init__(self, reason: str) -> None:
+        self.reason = reason
+
+        super().__init__(f"Configuration you chose is invalid: {reason}")

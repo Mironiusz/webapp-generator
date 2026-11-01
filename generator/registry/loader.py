@@ -28,7 +28,7 @@ class Loader:
         except ValidationError as e:
             raise InvalidTemplatePackError(manifest_path.parent.name, f"Manifest does not match the schema: {format_validation_error(e)}") from e
 
-        logger.debug(manifest)
+        logger.debug("Loaded manifest %s:\n%s", manifest_path.parent.name, yaml.dump(manifest.model_dump(mode="json"), sort_keys=False, allow_unicode=True))
 
         return manifest
 

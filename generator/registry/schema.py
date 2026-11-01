@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-from generator.common.schema import Port, ProjectRealm, StrictModel
+from generator.common.schema import EnvName, Port, ProjectRealm, StrictModel
 
 
 class ManifestType(StrEnum):
@@ -56,4 +56,4 @@ class Manifest(StrictModel):
     stability: ManifestStability
     ports: dict[ProjectRealm, Port]
     contributions: list[str]
-    required_envs: dict[ProjectRealm, list[str]]
+    required_envs: dict[ProjectRealm, list[EnvName]]

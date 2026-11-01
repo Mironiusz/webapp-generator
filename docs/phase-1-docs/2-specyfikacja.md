@@ -1,6 +1,6 @@
 # Specyfikacja
 
-Stan: 31.10.2026
+Stan: 01.11.2026
 
 ## 1. Cel dokumentu
 
@@ -67,7 +67,9 @@ Dane wejściowe są określane na podstawie kreatora lub pliku konfiguracyjnego.
 
 Projekt powstaje w katalogu projektu o nazwie project.name wewnątrz katalogu docelowego. Katalog docelowy musi istnieć, ale nie musi być pusty. Katalog projektu nie może istnieć albo musi być pusty, chyba że użytkownik potwierdzi jego użycie w kreatorze albo uruchomi generator z flagą `--force`.
 
-Sekrety, np. klucz podpisu tokenów JWT, to zmienne środowiskowe bez wartości domyślnych. Jeśli nie zostały podane, generator tworzy je losowo osobno dla każdego projektu.
+Nazwa projektu składa się z małych liter, cyfr oraz znaków `_` i `-`, zaczyna się literą, kończy literą albo cyfrą i ma najwyżej 127 znaków. Katalog docelowy jest podawany jako ścieżka bezwzględna. Port jest liczbą całkowitą od 1 do 65535.
+
+Sekrety, np. klucz podpisu tokenów JWT, to zmienne środowiskowe bez wartości domyślnych. Jeśli nie zostały podane, generator tworzy je losowo osobno dla każdego projektu. Nazwa zmiennej środowiskowej ma co najmniej 3 znaki, składa się z wielkich liter, cyfr i znaku `_` i nie zaczyna się cyfrą. Wartość ma co najmniej 32 znaki i składa się z liter, cyfr oraz znaków `.`, `_` i `-`.
 
 ## 6. Wspierane technologie i kombinacje
 
@@ -124,6 +126,7 @@ Generator musi przerwać działanie przed rozpoczęciem generacji, jeśli:
 - katalog docelowy nie istnieje albo nie pozwala na zapis
 - katalog projektu istnieje i nie jest pusty, a użytkownik nie potwierdził jego użycia ani nie użył flagi `--force`
 - porty części projektu są skonfliktowane
+- port części projektu jest zajęty przez inny proces, a użytkownik nie potwierdził jego użycia w kreatorze ani nie użył flagi `--force`
 - zmienne środowiskowe są niepoprawne
 
 ## 9. Wymagania funkcjonalne wygenerowanej aplikacji

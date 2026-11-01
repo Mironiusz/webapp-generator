@@ -30,7 +30,7 @@ class Resolver:
 
             manifest_paths[tp_path.name] = manifest_path
 
-        logger.debug(manifest_paths)
+        logger.debug("Detected template packs: %s", ", ".join(manifest_paths))
 
         return manifest_paths
 

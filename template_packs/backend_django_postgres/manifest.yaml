@@ -1,0 +1,20 @@
+name: "Django + PostgreSQL"
+type: "backend-db"
+version: "0.0.1"
+framework:
+  name: "Django"
+  version: "6.1.2"
+language:
+  name: "Python"
+  version: "3.13"
+database:
+  engine: "PostgreSQL"
+  version: "18.6"
+stability: "alpha"
+ports:
+  backend: 8000
+  database: 5432
+contributions: ["docker-compose.yml"]
+required_envs:
+  backend: ["DJANGO_SECRET_KEY"]
+  database: ["POSTGRES_PASSWORD"]

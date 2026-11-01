@@ -1,9 +1,9 @@
 import secrets
 from collections.abc import Mapping
 
-from pydantic import SecretStr, StrictInt
+import yaml
 
-from generator.common.schema import Port, ProjectRealm
+from generator.common.schema import EnvValue, Port, ProjectRealm
 from generator.configuration.schema import ConfigFile, NormalizedConfig
 from generator.registry.schema import Manifest
 from generator.settings.logger import get_logger
@@ -15,7 +15,6 @@ class Normalizer:
     """
     Tutaj konfiguracja zostaje uporządkowana i znormalizowana. Wynikiem normalizacji powinien być docelowy model konfiguracji: uporządkowany, uzupełniony o dane domyślne i poprawny semantycznie. Poprawność semantyczna oznacza tutaj spójne znaczenie danych, a nie potwierdzenie, że dana technologia lub kombinacja jest obsługiwana przez generator.
     Normalizacja obejmuje:
-
     - uzupełnienie domyślnych portów
     - wylosowanie brakujących sekretów wymaganych przez template packi
     - pominięcie z ostrzeżeniem portów i zmiennych środowiskowych, których nie deklarują wybrane template packi
@@ -80,7 +79,7 @@ class Normalizer:
 
         return target_ports
 
-    def _fill_default_envs(self) -> dict[ProjectRealm, dict[str, SecretStr | StrictInt]]:
+    def _fill_default_envs(self) -> dict[ProjectRealm, dict[str, EnvValue]]:
         """
         Uzupełnia zmienne środowiskowe sekretami wymaganymi przez manifesty wybranych template packów.
         Każda część projektu, która ma port, dostaje swoją sekcję zmiennych, nawet pustą.
@@ -95,16 +94,16 @@ class Normalizer:
             for env_name in sorted(realm_envs.keys() - required_env_names.get(realm, [])):
                 logger.warning("Ignoring env %s for %s, no selected template pack requires it", env_name, realm)
 
-        target_envs: dict[ProjectRealm, dict[str, SecretStr | StrictInt]] = {}
+        target_envs: dict[ProjectRealm, dict[str, EnvValue]] = {}
         for realm, env_names in required_env_names.items():
             realm_envs = config_file_envs.get(realm, {})
 
-            target_realm_envs: dict[str, SecretStr | StrictInt] = {}
+            target_realm_envs: dict[str, EnvValue] = {}
             for env_name in env_names:
                 if env_name in realm_envs:
                     target_realm_envs[env_name] = realm_envs[env_name]
                 else:
-                    target_realm_envs[env_name] = SecretStr(secrets.token_urlsafe(32))
+                    target_realm_envs[env_name] = EnvValue(secrets.token_urlsafe(32))
 
             target_envs[realm] = target_realm_envs
 
@@ -122,6 +121,8 @@ class Normalizer:
         config_file["ports"] = target_ports
         config_file["envs"] = target_envs
 
-        logger.debug(config_file)
+        normalized_config = NormalizedConfig.model_validate(config_file)
 
-        return NormalizedConfig.model_validate(config_file)
+        logger.debug("Normalized config file: \n%s", yaml.dump(normalized_config.model_dump(mode="json"), sort_keys=False, allow_unicode=True))
+
+        return normalized_config

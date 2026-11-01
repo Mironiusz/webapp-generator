@@ -1,6 +1,6 @@
 # Architektura
 
-Stan: 31.10.2026
+Stan: 01.11.2026
 
 ## 1 Wstęp
 
@@ -156,7 +156,7 @@ Katalog projektu zawiera wyłącznie poprawnie wygenerowany i zweryfikowany proj
 
 ### 2.19 Walidacja (validation)
 
-Wszystkie sprawdzenia konfiguracji przed rozpoczęciem generacji. Pierwsza część odbywa się przy ładowaniu konfiguracji (6.4): struktura danych oraz istnienie i typ wskazanych template packów. Druga część odbywa się po normalizacji (6.6): porty, katalogi i zmienne środowiskowe. Błąd walidacji przerywa działanie, zanim generator zapisze jakikolwiek plik projektu.
+Wszystkie sprawdzenia konfiguracji przed rozpoczęciem generacji. Pierwsza część odbywa się przy ładowaniu konfiguracji (6.4): struktura danych, format nazwy projektu, portów i zmiennych środowiskowych oraz istnienie i typ wskazanych template packów. Druga część odbywa się po normalizacji (6.6): konflikty portów, zajęte porty, katalog docelowy i katalog projektu. Błąd walidacji przerywa działanie, zanim generator zapisze jakikolwiek plik projektu.
 
 ### 2.20 Weryfikacja (verification)
 
@@ -205,7 +205,7 @@ Generacja składa się z siedmiu etapów. Etapy 5-7 wykonuje pipeline jako ciąg
    Generator przerabia dane wejściowe na spójną konfigurację wewnętrzną za pomocą wspólnego mechanizmu normalizacji danych wejściowych. Wartości zostają uporządkowane i uzupełnione, a wynikiem jest znormalizowana konfiguracja, na której podstawie powstanie projekt. Dzięki temu zarówno kreator, jak i plik konfiguracyjny mogą być interpretowane tak samo.
 
 3. Walidacja
-   Generator sprawdza, czy porty nie mają konfliktów, czy katalog docelowy istnieje i czy katalog projektu nie istnieje albo jest pusty. Istnienie i typ template packów sprawdza już ładowanie konfiguracji.
+   Generator sprawdza, czy porty nie mają konfliktów i nie są zajęte przez inne procesy, czy katalog docelowy istnieje i pozwala na zapis i czy katalog projektu nie istnieje albo jest pusty. Format danych oraz istnienie i typ template packów sprawdza już ładowanie konfiguracji.
 
 4. Stworzenie planu generacji
    Plan generacji jest zbiorem danych parametryzujących generację projektu. Zostanie on przekazany do pipeline'u. Planowanie wykrywa przy tym konflikty między packami, na przykład gdy dwa packi chcą wyrenderować ten sam plik. Odróżnia renderowanie pliku od składania go z kilku packów, informuje, jakie pliki składane zostaną stworzone.
@@ -390,7 +390,7 @@ CLI wyświetla użytkownikowi:
 
 ### 6.4 Ładowanie konfiguracji
 
-Kiedy CLI już przygotuje dane wejściowe, przekazuje je do core'a. Dane są sprawdzane pod kątem poprawności struktury i syntaktyki. Sprawdzane jest też, czy template packi wskazane jako frontend i backend istnieją w rejestrze template packów i mają właściwy typ. Kreator robi to przy wyborze packa, a tryb pliku konfiguracyjnego zaraz po wczytaniu pliku. To pierwsza część walidacji. Następnie dane są przekazywane do modułu normalizacji konfiguracji.
+Kiedy CLI już przygotuje dane wejściowe, przekazuje je do core'a. Dane są sprawdzane pod kątem poprawności struktury i syntaktyki, w tym formatu nazwy projektu, portów oraz nazw i wartości zmiennych środowiskowych. Sprawdzane jest też, czy template packi wskazane jako frontend i backend istnieją w rejestrze template packów i mają właściwy typ. Kreator robi to przy wyborze packa, a tryb pliku konfiguracyjnego zaraz po wczytaniu pliku. To pierwsza część walidacji. Następnie dane są przekazywane do modułu normalizacji konfiguracji.
 
 ### 6.5 Normalizacja konfiguracji
 
@@ -407,6 +407,7 @@ Po normalizacji druga część walidacji sprawdza, czy z tej konfiguracji można
 Walidacja obejmuje sprawdzenie:
 
 - czy porty nie mają konfliktów
+- czy porty nie są zajęte przez inne procesy
 - czy katalog docelowy istnieje i pozwala na zapis, a katalog projektu nie istnieje albo jest pusty
 
 ### 6.7 Budowanie planu generacji
@@ -581,7 +582,7 @@ W trybie pliku konfiguracyjnego sytuacje, które kreator rozwiązuje potwierdzen
 
 Bezwzględna ścieżka katalogu docelowego oraz nazwa projektu. Projekt powstaje w katalogu projektu o nazwie project.name wewnątrz katalogu docelowego.
 
-Katalog docelowy musi istnieć i umożliwiać zapis i odczyt plików, ale nie musi być pusty. Katalog projektu nie może istnieć albo musi być pusty. Jeśli istnieje i nie jest pusty, użytkownik musi potwierdzić jego użycie w kreatorze albo uruchomić generator z flagą `--force` - wtedy jego zawartość zostanie usunięta podczas finalizacji, po pozytywnej weryfikacji. Czyszczenie nigdy nie obejmuje pozostałej zawartości katalogu docelowego.
+Katalog docelowy musi istnieć i pozwalać na zapis, ale nie musi być pusty. Katalog projektu nie może istnieć albo musi być pusty. Jeśli istnieje i nie jest pusty, użytkownik musi potwierdzić jego użycie w kreatorze albo uruchomić generator z flagą `--force` - wtedy jego zawartość zostanie usunięta podczas finalizacji, po pozytywnej weryfikacji. Czyszczenie nigdy nie obejmuje pozostałej zawartości katalogu docelowego.
 
 ### 10.4 Konfiguracja frontendu
 
@@ -597,7 +598,7 @@ Konflikt portów oznacza, że dwie części projektu mają ten sam port hosta. P
 
 ### 10.7 Konfiguracja środowiskowa
 
-Sekrety można tutaj podać, a brakujące generator losuje osobno dla każdego projektu. Każdy template pack może oczekiwać zmiennych środowiskowych. Wartości są podawane osobno dla każdej części projektu i trafiają do jej własnego pliku .env. Zmienne, których nie wymaga żaden z wybranych template packów, są pomijane z ostrzeżeniem. Każda istniejąca część projektu ma w znormalizowanej konfiguracji swoją sekcję zmiennych, nawet pustą, a część, która nie istnieje, nie ma jej wcale.
+Sekrety można tutaj podać, a brakujące generator losuje osobno dla każdego projektu. Każdy template pack może oczekiwać zmiennych środowiskowych. Wartości są podawane osobno dla każdej części projektu i trafiają do jej własnego pliku .env. Zmienne, których nie wymaga żaden z wybranych template packów, są pomijane z ostrzeżeniem. Każda istniejąca część projektu ma w znormalizowanej konfiguracji swoją sekcję zmiennych, nawet pustą, a część, która nie istnieje, nie ma jej wcale. Nazwy i wartości zmiennych muszą spełniać reguły opisane w specyfikacji.
 
 ### 10.8 Wartości domyślne
 
@@ -679,7 +680,7 @@ Dane zawarte w manifeście (\* oznacza daną opcjonalną):
 - Lista sekretów dla każdej części projektu (required_envs)
 - Lista plików składanych, do których template pack dostarcza contributions (contributions)
 
-Domyślny port oznacza, że template pack dostarcza daną część projektu. Sekrety wymagane dla części projektu, dla której żaden z wybranych template packów nie deklaruje portu, są pomijane.
+Domyślny port oznacza, że template pack dostarcza daną część projektu. Sekrety wymagane dla części projektu, dla której żaden z wybranych template packów nie deklaruje portu, są pomijane. Nazwy sekretów w required_envs spełniają te same reguły co nazwy zmiennych w konfiguracji.
 
 Sekrety wymagane przez kilka template packów w tej samej części projektu są łączone i mają jedną wspólną wartość.
 
@@ -834,7 +835,7 @@ Core obsługuje uruchomienie generatora jako narzędzia CLI, wczytanie danych we
 
 Tryb kreatora oraz tryb pliku konfiguracyjnego są sprowadzane do tej samej znormalizowanej konfiguracji. Dzięki temu dalsze etapy generatora działają tak samo niezależnie od źródła danych wejściowych.
 
-Walidacja konfiguracji przed rozpoczęciem generacji pozwala spełnić kryteria dotyczące wykrywania błędnych danych wejściowych, nieznanych template packów, konfliktów portów, niepoprawnego katalogu docelowego oraz niepustego katalogu projektu.
+Walidacja konfiguracji przed rozpoczęciem generacji pozwala spełnić kryteria dotyczące wykrywania błędnych danych wejściowych, nieznanych template packów, konfliktów portów, zajętych portów, niepoprawnych zmiennych środowiskowych, niepoprawnego katalogu docelowego oraz niepustego katalogu projektu.
 
 ### 19.2 Kryteria wspieranych kombinacji
 

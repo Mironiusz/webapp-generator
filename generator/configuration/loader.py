@@ -25,13 +25,13 @@ class Loader:
             config_text = self.config_file_path.read_text(encoding="utf-8")
             config_file = ConfigFile.model_validate(yaml.safe_load(config_text))
         except (OSError, UnicodeDecodeError) as e:
-            raise InvalidConfigFileError(self.config_file_path, f"File could not be read: {e}") from e
+            raise InvalidConfigFileError(f"File could not be read: {e}", self.config_file_path) from e
         except yaml.YAMLError as e:
-            raise InvalidConfigFileError(self.config_file_path, f"File is not valid YAML: {format_yaml_error(e)}") from e
+            raise InvalidConfigFileError(f"File is not valid YAML: {format_yaml_error(e)}", self.config_file_path) from e
         except ValidationError as e:
-            raise InvalidConfigFileError(self.config_file_path, f"File does not match the schema: {format_validation_error(e)}") from e
+            raise InvalidConfigFileError(f"File does not match the schema: {format_validation_error(e)}", self.config_file_path) from e
 
-        logger.debug(config_file)
+        logger.debug("Loaded config file: \n%s", yaml.dump(config_file.model_dump(mode="json"), sort_keys=False, allow_unicode=True))
 
         return config_file
 

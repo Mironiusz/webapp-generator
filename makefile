@@ -40,7 +40,9 @@ security:
 audit:
 	$(PYTHON) -m pip_audit
 
-check: lint typecheck deadcode deps security audit test
+check: lint typecheck deps
+
+full-check: lint typecheck deps deadcode security audit test
 
 run:
 	$(PYTHON) main.py

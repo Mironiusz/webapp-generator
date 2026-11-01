@@ -53,3 +53,11 @@ Skończyłem podstawową wersję backendu, jeszcze bez dokłądniejszych zabezpi
 Okazuje się, że implementując backend, trochę rozjechałem się z moimi docsami specyfikacji. Jako że bardziej podoba mi się to, co wyszło mi w praktyce, po prostu zaktualizuję te docsy.
 
 Odłożę też na jakiś czas template pack frontendu - chcę zrobić w końću coś z właściwego generatora.
+
+### 31.10.2026
+
+Podczas planowania dużej prezentacji zauważyłem, że moja architektura wymaga przeglądu i uspójnienia. Zajęło mi to cały dzień, ale w przyszłości już nie powinno sprawiać problemów. Czat potwierdził mi też, że dokumenty nie mają żadnych sprzeczności i niespójności.
+
+### 01.11.2026
+
+Planem na dzisiaj jest ukończenie normalizacji, walidacji, szkielet przebiegu całej procedury ze strukturami danych oraz rozpoczęcie pisania testów. Udało się właśnie dokończyć normalizację i walidację, co uważam za sukces.

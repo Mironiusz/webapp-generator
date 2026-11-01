@@ -1,6 +1,6 @@
 # Kryteria akceptacyjne
 
-Stan: 31.10.2026
+Stan: 01.11.2026
 
 ## 1. Cel dokumentu
 
@@ -419,9 +419,9 @@ Kryterium jest spełnione, jeśli wskazanie backend-db stacka, którego nie ma w
 
 Typ weryfikacji: automatyczna.
 
-### KA-NEG-03 - Konflikt portów
+### KA-NEG-03 - Konflikt portów albo zajęty port
 
-Kryterium jest spełnione, jeśli konflikt portów kończy się błędem walidacji.
+Kryterium jest spełnione, jeśli konflikt portów kończy się błędem walidacji, a port zajęty przez inny proces kończy się błędem walidacji w trybie pliku konfiguracyjnego uruchomionym bez flagi `--force`.
 
 Typ weryfikacji: automatyczna.
 
@@ -434,6 +434,12 @@ Typ weryfikacji: automatyczna.
 ### KA-NEG-05 - Niepoprawny katalog docelowy albo niepusty katalog projektu
 
 Kryterium jest spełnione, jeśli katalog docelowy, który nie istnieje albo nie pozwala na zapis, kończy się błędem walidacji, a katalog projektu, który istnieje i nie jest pusty, kończy się błędem walidacji w trybie pliku konfiguracyjnego uruchomionym bez flagi `--force`.
+
+Typ weryfikacji: automatyczna.
+
+### KA-NEG-06 - Niepoprawne zmienne środowiskowe
+
+Kryterium jest spełnione, jeśli zmienna środowiskowa o niepoprawnej nazwie albo wartości kończy się błędem walidacji.
 
 Typ weryfikacji: automatyczna.
 

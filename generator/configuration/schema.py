@@ -2,9 +2,9 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Annotated, Literal
 
-from pydantic import AfterValidator, SecretStr, StrictInt, StringConstraints
+from pydantic import AfterValidator, StringConstraints
 
-from generator.common.schema import Port, ProjectRealm, StrictModel
+from generator.common.schema import EnvName, EnvValue, Port, ProjectRealm, StrictModel
 
 PROJECT_NAME_MAX_LENGTH = 127
 
@@ -34,12 +34,12 @@ class ConfigFile(StrictModel):
     project: ProjectConfig
     frontend: str
     backend: str
-    ports: Mapping[ProjectRealm, Port | None]
-    envs: dict[ProjectRealm, dict[str, SecretStr | StrictInt]] | None
+    ports: Mapping[ProjectRealm, Port | None] = {}
+    envs: Mapping[ProjectRealm, Mapping[EnvName, EnvValue]] | None = {}
 
 
 class NormalizedConfig(ConfigFile):
     """Konfiguracja znormalizowana generatora w wersji 1 formatu."""
 
     ports: Mapping[ProjectRealm, Port]
-    envs: dict[ProjectRealm, dict[str, SecretStr | StrictInt]]
+    envs: Mapping[ProjectRealm, Mapping[EnvName, EnvValue]]

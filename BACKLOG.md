@@ -71,9 +71,9 @@ Te pliki pozwolą mi łatwiej układać sobie pracę krok po kroku i dzielić j�
 
 - [x] Format pliku konfiguracyjnego
 - [x] Odczyt manifestu
-- [ ] Normalizacja konifguracji (pełne 6.5)
-- [ ] Walidacja konfiguracji (pełne 6.6)
-- [ ] Manifest i szkic docker-compose.yml Django + PostgreSQL, sprawdzenie modelu manifestu
+- [x] Normalizacja konifguracji (pełne 6.5)
+- [x] Walidacja konfiguracji (pełne 6.6)
+- [ ] Manifest Django + PostgreSQL, sprawdzenie modelu manifestu o database
 
 #### CLI
 

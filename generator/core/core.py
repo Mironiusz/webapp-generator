@@ -4,6 +4,7 @@ from generator.common.errors import InvalidTemplatePackError, UnknownTemplatePac
 from generator.configuration.loader import Loader as ConfLoader
 from generator.configuration.normalization import Normalizer
 from generator.configuration.schema import ConfigFile, NormalizedConfig
+from generator.configuration.validation import Validator
 from generator.registry.resolver import Resolver
 from generator.registry.schema import Manifest, ManifestType
 from generator.settings.logger import get_logger
@@ -30,7 +31,6 @@ class Core:
 
         resolver = Resolver()
         manifest_paths = resolver.get_manifests()
-        logger.debug(manifest_paths)
         logger.info("Available template packs loaded")
         return manifest_paths
 
@@ -80,7 +80,11 @@ class Core:
 
     def _validate_config(self, config: NormalizedConfig) -> NormalizedConfig:
         """Spełnia 6.6"""
-        logger.info("[mock] Config validated")
+        validator = Validator(config)
+        validator.run_validation()
+
+        logger.info("Config validated")
+
         return config
 
     def _run_pipeline(self) -> None:

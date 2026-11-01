@@ -1,12 +1,16 @@
 from enum import StrEnum
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, Secret, StrictInt, StringConstraints
 
 PROJECT_MIN_PORT = 1
 PROJECT_MAX_PORT = 65535
+ENV_NAME_MIN_LENGTH = 3
+ENV_VALUE_MIN_LENGTH = 32
 
-Port = Annotated[int, Field(ge=PROJECT_MIN_PORT, le=PROJECT_MAX_PORT)]
+EnvName = Annotated[str, StringConstraints(min_length=ENV_NAME_MIN_LENGTH, pattern=r"^[A-Z_][A-Z0-9_]*$")]
+EnvValue = Secret[Annotated[str, StringConstraints(min_length=ENV_VALUE_MIN_LENGTH, pattern=r"^[A-Za-z0-9._-]+$")]]
+Port = Annotated[StrictInt, Field(ge=PROJECT_MIN_PORT, le=PROJECT_MAX_PORT)]
 
 
 class ProjectRealm(StrEnum):
