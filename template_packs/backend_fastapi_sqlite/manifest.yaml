@@ -13,6 +13,6 @@ database:
 stability: "alpha"
 ports:
   backend: 8000
-contributions: ["docker-compose.yml"]
+contributions: ["docker-compose.yml", "README.md"]
 required_envs:
   backend: ["AUTH__SECRET_KEY"]

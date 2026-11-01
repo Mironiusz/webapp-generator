@@ -10,5 +10,5 @@ language:
 stability: "alpha"
 ports:
   frontend: 3000
-contributions: ["docker-compose.yml"]
+contributions: ["docker-compose.yml", "README.md"]
 required_envs: {}

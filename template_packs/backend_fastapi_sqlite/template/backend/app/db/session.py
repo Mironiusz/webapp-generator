@@ -7,7 +7,7 @@ from sqlalchemy.engine.interfaces import DBAPIConnection
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import ConnectionPoolEntry
 
-from app.core.config import DatabaseSettings
+from template_packs.backend_fastapi_sqlite.template.backend.app.core.config import DatabaseSettings
 
 
 class LifespanState(TypedDict):

@@ -14,7 +14,7 @@ stability: "alpha"
 ports:
   backend: 8000
   database: 5432
-contributions: ["docker-compose.yml"]
+contributions: ["docker-compose.yml", "README.md"]
 required_envs:
   backend: ["DJANGO_SECRET_KEY"]
   database: ["POSTGRES_PASSWORD"]

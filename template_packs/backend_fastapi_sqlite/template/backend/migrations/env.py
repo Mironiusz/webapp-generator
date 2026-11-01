@@ -7,9 +7,9 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from app.core.config import get_settings
-from app.core.logger import configure_logging
-from app.db.registry import Base
+from template_packs.backend_fastapi_sqlite.template.backend.app.core.config import get_settings
+from template_packs.backend_fastapi_sqlite.template.backend.app.core.logger import configure_logging
+from template_packs.backend_fastapi_sqlite.template.backend.app.db.registry import Base
 
 configure_logging()
 

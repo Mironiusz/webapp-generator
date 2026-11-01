@@ -81,7 +81,6 @@ Typ weryfikacji: automatyczna.
 Kryterium jest spełnione, jeśli wygenerowany projekt zawiera co najmniej:
 
 ```text
-|--/docs
 |--/frontend
 |--/backend
 |--/database *opcjonalny
@@ -90,7 +89,6 @@ Kryterium jest spełnione, jeśli wygenerowany projekt zawiera co najmniej:
 |--README.md
 |--docker-compose.yml
 |--.gitignore
-|--.dockerignore
 ```
 
 Typ weryfikacji: automatyczna.
@@ -146,7 +144,7 @@ Typ weryfikacji: automatyczna.
 
 ### KA-DOCKER-03 - Konfiguracja środowiskowa
 
-Kryterium jest spełnione, jeśli katalog główny i każda część projektu zawierają pliki .env i .env.example, a wartości w tych plikach umożliwiają uruchomienie projektu bez dodatkowej konfiguracji.
+Kryterium jest spełnione, jeśli katalog główny i każda część projektu zawierają pliki .env i .env.example, a wartości w plikach .env umożliwiają uruchomienie projektu bez dodatkowej konfiguracji.
 
 Typ weryfikacji: automatyczna i ręczna.
 
@@ -381,7 +379,7 @@ Typ weryfikacji: automatyczna.
 
 ### KA-TEST-05 - Testy wygenerowanego projektu
 
-Kryterium jest spełnione, jeśli README.md wygenerowanego projektu opisuje, jak uruchomić testy każdej części projektu i test happy path.
+Kryterium jest spełnione, jeśli README.md wygenerowanego projektu opisuje, jak uruchomić testy frontendu i backendu oraz test happy path.
 
 Typ weryfikacji: ręczna.
 

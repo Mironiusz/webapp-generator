@@ -4,9 +4,9 @@ from typing import Any
 
 from fastapi import APIRouter, Request, Response, status
 
-from app.api.deps import SessionDep
-from app.api.system.health import db_connection_check, db_schema_check
-from app.api.system.schemas import (
+from template_packs.backend_fastapi_sqlite.template.backend.app.api.deps import SessionDep
+from template_packs.backend_fastapi_sqlite.template.backend.app.api.system.health import db_connection_check, db_schema_check
+from template_packs.backend_fastapi_sqlite.template.backend.app.api.system.schemas import (
     DatabaseStatus,
     GetDatabaseStatus,
     GetHealthStatus,

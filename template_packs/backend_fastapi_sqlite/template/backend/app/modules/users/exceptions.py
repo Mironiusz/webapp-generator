@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from app.exceptions import ConflictError, ForbiddenError, UnauthorizedError
+from template_packs.backend_fastapi_sqlite.template.backend.app.exceptions import ConflictError, ForbiddenError, UnauthorizedError
 
 
 class UserAlreadyExistsError(ConflictError):

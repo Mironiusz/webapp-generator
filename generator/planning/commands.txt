@@ -1,0 +1,3 @@
+git -C <pack>/template ls-files -z --cached --others --exclude-standard
+
+git -C <pack>/template ls-files -z --deleted

@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from app.core.config import AuthSettings
+from template_packs.backend_fastapi_sqlite.template.backend.app.core.config import AuthSettings
 
 
 @pytest.mark.parametrize("key_length", [32, 64])

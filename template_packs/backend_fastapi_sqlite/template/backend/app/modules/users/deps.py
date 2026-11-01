@@ -5,12 +5,12 @@ from typing import Annotated
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from app.api.deps import SessionDep
-from app.core.logger import get_logger
-from app.core.security import TokenValidationError, decode_access_token
-from app.modules.users import service
-from app.modules.users.exceptions import InactiveUserError, NotAuthenticatedError
-from app.modules.users.models import User
+from template_packs.backend_fastapi_sqlite.template.backend.app.api.deps import SessionDep
+from template_packs.backend_fastapi_sqlite.template.backend.app.core.logger import get_logger
+from template_packs.backend_fastapi_sqlite.template.backend.app.core.security import TokenValidationError, decode_access_token
+from template_packs.backend_fastapi_sqlite.template.backend.app.modules.users import service
+from template_packs.backend_fastapi_sqlite.template.backend.app.modules.users.exceptions import InactiveUserError, NotAuthenticatedError
+from template_packs.backend_fastapi_sqlite.template.backend.app.modules.users.models import User
 
 logger = get_logger(__name__)
 

@@ -1,6 +1,6 @@
 # Stan
 
-31.10.2026
+02.11.2026
 
 ## Po co
 
@@ -73,7 +73,10 @@ Te pliki pozwolą mi łatwiej układać sobie pracę krok po kroku i dzielić j�
 - [x] Odczyt manifestu
 - [x] Normalizacja konifguracji (pełne 6.5)
 - [x] Walidacja konfiguracji (pełne 6.6)
-- [ ] Manifest Django + PostgreSQL, sprawdzenie modelu manifestu o database
+- [ ] Obsługa dla Django, by sekret o tej samej nazwie w różnych częściach projektu miał taką samą wartość
+- [ ] Sprawdzanie, że każda część ma jednego właściciela i może deklarować envy tylko gdy deklaruje porty
+- [ ] Błąd przy tworzeniu rejestru, gdy katalog template nie ma katalogu zadeklarowanej części (architektura 13.4)
+- [ ] Normalizacja bez łączenia sekretów z kilku manifestów i bez pomijania sekretów części bez portu
 
 #### CLI
 

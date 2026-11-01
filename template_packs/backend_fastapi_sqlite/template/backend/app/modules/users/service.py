@@ -4,11 +4,11 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.logger import get_logger
-from app.core.security import hash_password, verify_password
-from app.modules.users.exceptions import InactiveUserError, InvalidCredentialsError, UserAlreadyExistsError
-from app.modules.users.models import User
-from app.modules.users.schemas import UserCreate, UserLogin
+from template_packs.backend_fastapi_sqlite.template.backend.app.core.logger import get_logger
+from template_packs.backend_fastapi_sqlite.template.backend.app.core.security import hash_password, verify_password
+from template_packs.backend_fastapi_sqlite.template.backend.app.modules.users.exceptions import InactiveUserError, InvalidCredentialsError, UserAlreadyExistsError
+from template_packs.backend_fastapi_sqlite.template.backend.app.modules.users.models import User
+from template_packs.backend_fastapi_sqlite.template.backend.app.modules.users.schemas import UserCreate, UserLogin
 
 logger = get_logger(__name__)
 

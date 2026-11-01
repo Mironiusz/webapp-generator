@@ -7,8 +7,8 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from app.core.logger import get_logger
-from app.exceptions import AppError, BadRequestError
+from template_packs.backend_fastapi_sqlite.template.backend.app.core.logger import get_logger
+from template_packs.backend_fastapi_sqlite.template.backend.app.exceptions import AppError, BadRequestError
 
 logger = get_logger(__name__)
 

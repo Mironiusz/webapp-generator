@@ -9,12 +9,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.types import Lifespan
 
-from app.api.errors import register_exception_handlers
-from app.api.system.router import system_router
-from app.api.v1.router import v1_router
-from app.core.config import Settings, get_settings
-from app.core.logger import configure_logging, get_logger
-from app.db.session import LifespanState, build_engine, build_orm_session_factory
+from template_packs.backend_fastapi_sqlite.template.backend.app.api.errors import register_exception_handlers
+from template_packs.backend_fastapi_sqlite.template.backend.app.api.system.router import system_router
+from template_packs.backend_fastapi_sqlite.template.backend.app.api.v1.router import v1_router
+from template_packs.backend_fastapi_sqlite.template.backend.app.core.config import Settings, get_settings
+from template_packs.backend_fastapi_sqlite.template.backend.app.core.logger import configure_logging, get_logger
+from template_packs.backend_fastapi_sqlite.template.backend.app.db.session import LifespanState, build_engine, build_orm_session_factory
 
 logger = get_logger(__name__)
 

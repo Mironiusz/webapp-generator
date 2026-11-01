@@ -1,6 +1,6 @@
 # Zmiany zakresu
 
-Stan: 31.10.2026
+Stan: 01.11.2026
 
 ## 1 Cel dokumentu
 
@@ -13,6 +13,7 @@ Elementy, które zostaną zmienione:
 - State i wznawialność
 - Zakres template packów
 - Spójność nazewnictwa
+- Pliki w roocie projektu
 
 ## 3 State
 
@@ -77,3 +78,14 @@ Przy przeglądzie wyszło kilka miejsc, w których dokumenty nie tylko różnie 
 - pipeline ma stałą listę kroków, a plan generacji tylko ją parametryzuje
 - test happy path jest we frontendzie, a wspólne testy kontraktu w generatorze, więc oba piszę raz i sprawdzają każdy backend
 - niepusty katalog projektu i zajęty port w trybie pliku konfiguracyjnego przechodzą tylko z flagą `--force`
+
+## 6 Pliki w roocie projektu
+
+### 6.1 Decyzja
+
+W roocie wygenerowanego projektu nie ma .dockerignore ani katalogu docs.
+
+### 6.2 Uzasadnienie
+
+- .dockerignore: każda część projektu ma własny Dockerfile, a kontekstem jego builda jest katalog tej części, więc .dockerignore leży w katalogu części. W roocie nie miałby czego wykluczać
+- docs: do projektu trafiają tylko pliki z katalogów części i pliki tworzone przez generator, więc katalog docs w roocie musiałby powstawać z contributions. Dokumentację projektu i tak daje README.md w roocie i README.md każdej części

@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.modules.users.router import user_router
+from template_packs.backend_fastapi_sqlite.template.backend.app.modules.users.router import user_router
 
 v1_router = APIRouter(
     prefix="/api/v1",

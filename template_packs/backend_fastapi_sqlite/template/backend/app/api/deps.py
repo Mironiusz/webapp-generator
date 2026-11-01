@@ -6,7 +6,7 @@ from typing import Annotated
 from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.logger import get_logger
+from template_packs.backend_fastapi_sqlite.template.backend.app.core.logger import get_logger
 
 logger = get_logger(__name__)
 

@@ -1,8 +1,8 @@
 from sqlalchemy import String, Text, true
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.db.base import Base
-from app.db.mixins import CreatedAtMixin, IdMixin, UpdatedAtMixin
+from template_packs.backend_fastapi_sqlite.template.backend.app.db.base import Base
+from template_packs.backend_fastapi_sqlite.template.backend.app.db.mixins import CreatedAtMixin, IdMixin, UpdatedAtMixin
 
 
 class User(IdMixin, CreatedAtMixin, UpdatedAtMixin, Base):

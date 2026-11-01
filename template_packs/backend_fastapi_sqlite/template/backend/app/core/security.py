@@ -5,8 +5,8 @@ from datetime import UTC, datetime, timedelta
 import jwt
 from pwdlib import PasswordHash
 
-from app.core.config import get_settings
-from app.core.logger import get_logger
+from template_packs.backend_fastapi_sqlite.template.backend.app.core.config import get_settings
+from template_packs.backend_fastapi_sqlite.template.backend.app.core.logger import get_logger
 
 logger = get_logger(__name__)
 password_hash = PasswordHash.recommended()

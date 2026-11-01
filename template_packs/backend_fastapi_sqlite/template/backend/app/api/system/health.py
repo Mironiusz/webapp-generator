@@ -6,11 +6,11 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
-from app.api.system.schemas import (
+from template_packs.backend_fastapi_sqlite.template.backend.app.api.system.schemas import (
     DatabaseStatus,
     SchemaStatus,
 )
-from app.core.logger import get_logger
+from template_packs.backend_fastapi_sqlite.template.backend.app.core.logger import get_logger
 
 logger = get_logger(__name__)
 

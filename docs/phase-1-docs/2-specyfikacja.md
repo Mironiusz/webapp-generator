@@ -96,7 +96,6 @@ Generowane są:
 ### 7.1 Struktura wygenerowanego projektu
 
 ```text
-|--/docs
 |--/frontend
 |--/backend
 |--/database *opcjonalny
@@ -105,7 +104,6 @@ Generowane są:
 |--README.md
 |--docker-compose.yml
 |--.gitignore
-|--.dockerignore
 ```
 
 ## 8. Wymagania funkcjonalne generatora

@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from fastapi import APIRouter, status
 
-from app.api.deps import SessionDep
-from app.api.errors import InvalidRequestDataError, error_responses
-from app.core.security import create_access_token
-from app.modules.users import service
-from app.modules.users.deps import CurrentUserDep
-from app.modules.users.exceptions import InactiveUserError, InvalidCredentialsError, NotAuthenticatedError, UserAlreadyExistsError
-from app.modules.users.schemas import UserCreate, UserLogin, UserRead, UserTokenResponse
+from template_packs.backend_fastapi_sqlite.template.backend.app.api.deps import SessionDep
+from template_packs.backend_fastapi_sqlite.template.backend.app.api.errors import InvalidRequestDataError, error_responses
+from template_packs.backend_fastapi_sqlite.template.backend.app.core.security import create_access_token
+from template_packs.backend_fastapi_sqlite.template.backend.app.modules.users import service
+from template_packs.backend_fastapi_sqlite.template.backend.app.modules.users.deps import CurrentUserDep
+from template_packs.backend_fastapi_sqlite.template.backend.app.modules.users.exceptions import InactiveUserError, InvalidCredentialsError, NotAuthenticatedError, UserAlreadyExistsError
+from template_packs.backend_fastapi_sqlite.template.backend.app.modules.users.schemas import UserCreate, UserLogin, UserRead, UserTokenResponse
 
 user_router = APIRouter(
     prefix="",

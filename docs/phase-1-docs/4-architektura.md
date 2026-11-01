@@ -92,7 +92,7 @@ Template może opisywać na przykład plik konfiguracyjny, plik źródłowy, tes
 
 ### 2.8 Template pack
 
-Zestaw template'ów i manifestu odpowiadający za wygenerowanie konkretnej części projektu.
+Zestaw template'ów i manifestu odpowiadający za wygenerowanie jednej albo kilku części projektu.
 
 Template pack jest podstawową jednostką rozszerzalności generatora. Nowa technologia, na przykład nowy frontend albo nowy backend-db stack, powinna być dodawana jako nowy template pack, a nie jako dodatkowa logika warunkowa w core generatora.
 
@@ -160,7 +160,7 @@ Wszystkie sprawdzenia konfiguracji przed rozpoczęciem generacji. Pierwsza czę�
 
 ### 2.20 Weryfikacja (verification)
 
-Proces sprawdzania w stagingu, czy wygenerowany projekt działa: uruchomienie przez Docker Compose, testy kontraktu HTTP API, testy części projektu i test happy path. Szczegóły opisuje sekcja 15.
+Proces sprawdzania w stagingu, czy wygenerowany projekt działa: uruchomienie przez Docker Compose, testy kontraktu HTTP API, testy frontendu i backendu oraz test happy path. Szczegóły opisuje sekcja 15.
 
 ### 2.21 Idempotentność
 
@@ -208,14 +208,14 @@ Generacja składa się z siedmiu etapów. Etapy 5-7 wykonuje pipeline jako ciąg
    Generator sprawdza, czy porty nie mają konfliktów i nie są zajęte przez inne procesy, czy katalog docelowy istnieje i pozwala na zapis i czy katalog projektu nie istnieje albo jest pusty. Format danych oraz istnienie i typ template packów sprawdza już ładowanie konfiguracji.
 
 4. Stworzenie planu generacji
-   Plan generacji jest zbiorem danych parametryzujących generację projektu. Zostanie on przekazany do pipeline'u. Planowanie wykrywa przy tym konflikty między packami, na przykład gdy dwa packi chcą wyrenderować ten sam plik. Odróżnia renderowanie pliku od składania go z kilku packów, informuje, jakie pliki składane zostaną stworzone.
+   Plan generacji jest zbiorem danych parametryzujących generację projektu. Zostanie on przekazany do pipeline'u. Planowanie odróżnia renderowanie pliku od składania go z kilku packów oraz informuje, jakie pliki całościowe i składane zostaną stworzone.
 
 5. Generowanie w katalogu roboczym
    Generator nie zaczyna od katalogu docelowego, ale robi staging. Na podstawie stałej listy kroków oraz planu generacji zostaje przeprowadzony cały proces - renderowanie template'ów, tworzenie struktury katalogów, zapis plików i przygotowanie konteneryzacji.
 
 6. Weryfikacja
    Etap sprawdzenia, czy wygenerowany projekt rzeczywiście spełnia wymagania. Jest to główne odróżnienie tego generatora od prostego kopiowania template'ów. Poprawność projektu nie jest oceniana tym, że pliki powstały, tylko tym, że przechodzą wymagane testy.
-   Weryfikacja uruchamia projekt przez Docker Compose, czeka, aż backend będzie gotowy (GET /health/ready), i uruchamia testy kontraktu HTTP API, testy wszystkich części projektu oraz test happy path.
+   Weryfikacja uruchamia projekt przez Docker Compose, czeka, aż backend będzie gotowy (GET /health/ready), i uruchamia testy kontraktu HTTP API, testy frontendu i backendu oraz test happy path.
 
 7. Finalizacja
    Ostatni etap, przenoszący zweryfikowany projekt do katalogu docelowego. Jeśli weryfikacja nie zakończy się sukcesem, projekt nie zostaje przeniesiony do katalogu docelowego.
@@ -321,7 +321,7 @@ Część odpowiedzialna za przetłumaczenie konfiguracji na plan generacji. Na t
 
 ### 5.5 Renderowanie
 
-Proces zmieniający template'y wybrane w planie generacji na pliki w katalogu roboczym. Renderer kopiuje pliki całościowe i składa pliki składane z contributions.
+Proces zmieniający template'y wybrane w planie generacji na pliki w katalogu roboczym. Renderer kopiuje pliki całościowe, składa pliki składane z contributions i zapisuje stały .gitignore w roocie projektu.
 
 ### 5.6 Output
 
@@ -330,7 +330,7 @@ Output odpowiada za operacje na plikach i katalogach poza samym renderowaniem te
 Zadania outputu:
 
 - utworzenie pustego katalogu stagingu dla runa
-- zapis plików .env z wartościami ze znormalizowanej konfiguracji (14.5)
+- zapis plików środowiskowych (14.5)
 - przeniesienie zweryfikowanego projektu do katalogu projektu (9.4)
 - wykonanie cleanupu runa na polecenie core (sekcja 8)
 
@@ -416,10 +416,9 @@ Plan generacji przekłada język konfiguracji na docelowy plan wykonania, używa
 Plan określa:
 
 - wybrane template packi
+- pliki całościowe
 - pliki składane z contributions
 - dane projektu
-
-Przy budowaniu planu planowanie wykrywa konflikty między template packami: dwa packi dostarczają plik całościowy o tej samej ścieżce albo jeden dostarcza plik całościowy, a drugi contribution do tego samego pliku. Konflikt przerywa działanie, zanim generator zapisze jakikolwiek plik projektu.
 
 ### 6.8 Pipeline jako podmoduł core
 
@@ -461,13 +460,13 @@ Kroki pipeline'u:
 
 1. Utworzenie katalogu stagingu i zapis śladu runa.
 2. Skopiowanie plików całościowych z template packów.
-3. Złożenie plików składanych z contributions.
-4. Zapis plików .env z wartościami ze znormalizowanej konfiguracji.
+3. Zapis plików .env z wartościami ze znormalizowanej konfiguracji, podmiana tokenów portów w .env.local.example i utworzenie .env.local.
+4. Złożenie plików składanych z contributions i zapis stałego .gitignore w roocie projektu.
 5. Zbudowanie obrazów przez Docker Compose.
 6. Uruchomienie projektu przez Docker Compose.
 7. Sprawdzenie, czy jednorazowe usługi inicjalizujące zakończyły się kodem 0, a backend osiągnął stan healthy.
 8. Uruchomienie testów kontraktu HTTP API na działającym backendzie.
-9. Uruchomienie testów każdej części projektu.
+9. Uruchomienie testów frontendu i backendu.
 10. Uruchomienie testu happy path.
 11. Zatrzymanie projektu i usunięcie jego zasobów Dockera.
 12. Kopia projektu do katalogu tymczasowego w katalogu docelowym.
@@ -513,7 +512,7 @@ Core:
 
 ### 7.7 Relacja pipeline'u z planem generacji
 
-Kroki pipeline'u są stałe, a plan generacji dostarcza im parametry: jakie template packi, pliki, contributions i testy weryfikacji są wymagane dla danej konfiguracji.
+Kroki pipeline'u są stałe, a plan generacji dostarcza im parametry: jakie template packi, pliki i contributions są wymagane dla danej konfiguracji. Testy weryfikacji są w każdym projekcie te same, więc plan ich nie określa.
 
 Dzięki temu pipeline nie musi zawierać logiki konkretnych technologii.
 
@@ -610,17 +609,35 @@ Frontend, backend-db stack, katalog docelowy i nazwa projektu muszą być podane
 
 Plan generacji to dane, które parametryzują stałą listę kroków pipeline'u. Powstaje na podstawie znormalizowanej konfiguracji i manifestów wybranych template packów.
 
+Plan określa, skąd pochodzi każdy plik projektu: które pliki są kopiowane z template packów, które powstają z contributions, a które tworzy generator.
+
 ### 11.2 Wzór planu generacji
 
-- katalog docelowy
-- nazwa projektu
-- frontend template pack
-- backend-db stack template pack
-- lista plików składanych z contributions
+Plan generacji zawiera:
+
+- katalog projektu
+- template pack frontendu
+- template pack backend-db
+- listę plików całościowych każdego template packa
+- listę plików składanych z contributions
+- porty części projektu
+- sekrety części projektu
 
 ### 11.3 Utworzenie planu generacji
 
-Plan generacji powstaje w etapie planowania, po walidacji konfiguracji. Pipeline nie zmienia planu, tylko odczytuje z niego parametry dla swoich kroków.
+Plan generacji powstaje w etapie planowania, po walidacji konfiguracji. Pipeline nie zmienia planu, tylko odczytuje z niego parametry dla swoich kroków. Ta sama konfiguracja i te same template packi dają zawsze ten sam plan.
+
+### 11.4 Pliki całościowe
+
+Plikami całościowymi są pliki z katalogów części, które git śledzi, oraz nowe pliki, których git nie ignoruje, bez plików usuniętych z dysku. Lista jest sortowana, żeby kolejność plików była zawsze taka sama.
+
+W ten sposób zarówno użytkownik, który świeżo sklonował repozytorium, jak i osoba rozwijająca template pack, ma zawsze poprawną listę plików do wyrenderowania. Śmieci z lokalnego uruchamiania template packa, takie jak venv, cache czy lokalne pliki .env, nie wpadną do wygenerowanego projektu.
+
+Generator zależy przez to od gita. Akceptuję to, bo generator i tak pobiera się z repozytorium gita. Pliki są kopiowane w dalszym ciągu z dysku, a nie z gita.
+
+### 11.5 Pliki składane
+
+Pliki składane powstają z contributions template packów, które dokładają się do wspólnych plików w roocie projektu. Wstęp i zakończenie plików składanych są stałe i pochodzą z generatora. W tym samym kroku generator zapisuje stały .gitignore w roocie projektu.
 
 ## 12 Model kontraktów
 
@@ -654,10 +671,13 @@ Template to pojedynczy plik, będący częścią template packa. Template cało�
 
 ### 13.2 Rola template packów
 
-Template pack składa się z template'ów całościowych, template'ów częściowych oraz manifestu.
-Template'y całościowe są po prostu katalogiem do skopiowania.
+Każdy template pack ma manifest, katalog template z template'ami całościowymi i katalog contributions z template'ami częściowymi.
 Template'y częściowe zawierają treść oraz informację, do którego pliku składanego należą.
 Manifest określa typ template packa i jego wersję.
+
+Katalog template ma strukturę roota projektu. Template pack frontendu ma w nim katalog /frontend, a template pack backend-db katalog /backend albo /backend i /database. Do projektu trafiają tylko pliki z katalogów części, więc ścieżka w template jest od razu ścieżką w projekcie.
+
+Template zawiera też plik README.md w katalogu części, który jest zwykłym plikiem całościowym i powinien być pisany pod generowany projekt. Do tego, docker-compose.yml projektu powstaje z /contributions, więc trzeba utrzymywać dwa pliki docker-compose.yml - wersja leżąca w katalogu template danej części jest tylko developerska.
 
 ### 13.3 Template pack jako jednostka rozszerzalności
 
@@ -680,15 +700,17 @@ Dane zawarte w manifeście (\* oznacza daną opcjonalną):
 - Lista sekretów dla każdej części projektu (required_envs)
 - Lista plików składanych, do których template pack dostarcza contributions (contributions)
 
-Domyślny port oznacza, że template pack dostarcza daną część projektu. Sekrety wymagane dla części projektu, dla której żaden z wybranych template packów nie deklaruje portu, są pomijane. Nazwy sekretów w required_envs spełniają te same reguły co nazwy zmiennych w konfiguracji.
+Nazwy sekretów w required_envs spełniają te same reguły co nazwy zmiennych w konfiguracji.
 
-Sekrety wymagane przez kilka template packów w tej samej części projektu są łączone i mają jedną wspólną wartość.
+Właścicielem części jest template pack, który deklaruje jej port. Każda część ma jednego właściciela. Template pack frontendu deklaruje tylko port frontendu, a template pack backend-db port backendu i opcjonalnie bazy danych. Te reguły zależą wyłącznie od typu template packa, więc manifest, który deklaruje port innej części albo nie deklaruje portu swojej głównej części, jest niepoprawny, a tworzenie rejestru template packów kończy się błędem. Dzięki temu dwa template packi nigdy nie deklarują portu tej samej części.
 
-Sposób uruchomienia testów nie jest częścią manifestu. Każdy template pack musi dostarczać makefile z targetem `test`, który uruchamia jego testy. Template pack frontendu dostarcza też target `happy-path`, który uruchamia test happy path na działającym projekcie.
+Template pack ma w katalogu template katalog każdej swojej części. Brak katalogu zadeklarowanej części kończy się błędem przy tworzeniu rejestru template packów. Template pack może deklarować required_envs tylko dla części, których jest właścicielem.
+
+Sposób uruchomienia testów nie jest częścią manifestu. Każdy template pack musi dostarczać makefile z targetem test, który uruchamia jego testy. Makefile leży w katalogu /frontend albo /backend, bo root katalogu template nie trafia do projektu. Template pack frontendu dostarcza też target happy-path, który uruchamia test happy path na działającym projekcie.
 
 Zależności również nie są częścią manifestu. Template pack deklaruje je w natywnym pliku zależności swojej technologii, na przykład pyproject.toml albo package.json. Zależności między template packami wynikają z ich typów.
 
-Generowane pliki nie są wymieniane w manifeście. Wynikają z zawartości katalogu template'ów całościowych template packa.
+Generowane pliki nie są wymieniane w manifeście. Wynikają z plików całościowych template packa, czyli z plików z katalogów części widzianych przez gita (11.4).
 
 ### 13.5 Jakość template packa
 
@@ -710,7 +732,7 @@ Zawiera framework z backend-db stackiem. Jest wymagany do każdego projektu.
 
 Rejestr jest tworzony podczas każdego wykonania programu. Wszystkie dostępne template packi znajdujące się w katalogu template_packs są sprawdzane, a dane pobierane z ich manifestów. Na tej podstawie następuje kategoryzacja.
 
-Identyfikatorem template packa jest nazwa jego katalogu. Katalog bez pliku manifest.yaml jest pomijany z ostrzeżeniem. Niepoprawny manifest przerywa działanie generatora błędem, który wskazuje, co należy poprawić.
+Identyfikatorem template packa jest nazwa jego katalogu. Katalog bez pliku manifest.yaml jest pomijany z ostrzeżeniem. Niepoprawny manifest, w tym manifest łamiący reguły właściciela części z 13.4, albo brak katalogu zadeklarowanej części przerywa działanie generatora błędem.
 
 #### 13.7.2 Dobór template packów
 
@@ -728,11 +750,11 @@ Renderowanie to proces faktycznej generacji zawartości projektu. Pliki są kopi
 
 ### 14.2 Renderowanie plików całościowych
 
-Pliki całościowe są bardzo proste do wyrenderowania. Wystarczy skopiować template'y całościowe do odpowiedniego katalogu.
+Pliki całościowe są bardzo proste do wyrenderowania. Wystarczy skopiować z dysku pliki z listy plików całościowych planu generacji do katalogu stagingu, bo ścieżka w template jest od razu ścieżką w projekcie.
 
 ### 14.3 Renderowanie plików składanych
 
-Pliki składane tworzone są z template'ów częściowych. Jeden z kroków pipeline'u tworzy wszystkie pliki składane i ich wspólny początek, a następnie dokleja contributions kolejnych template packów.
+Pliki składane tworzone są z template'ów częściowych. Jeden z kroków pipeline'u tworzy wszystkie pliki składane i ich wspólny początek, a następnie dokleja contributions kolejnych template packów. W tym samym kroku generator zapisuje stały .gitignore w roocie projektu.
 
 Pliki są zawsze składane w tej samej kolejności:
 
@@ -749,11 +771,49 @@ Dla plików strukturalnych, takich jak docker-compose.yml, contributions są sk�
 
 Renderer jedynie kopiuje pliki lub skleja zawartość plików według prostego schematu. Dzięki temu nie ma ciężkiej logiki i jest stosunkowo mało podatny na błędy, a także niezależny od tego, co renderuje.
 
-### 14.5 Wartości z konfiguracji
+### 14.5 Pliki środowiskowe
 
-Renderer nie podstawia w template'ach żadnych wartości. Wartości ze znormalizowanej konfiguracji trafiają do projektu wyłącznie przez pliki .env, które generator zapisuje osobnym krokiem pipeline'u. Każda część projektu dostaje własny .env ze swoimi zmiennymi i sekretami oraz .env.example z tymi samymi kluczami bez wartości sekretów. Główny .env zawiera porty części projektu w postaci `<CZĘŚĆ>_PORT`, np. `BACKEND_PORT`, które docker-compose.yml odczytuje przez interpolację zmiennych. Nazwa projektu Docker Compose wynika z nazwy katalogu projektu.
+#### 14.5.1 Zapis plików środowiskowych
 
-Dzięki temu template pack pozostaje działającą aplikacją, którą da się uruchomić i przetestować bez generatora.
+Pliki środowiskowe zapisuje osobny krok pipeline'u. Tworzy:
+
+- główny .env i .env.example w roocie projektu, z portami części projektu
+- .env każdej części z sekretami
+- .env.local.example z podmienionymi tokenami portów i .env.local jako jego kopię, w każdej części, która ma .env.local.example
+
+Dzięki temu renderer nie podstawia w template'ach żadnych wartości, a wartości z konfiguracji trafiają do projektu wyłącznie przez ten krok. Template pack pozostaje przez to działającą aplikacją, którą da się uruchomić i przetestować bez generatora.
+
+Główny .env zawiera porty części projektu w postaci `<CZĘŚĆ>_PORT`, np. `BACKEND_PORT`, które docker-compose.yml odczytuje przez interpolację zmiennych. Nazwa projektu Docker Compose wynika z nazwy katalogu projektu.
+
+#### 14.5.2 .env części
+
+Plik .env każdej części tworzy generator. Zawiera tylko sekrety zdefiniowane w required_envs manifestu właściciela części, a ich wartości pochodzą z konfiguracji albo są losowane.
+
+#### 14.5.3 .env.example części
+
+.env.example jest kopiowany 1:1 z template packa. Ma te same klucze co .env, ale z wartością CHANGE_ME. Pilnowanie, żeby te klucze zgadzały się z required_envs z manifestu, jest po stronie autora template packa.
+
+#### 14.5.4 .env.local i .env.local.example
+
+.env.local.example pochodzi z template packa. W wygenerowanym projekcie krok zapisu plików środowiskowych podmienia w nim tokeny portów, a .env.local powstaje jako jego kopia. Dzięki temu w wygenerowanym projekcie nie zostaje żaden token, a .env.local.example po sklonowaniu repozytorium projektu od razu nadaje się do skopiowania jako .env.local.
+
+.env.local.example jest opcjonalny. Jeśli template pack go nie ma, .env.local nie powstaje.
+
+#### 14.5.5 Tokeny portów
+
+Część projektu może potrzebować portu innej części. Backend potrzebuje portu frontendu do listy originów CORS, a frontend portu backendu do adresu API. Port jest znany dopiero ze znormalizowanej konfiguracji, a nie chcę dokładać go do .env, który ma zawierać tylko sekrety.
+
+Dlatego .env.local.example może zawierać tokeny w postaci `{{<CZĘŚĆ>_PORT}}`, po jednym dla każdej części projektu: `{{FRONTEND_PORT}}`, `{{BACKEND_PORT}}` i `{{DATABASE_PORT}}`. Nazwy tokenów są takie same jak nazwy portów w głównym .env. Przykład dla backendu FastAPI:
+
+```text
+API__CORS_ORIGINS='["http://localhost:{{FRONTEND_PORT}}"]'
+```
+
+Token występuje tylko w .env.local.example template packa. Krok zapisu plików środowiskowych podmienia tokeny na porty z planu generacji, zanim zapisze .env.local.example i .env.local. Generator nie zna nazw zmiennych, w których stoją tokeny, więc nie potrzebuje wiedzy o żadnej technologii.
+
+Frontend i backend są w każdym projekcie, więc ich tokeny zawsze da się podmienić. Część database istnieje tylko wtedy, gdy ma właściciela, dlatego tokenu `{{DATABASE_PORT}}` może używać tylko template pack, który jest jej właścicielem.
+
+Jeśli po podmianie w .env.local.example zostanie jakikolwiek `{{...}}`, krok kończy się błędem. Dotyczy to zarówno tokenu części, której nie ma w projekcie, jak i literówki w nazwie tokenu.
 
 ## 15 Weryfikacja
 
@@ -762,7 +822,7 @@ Weryfikacja sprawdza w stagingu, czy wygenerowany projekt działa, zanim trafi d
 - zbudowanie i uruchomienie projektu w projekcie Docker Compose runa
 - sprawdzenie, czy jednorazowe usługi inicjalizujące zakończyły się kodem 0, a backend osiągnął stan healthy na podstawie GET /health/ready
 - uruchomienie testów kontraktu HTTP API z katalogu contracts generatora
-- uruchomienie testów każdej części projektu przez make test
+- uruchomienie testów frontendu i backendu przez make test
 - uruchomienie testu happy path
 - zatrzymanie projektu i usunięcie jego zasobów Dockera
 
@@ -811,7 +871,6 @@ Statystyki pozwolą podsumować i porównać różne template packi. CLI pokazuj
 ## 18 Struktura wygenerowanego projektu
 
 ```text
-|--/docs
 |--/frontend
 |--/backend
 |--/database *opcjonalny
@@ -820,7 +879,6 @@ Statystyki pozwolą podsumować i porównać różne template packi. CLI pokazuj
 |--README.md
 |--docker-compose.yml
 |--.gitignore
-|--.dockerignore
 ```
 
 Każda część projektu ma własne pliki .env i .env.example, a główny .env zawiera porty części projektu dla docker-compose.yml.
@@ -895,7 +953,7 @@ Nowa technologia powinna być dodawana jako nowy template pack. Core nie powinie
 
 Frontend musi być zgodny z kontraktem HTTP API. Backend-db stack musi być zgodny z kontraktem HTTP API oraz kontraktem danych. Dzięki temu nowe technologie mogą być dodawane niezależnie od istniejących, bez naruszania już obsługiwanych kombinacji.
 
-Manifest template packa określa informacje potrzebne do użycia danej technologii przez generator. Dzięki temu rejestr template packów wykrywa dostępne template packi i ich typy, a planowanie wykrywa konflikty plików między nimi.
+Manifest template packa określa informacje potrzebne do użycia danej technologii przez generator. Dzięki temu rejestr template packów wykrywa dostępne template packi i ich typy oraz pilnuje, żeby każda część projektu miała jednego właściciela.
 
 ## 20 Elementy poza zakresem architektury
 
