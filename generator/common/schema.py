@@ -13,7 +13,7 @@ EnvValue = Secret[Annotated[str, StringConstraints(min_length=ENV_VALUE_MIN_LENG
 Port = Annotated[StrictInt, Field(ge=PROJECT_MIN_PORT, le=PROJECT_MAX_PORT)]
 
 
-class ProjectRealm(StrEnum):
+class ProjectPart(StrEnum):
     """Części wygenerowanego projektu, z własnym katalogiem i plikiem .env."""
 
     BACKEND = "backend"

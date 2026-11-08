@@ -5,8 +5,10 @@ from generator.configuration.loader import Loader as ConfLoader
 from generator.configuration.normalization import Normalizer
 from generator.configuration.schema import ConfigFile, NormalizedConfig
 from generator.configuration.validation import Validator
+from generator.planning.planner import Planner
+from generator.planning.schema import GenerationPlan
 from generator.registry.resolver import Resolver
-from generator.registry.schema import Manifest, ManifestType
+from generator.registry.schema import TemplatePack, TemplatePackType
 from generator.settings.logger import get_logger
 
 logger = get_logger(__name__)
@@ -15,7 +17,7 @@ CONFIG_FILE_PATH = Path(r"C:\wju\Thesis\generator\cli\example_config_file.yaml")
 
 
 class Core:
-    available_packs: dict[str, Manifest]
+    available_packs: dict[str, TemplatePack]
 
     def __init__(self) -> None:
         """
@@ -23,16 +25,16 @@ class Core:
         """
         logger.info("Core created")
 
-    def _load_available_packs(self) -> dict[str, Manifest]:
+    def _load_available_packs(self) -> dict[str, TemplatePack]:
         """
         Wczytuje manifesty dostępnych template packów.
         Zwraca słownik nazwa packa -> wczytany manifest.
         """
 
         resolver = Resolver()
-        manifest_paths = resolver.get_manifests()
+        template_packs = resolver.get_template_packs()
         logger.info("Available template packs loaded")
-        return manifest_paths
+        return template_packs
 
     def _get_config(self) -> ConfigFile:
         """
@@ -51,15 +53,15 @@ class Core:
         if config_file.backend not in self.available_packs:
             raise UnknownTemplatePackError(config_file.backend)
 
-        backend_manifest = self.available_packs[config_file.backend]
-        if backend_manifest.type is not ManifestType.BACKEND_DB:
+        backend_manifest = self.available_packs[config_file.backend].manifest
+        if backend_manifest.type is not TemplatePackType.BACKEND_DB:
             raise InvalidTemplatePackError(config_file.backend, "Template pack is not a backend template pack")
 
         if config_file.frontend not in self.available_packs:
             raise UnknownTemplatePackError(config_file.frontend)
 
-        frontend_manifest = self.available_packs[config_file.frontend]
-        if frontend_manifest.type is not ManifestType.FRONTEND:
+        frontend_manifest = self.available_packs[config_file.frontend].manifest
+        if frontend_manifest.type is not TemplatePackType.FRONTEND:
             raise InvalidTemplatePackError(config_file.frontend, "Template pack is not a frontend template pack")
 
         logger.info("Target packs verified")
@@ -68,8 +70,8 @@ class Core:
 
     def _normalize_config(self, config_file: ConfigFile) -> NormalizedConfig:
         """Spełnia 6.5"""
-        frontend_manifest = self.available_packs[config_file.frontend]
-        backend_manifest = self.available_packs[config_file.backend]
+        frontend_manifest = self.available_packs[config_file.frontend].manifest
+        backend_manifest = self.available_packs[config_file.backend].manifest
 
         normalizer = Normalizer(config_file, frontend_manifest, backend_manifest)
         normalized_config = normalizer.run_normalization()
@@ -87,7 +89,15 @@ class Core:
 
         return config
 
-    def _run_pipeline(self) -> None:
+    def _create_generation_plan(self, config: NormalizedConfig) -> GenerationPlan:
+        """Tworzy plan generacji"""
+        planner = Planner(config, self.available_packs)
+        generation_plan = planner.create_generation_plan()
+        logger.info("Generation plan created")
+
+        return generation_plan
+
+    def _run_pipeline(self, _generation_plan: GenerationPlan) -> None:
         logger.info("[mock] Pipeline ran")
 
     def _pass_result(self) -> None:
@@ -101,6 +111,7 @@ class Core:
         config = self._get_config()
         config = self._normalize_config(config)
         config = self._validate_config(config)
-        self._run_pipeline()
+        generation_plan = self._create_generation_plan(config)
+        self._run_pipeline(generation_plan)
         self._pass_result()
         self._show_stats()

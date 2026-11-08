@@ -1,9 +1,10 @@
 from enum import StrEnum
+from pathlib import Path
 
-from generator.common.schema import EnvName, Port, ProjectRealm, StrictModel
+from generator.common.schema import EnvName, Port, ProjectPart, StrictModel
 
 
-class ManifestType(StrEnum):
+class TemplatePackType(StrEnum):
     """Typ template packa, określający, którą część projektu generuje."""
 
     BACKEND_DB = "backend-db"
@@ -48,12 +49,22 @@ class Manifest(StrictModel):
     """
 
     name: str
-    type: ManifestType
+    type: TemplatePackType
     version: str
     framework: ManifestFramework
     language: ManifestLanguage
     database: ManifestDatabase | None = None
     stability: ManifestStability
-    ports: dict[ProjectRealm, Port]
+    ports: dict[ProjectPart, Port]
     contributions: list[str]
-    required_envs: dict[ProjectRealm, list[EnvName]]
+    required_envs: dict[ProjectPart, list[EnvName]]
+
+
+class TemplatePack(StrictModel):
+    """
+    Nazwa, ścieżka i manifest, czyli wszystko o template packu.
+    """
+
+    name: str
+    path: Path
+    manifest: Manifest

@@ -1,6 +1,6 @@
 # Architektura
 
-Stan: 01.11.2026
+Stan: 07.11.2026
 
 ## 1 Wstęp
 
@@ -618,7 +618,7 @@ Plan generacji zawiera:
 - katalog projektu
 - template pack frontendu
 - template pack backend-db
-- listę plików całościowych każdego template packa
+- listę plików całościowych każdej części projektu
 - listę plików składanych z contributions
 - porty części projektu
 - sekrety części projektu
@@ -704,7 +704,7 @@ Nazwy sekretów w required_envs spełniają te same reguły co nazwy zmiennych w
 
 Właścicielem części jest template pack, który deklaruje jej port. Każda część ma jednego właściciela. Template pack frontendu deklaruje tylko port frontendu, a template pack backend-db port backendu i opcjonalnie bazy danych. Te reguły zależą wyłącznie od typu template packa, więc manifest, który deklaruje port innej części albo nie deklaruje portu swojej głównej części, jest niepoprawny, a tworzenie rejestru template packów kończy się błędem. Dzięki temu dwa template packi nigdy nie deklarują portu tej samej części.
 
-Template pack ma w katalogu template katalog każdej swojej części. Brak katalogu zadeklarowanej części kończy się błędem przy tworzeniu rejestru template packów. Template pack może deklarować required_envs tylko dla części, których jest właścicielem.
+Template pack ma w katalogu template katalog każdej swojej części. Brak katalogu zadeklarowanej części sprawia, że template pack jest pomijany z ostrzeżeniem przy tworzeniu rejestru template packów. Template pack może deklarować required_envs tylko dla części, których jest właścicielem.
 
 Sposób uruchomienia testów nie jest częścią manifestu. Każdy template pack musi dostarczać makefile z targetem test, który uruchamia jego testy. Makefile leży w katalogu /frontend albo /backend, bo root katalogu template nie trafia do projektu. Template pack frontendu dostarcza też target happy-path, który uruchamia test happy path na działającym projekcie.
 
@@ -732,7 +732,7 @@ Zawiera framework z backend-db stackiem. Jest wymagany do każdego projektu.
 
 Rejestr jest tworzony podczas każdego wykonania programu. Wszystkie dostępne template packi znajdujące się w katalogu template_packs są sprawdzane, a dane pobierane z ich manifestów. Na tej podstawie następuje kategoryzacja.
 
-Identyfikatorem template packa jest nazwa jego katalogu. Katalog bez pliku manifest.yaml jest pomijany z ostrzeżeniem. Niepoprawny manifest, w tym manifest łamiący reguły właściciela części z 13.4, albo brak katalogu zadeklarowanej części przerywa działanie generatora błędem.
+Identyfikatorem template packa jest nazwa jego katalogu. Katalog bez pliku manifest.yaml albo bez katalogu template jest pomijany z ostrzeżeniem. Niepoprawny manifest, w tym manifest łamiący reguły właściciela części z 13.4, przerywa działanie generatora błędem. Template pack bez katalogu którejś z zadeklarowanych części jest pomijany z ostrzeżeniem.
 
 #### 13.7.2 Dobór template packów
 

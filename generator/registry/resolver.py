@@ -1,49 +1,68 @@
 from pathlib import Path
 
+from generator.common.schema import ProjectPart
 from generator.registry.loader import Loader
-from generator.registry.schema import Manifest
+from generator.registry.schema import Manifest, TemplatePack
 from generator.settings.config import TEMPLATE_PACKS_PATH
 from generator.settings.logger import get_logger
 
 logger = get_logger(__name__)
 
 MANIFEST_FILE_NAME = "manifest.yaml"
+TEMPLATE_PACK_TEMPLATE_NAME = "template"
+TEMPLATE_PACK_CONTRIBUTIONS_NAME = "contributions"
 
 
 class Resolver:
-    """Odnajduje template packi w katalogu template_packs i udostępnia ich manifesty."""
+    """Odnajduje template packi w katalogu template_packs i buduje z nich rejestr."""
 
-    def get_manifest_paths(self) -> dict[str, Path]:
-        """Zwraca słownik nazwa packa -> ścieżka jego manifestu."""
+    def get_pack_dirs(self) -> dict[str, Path]:
+        """Zwraca słownik nazwa packa -> katalog packa, pomijając z ostrzeżeniem katalogi bez manifestu."""
+        pack_dirs: dict[str, Path] = {}
 
-        manifest_paths = {}
-
-        for tp_path in sorted(TEMPLATE_PACKS_PATH.iterdir()):
-            if not tp_path.is_dir():
+        for pack_dir in sorted(TEMPLATE_PACKS_PATH.iterdir()):
+            if not pack_dir.is_dir():
                 continue
 
-            manifest_path = tp_path / MANIFEST_FILE_NAME
-
-            if not manifest_path.is_file():
-                logger.warning("%s is not a valid template pack. %s missing.", tp_path, MANIFEST_FILE_NAME)
+            if not (pack_dir / MANIFEST_FILE_NAME).is_file():
+                logger.warning("%s is not a valid template pack. %s missing.", pack_dir, MANIFEST_FILE_NAME)
                 continue
 
-            manifest_paths[tp_path.name] = manifest_path
+            pack_dirs[pack_dir.name] = pack_dir
 
-        logger.debug("Detected template packs: %s", ", ".join(manifest_paths))
+        logger.debug("Detected template packs: %s", ", ".join(pack_dirs))
 
-        return manifest_paths
+        return pack_dirs
 
-    def get_manifests(self) -> dict[str, Manifest]:
-        """Zwraca słownik nazwa packa -> wczytany manifest."""
-        manifest_paths = self.get_manifest_paths()
-        manifests = {}
+    def _get_missing_parts(self, template_dir: Path, manifest: Manifest) -> list[ProjectPart]:
+        """Zwraca części projektu z manifestu, które nie mają swojego katalogu w katalogu template."""
+
+        return [part for part in manifest.ports if not (template_dir / part).is_dir()]
+
+    def get_template_packs(self) -> dict[str, TemplatePack]:
+        """Zwraca słownik nazwa packa -> wczytany manifest wraz z nazwą packa i ścieżką do katalogu /template, który jest w packu."""
+        template_packs: dict[str, TemplatePack] = {}
         loader = Loader()
-        for manifest_name in manifest_paths:
-            manifests[manifest_name] = loader.get_manifest(manifest_paths[manifest_name])
 
-        return manifests
+        for pack_name, pack_dir in self.get_pack_dirs().items():
+            template_dir = pack_dir / TEMPLATE_PACK_TEMPLATE_NAME
+            contributions_dir = pack_dir / TEMPLATE_PACK_CONTRIBUTIONS_NAME
 
-    def get_path(self, name: str) -> Path:
-        """Zwraca ścieżkę manifestu packa o podanej nazwie."""
-        raise NotImplementedError
+            if not template_dir.is_dir():
+                logger.warning("Template pack %s does not have a /%s dir, so it was not loaded", pack_name, TEMPLATE_PACK_TEMPLATE_NAME)
+                continue
+
+            if not contributions_dir.is_dir():
+                logger.warning("Template pack %s does not have a /%s dir, so it was not loaded", pack_name, TEMPLATE_PACK_CONTRIBUTIONS_NAME)
+                continue
+
+            manifest = loader.get_manifest(pack_dir / MANIFEST_FILE_NAME)
+
+            missing_parts = self._get_missing_parts(template_dir, manifest)
+            if missing_parts:
+                logger.warning("Template pack %s does not have dirs for parts: %s, so it was not loaded", pack_name, ", ".join(missing_parts))
+                continue
+
+            template_packs[pack_name] = TemplatePack(name=pack_name, path=template_dir, manifest=manifest)
+
+        return template_packs

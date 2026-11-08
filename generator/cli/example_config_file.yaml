@@ -6,4 +6,4 @@ project:
 
 frontend: "frontend_nuxt"
 
-backend: "backend_django_postgres"
+backend: "backend_fastapi_sqlite"

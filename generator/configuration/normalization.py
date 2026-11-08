@@ -3,7 +3,7 @@ from collections.abc import Mapping
 
 import yaml
 
-from generator.common.schema import EnvValue, Port, ProjectRealm
+from generator.common.schema import EnvValue, Port, ProjectPart
 from generator.configuration.schema import ConfigFile, NormalizedConfig
 from generator.registry.schema import Manifest
 from generator.settings.logger import get_logger
@@ -24,25 +24,25 @@ class Normalizer:
         self.config_file = config_file
         self.manifests = (frontend_manifest, backend_manifest)
 
-    def _get_default_ports(self) -> dict[ProjectRealm, Port]:
+    def _get_default_ports(self) -> dict[ProjectPart, Port]:
         """
         Zbiera domyślne porty z manifestów wybranych template packów.
         Klucze wyniku wyznaczają części projektu, które istnieją w generowanym projekcie.
         """
-        default_ports: dict[ProjectRealm, Port] = {}
+        default_ports: dict[ProjectPart, Port] = {}
         for manifest in self.manifests:
             default_ports.update(manifest.ports)
 
         return default_ports
 
-    def _get_required_env_names(self) -> dict[ProjectRealm, list[str]]:
+    def _get_required_env_names(self) -> dict[ProjectPart, list[str]]:
         """
         Zbiera nazwy zmiennych środowiskowych wymaganych przez manifesty wybranych template packów.
         Nazwy z kilku manifestów są łączone bez powtórzeń, w kolejności z manifestów.
         Każda część projektu ma wpis, nawet z pustą listą.
         Zmienne wymagane dla części projektu bez portu są pomijane.
         """
-        required_env_names: dict[ProjectRealm, list[str]] = {realm: [] for realm in self._get_default_ports()}
+        required_env_names: dict[ProjectPart, list[str]] = {realm: [] for realm in self._get_default_ports()}
         for manifest in self.manifests:
             for realm, env_names in manifest.required_envs.items():
                 if realm not in required_env_names:
@@ -53,7 +53,7 @@ class Normalizer:
 
         return required_env_names
 
-    def _fill_default_ports(self) -> Mapping[ProjectRealm, Port]:
+    def _fill_default_ports(self) -> Mapping[ProjectPart, Port]:
         """
         Uzupełnia porty domyślnymi wartościami z manifestów wybranych template packów.
         Port podany przez użytkownika zostaje bez zmian.
@@ -63,8 +63,8 @@ class Normalizer:
         """
         default_ports = self._get_default_ports()
 
-        target_ports: dict[ProjectRealm, Port] = {}
-        for realm in ProjectRealm:
+        target_ports: dict[ProjectPart, Port] = {}
+        for realm in ProjectPart:
             target_port = self.config_file.ports.get(realm)
 
             if realm not in default_ports:
@@ -79,7 +79,7 @@ class Normalizer:
 
         return target_ports
 
-    def _fill_default_envs(self) -> dict[ProjectRealm, dict[str, EnvValue]]:
+    def _fill_default_envs(self) -> dict[ProjectPart, dict[str, EnvValue]]:
         """
         Uzupełnia zmienne środowiskowe sekretami wymaganymi przez manifesty wybranych template packów.
         Każda część projektu, która ma port, dostaje swoją sekcję zmiennych, nawet pustą.
@@ -94,7 +94,7 @@ class Normalizer:
             for env_name in sorted(realm_envs.keys() - required_env_names.get(realm, [])):
                 logger.warning("Ignoring env %s for %s, no selected template pack requires it", env_name, realm)
 
-        target_envs: dict[ProjectRealm, dict[str, EnvValue]] = {}
+        target_envs: dict[ProjectPart, dict[str, EnvValue]] = {}
         for realm, env_names in required_env_names.items():
             realm_envs = config_file_envs.get(realm, {})
 

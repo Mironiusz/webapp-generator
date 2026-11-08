@@ -1,3 +1,8 @@
-git -C <pack>/template ls-files -z --cached --others --exclude-standard
+git -C <pack>/template ls-files -z --cached --others --exclude-standard -- <parts>
 
-git -C <pack>/template ls-files -z --deleted
+git -C <pack>/template ls-files -z --deleted -- <parts>
+
+
+git -C "C:\wju\Thesis\template_packs\backend_fastapi_sqlite\template" ls-files -z --cached --others --exclude-standard
+
+git -C "C:\wju\Thesis\template_packs\backend_fastapi_sqlite\template" ls-files -z --deleted -- backend frontend

@@ -75,7 +75,7 @@ Te pliki pozwolą mi łatwiej układać sobie pracę krok po kroku i dzielić j�
 - [x] Walidacja konfiguracji (pełne 6.6)
 - [ ] Obsługa dla Django, by sekret o tej samej nazwie w różnych częściach projektu miał taką samą wartość
 - [ ] Sprawdzanie, że każda część ma jednego właściciela i może deklarować envy tylko gdy deklaruje porty
-- [ ] Błąd przy tworzeniu rejestru, gdy katalog template nie ma katalogu zadeklarowanej części (architektura 13.4)
+- [x] Pominięcie ładowania, gdy katalog template nie ma katalogu zadeklarowanej części (architektura 13.4)
 - [ ] Normalizacja bez łączenia sekretów z kilku manifestów i bez pomijania sekretów części bez portu
 
 #### CLI
@@ -92,8 +92,8 @@ Te pliki pozwolą mi łatwiej układać sobie pracę krok po kroku i dzielić j�
 
 #### Plan generacji i generacja
 
-- [ ] Określenie formatu planu generacji
-- [ ] Wykonywalność planu generacji
+- [x] Określenie formatu planu generacji
+- [x] Implementacja planu generacji
 
 #### Weryfikacja i finalizacja
 
