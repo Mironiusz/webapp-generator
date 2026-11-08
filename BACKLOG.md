@@ -63,9 +63,8 @@ Te pliki pozwolą mi łatwiej układać sobie pracę krok po kroku i dzielić j�
 #### Szkielet core
 
 - [x] Obiekty i architektoniczne fundamenty core
-- [ ] Korzystanie z CLI i obserwowalność
-- [ ] Wykonanywanie planu generacji
-- [ ] Obsługa pipelinu
+- [x] Wykonanywanie planu generacji
+- [x] Obsługa pipelinu
 
 #### Konfiguracja
 
@@ -78,31 +77,15 @@ Te pliki pozwolą mi łatwiej układać sobie pracę krok po kroku i dzielić j�
 - [x] Pominięcie ładowania, gdy katalog template nie ma katalogu zadeklarowanej części (architektura 13.4)
 - [ ] Normalizacja bez łączenia sekretów z kilku manifestów i bez pomijania sekretów części bez portu
 
-#### CLI
-
-- [ ] Wybór frameworka pod CLI. Sprawdzenie go i przetestowanie możliwości
-- [ ] Zebranie danych wejściowych od użytkownika
-- [ ] Zapis odpowiedzi kreatora jako plik konfiguracyjny
-- [ ] Obsługa przejścia przez cały proces przez CLI, na mockach
-
 #### Pipeline
 
-- [ ] Zdefiniowanie każdego z kroków pipelinu w kodzie
-- [ ] Obiekty i architektoniczne fundamenty pipelinu
+- [x] Obiekty i architektoniczne fundamenty pipelinu
+- [x] Zdefiniowanie każdego z kroków pipelinu w kodzie
 
 #### Plan generacji i generacja
 
 - [x] Określenie formatu planu generacji
 - [x] Implementacja planu generacji
-
-#### Weryfikacja i finalizacja
-
-- [ ] Procedura weryfikacyjna ze stagingiem
-- [ ] Testy kontraktu HTTP API w katalogu contracts
-- [ ] Procedura finalizacji
-- [ ] Cleanup runa i ślad runa
-- [ ] Ignorowanie zawartości TEMP w .gitignore, z wyjątkiem .gitkeep
-- [ ] Wygenerowany backend wstaje przez docker compose
 
 ### 3. Template pack nuxta
 
@@ -158,6 +141,55 @@ Te pliki pozwolą mi łatwiej układać sobie pracę krok po kroku i dzielić j�
 - [ ] Manifest i wkład packa do wspólnych plików projektu
 
 ### 5. Ukończenie generatora
+
+#### Testy generatora, potem testy razem z implementacją
+
+- [ ] Testy wczytywania konfiguracji
+- [ ] Testy normalizacji konfiguracji
+- [ ] Testy walidacji konfiguracji
+- [ ] Testy kontraktów wywoływane z generatora
+
+#### Pozostałe
+
+- [ ] Format i sklejanie plików contributions: zasady
+- [ ] Procedura cleanupu stagingu
+- [ ] Cleanup po błędzie w kroku, po ctrl+c oraz na początku uruchomienia, jeśli katalog nie jest pusty
+- [ ] Dokumentacja generatora
+
+#### Implementacja budujących kroków pipelinu
+
+- [ ] Pipeline krok 1
+- [ ] Pipeline krok 2
+- [ ] Pipeline krok 3
+- [ ] Pipeline krok 4
+
+#### Implementacja pozostałych kroków pipelinu
+
+- [ ] Pipeline krok 5
+- [ ] Pipeline krok 6
+- [ ] Pipeline krok 7
+- [ ] Pipeline krok 8
+- [ ] Pipeline krok 9
+- [ ] Pipeline krok 10
+- [ ] Pipeline krok 11
+- [ ] Pipeline krok 12
+- [ ] Pipeline krok 13
+- [ ] Pipeline krok 14
+
+#### CLI
+
+- [ ] Wybór frameworka pod CLI. Sprawdzenie go i przetestowanie możliwości
+- [ ] Zebranie danych wejściowych od użytkownika
+- [ ] Zapis odpowiedzi kreatora jako plik konfiguracyjny
+- [ ] Obsługa przejścia przez cały proces przez CLI
+- [ ] Flaga --force
+
+#### Statistics
+
+- [ ] Model statystyk
+- [ ] Zbieranie statystyk kroków poza pipelinem
+- [ ] Zbieranie statystyk kroków pipeline'u
+- [ ] Wyświetlenie statystyk w CLI jako ostanti krok
 
 ### 6. Stworzenie pracy inżynierskiej
 

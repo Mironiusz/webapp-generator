@@ -1,10 +1,11 @@
 from pathlib import Path
 
-from generator.common.errors import InvalidTemplatePackError, UnknownTemplatePackError
+from generator.common.errors import GeneratorError, InvalidTemplatePackError, UnknownTemplatePackError
 from generator.configuration.loader import Loader as ConfLoader
 from generator.configuration.normalization import Normalizer
 from generator.configuration.schema import ConfigFile, NormalizedConfig
 from generator.configuration.validation import Validator
+from generator.pipeline.pipeline import Pipeline
 from generator.planning.planner import Planner
 from generator.planning.schema import GenerationPlan
 from generator.registry.resolver import Resolver
@@ -97,8 +98,18 @@ class Core:
 
         return generation_plan
 
-    def _run_pipeline(self, _generation_plan: GenerationPlan) -> None:
-        logger.info("[mock] Pipeline ran")
+    def _run_pipeline(self, generation_plan: GenerationPlan) -> None:
+        """Przechodzi przez każdy krok pipeline'u"""
+        pipeline = Pipeline(generation_plan)
+        try:
+            for step in pipeline:
+                logger.debug(step)
+        except GeneratorError as e:
+            logger.error(e)
+        except BaseException as e:
+            logger.error(e)
+
+        logger.info("Pipeline ran")
 
     def _pass_result(self) -> None:
         logger.info("[mock] Result project passed")

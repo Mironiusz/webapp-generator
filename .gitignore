@@ -11,3 +11,5 @@ venv
 /build
 /dist
 node_modules
+TEMP
+!gitkeep

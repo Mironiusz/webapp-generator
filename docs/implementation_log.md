@@ -61,3 +61,9 @@ Podczas planowania dużej prezentacji zauważyłem, że moja architektura wymaga
 ### 01.11.2026
 
 Planem na dzisiaj jest ukończenie normalizacji, walidacji, szkielet przebiegu całej procedury ze strukturami danych oraz rozpoczęcie pisania testów. Udało się właśnie dokończyć normalizację i walidację, co uważam za sukces.
+
+### 07.11.2026, 08.11.2026
+
+Przez ten weekend postanowiłem dopiąć generation plan i postawić szkielet pipelinu. Przy okazji zaktualizowałem backlog.
+
+Kolejnym krokiem jest dla mnie rozpoczęcie pisania testów generatora.
