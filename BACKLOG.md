@@ -147,6 +147,7 @@ Te pliki pozwolą mi łatwiej układać sobie pracę krok po kroku i dzielić j�
 - [ ] Testy wczytywania konfiguracji
 - [ ] Testy normalizacji konfiguracji
 - [ ] Testy walidacji konfiguracji
+- [ ] Testy tworzenia generation planu
 - [ ] Testy kontraktów wywoływane z generatora
 
 #### Pozostałe

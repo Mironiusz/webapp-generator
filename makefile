@@ -23,10 +23,10 @@ typecheck:
 	$(PYTHON) -m mypy
 
 test:
-	$(PYTHON) -m pytest
+	$(PYTHON) -m pytest -s
 
 coverage:
-	$(PYTHON) -m pytest --cov --cov-report=term-missing
+	$(PYTHON) -m pytest --cov=generator --cov-report=term-missing
 
 deadcode:
 	$(PYTHON) -m vulture

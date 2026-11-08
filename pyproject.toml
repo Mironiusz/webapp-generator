@@ -81,12 +81,17 @@ skip-magic-trailing-comma = false
 docstring-code-format = true
 
 [tool.mypy]
-files = ["generator", "main.py"]
+files = ["generator", "main.py", "tests"]
 mypy_path = "."
 explicit_package_bases = true
 namespace_packages = true
 cache_dir = ".cache/mypy"
 strict = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
 
 [tool.vulture]
 paths = ["generator", "main.py"]
@@ -105,6 +110,10 @@ extend_exclude = ["template_packs", "TEMP"]
 [tool.coverage.run]
 data_file = ".cache/coverage"
 source = ["generator"]
+branch = true
+
+[tool.coverage.report]
+include_namespace_packages = true
 
 [tool.pytest.ini_options]
 addopts = "-ra -q --import-mode=importlib"
@@ -112,3 +121,5 @@ testpaths = ["tests"]
 pythonpath = ["."]
 cache_dir = ".cache/pytest"
 filterwarnings = ["error"]
+log_format = "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+log_date_format = "%Y-%m-%d %H:%M:%S"
